@@ -1190,7 +1190,7 @@ def _rule_2_15(dataset: DatasetReader) -> list[RuleIssue]:
     return issues
 
 
-def _rule_2_16(dataset: DatasetReader) -> list[RuleIssue]:
+#def _rule_2_16(dataset: DatasetReader) -> list[RuleIssue]:
     helper = JuridicoHelper(dataset)
     issues: list[RuleIssue] = []
     for table_name, row in helper.iter_derecho_interesado_fuente():
@@ -1518,7 +1518,7 @@ def _rule_2_31(dataset: DatasetReader) -> list[RuleIssue]:
     return issues
 
 
-def _rule_2_32(dataset: DatasetReader) -> list[RuleIssue]:
+#def _rule_2_32(dataset: DatasetReader) -> list[RuleIssue]:
     helper = JuridicoHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -1565,7 +1565,7 @@ RULE_FUNCTIONS = {
     "2.13": _rule_2_13,
     "2.14": _rule_2_14,
     "2.15": _rule_2_15,
-    "2.16": _rule_2_16,
+    #"2.16": _rule_2_16,
     "2.17": _rule_2_17,
     "2.18": _rule_2_18,
     "2.19": _rule_2_19,
@@ -1581,5 +1581,5 @@ RULE_FUNCTIONS = {
     "2.29": _rule_2_29,
     "2.30": _rule_2_30,
     "2.31": _rule_2_31,
-    "2.32": _rule_2_32,
+    #"2.32": _rule_2_32,
 }

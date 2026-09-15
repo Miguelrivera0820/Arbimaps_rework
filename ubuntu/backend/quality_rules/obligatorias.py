@@ -649,13 +649,13 @@ def rule_11_7(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def rule_11_8(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_8(dataset: DatasetReader) ->list[RuleIssue]:
     return[]
 
-def rule_11_9(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_9(dataset: DatasetReader) ->list[RuleIssue]:
     return[]
 
-def rule_11_10(dataset: DatasetReader) -> list[RuleIssue]:
+#def rule_11_10(dataset: DatasetReader) -> list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -697,7 +697,7 @@ def rule_11_10(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def rule_11_11(dataset: DatasetReader) -> list[RuleIssue]:
+#def rule_11_11(dataset: DatasetReader) -> list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -739,7 +739,7 @@ def rule_11_11(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def rule_11_12(dataset: DatasetReader) -> list[RuleIssue]:
+#def rule_11_12(dataset: DatasetReader) -> list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -922,7 +922,7 @@ def rule_11_16(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def rule_11_17(dataset: DatasetReader) -> list[RuleIssue]:
+#def rule_11_17(dataset: DatasetReader) -> list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -1797,7 +1797,7 @@ def rule_11_42(dataset: DatasetReader) ->list[RuleIssue]:
 
     return issues
 
-def rule_11_43(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_43(dataset: DatasetReader) ->list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -1861,7 +1861,7 @@ def rule_11_44(dataset: DatasetReader) ->list[RuleIssue]:
 
     return issues
 
-def rule_11_45(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_45(dataset: DatasetReader) ->list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -2053,7 +2053,7 @@ def rule_11_50(dataset: DatasetReader) ->list[RuleIssue]:
 
     return issues
 
-def rule_11_51(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_51(dataset: DatasetReader) ->list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -2085,7 +2085,7 @@ def rule_11_51(dataset: DatasetReader) ->list[RuleIssue]:
 
     return issues
 
-def rule_11_52(dataset: DatasetReader) -> list[RuleIssue]:
+#def rule_11_52(dataset: DatasetReader) -> list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -2123,7 +2123,7 @@ def rule_11_52(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def rule_11_53(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_53(dataset: DatasetReader) ->list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -2156,7 +2156,7 @@ def rule_11_53(dataset: DatasetReader) ->list[RuleIssue]:
 
     return issues
 
-def rule_11_54(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_54(dataset: DatasetReader) ->list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -2188,7 +2188,7 @@ def rule_11_54(dataset: DatasetReader) ->list[RuleIssue]:
 
     return issues
 
-def rule_11_55(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_55(dataset: DatasetReader) ->list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -2293,7 +2293,7 @@ def rule_11_57(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def rule_11_58(dataset: DatasetReader) -> list[RuleIssue]:
+#def rule_11_58(dataset: DatasetReader) -> list[RuleIssue]:
     helper = ObligatoriasHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -2416,10 +2416,10 @@ def rule_11_60(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def rule_11_61(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_61(dataset: DatasetReader) ->list[RuleIssue]:
     return[]
 
-def rule_11_62(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_62(dataset: DatasetReader) ->list[RuleIssue]:
     return[]
 
 def rule_11_63(dataset: DatasetReader) -> list[RuleIssue]:
@@ -2454,7 +2454,7 @@ def rule_11_63(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def rule_11_64(dataset: DatasetReader) ->list[RuleIssue]:
+#def rule_11_64(dataset: DatasetReader) ->list[RuleIssue]:
     return[]
 
 
@@ -2499,16 +2499,16 @@ RULE_FUNCTIONS = {
     "11.5": rule_11_5,
     "11.6": rule_11_6,
     "11.7": rule_11_7,
-    "11.8": rule_11_8,
-    "11.9": rule_11_9,
-    "11.10": rule_11_10,
-    "11.11": rule_11_11,
-    "11.12": rule_11_12,
+    #"11.8": rule_11_8,
+    #"11.9": rule_11_9,
+    #"11.10": rule_11_10,
+    #"11.11": rule_11_11,
+    #"11.12": rule_11_12,
     "11.13": rule_11_13,
     "11.14": rule_11_14,
     "11.15": rule_11_15,
     "11.16": rule_11_16,
-    "11.17": rule_11_17,
+    #"11.17": rule_11_17,
     "11.18": rule_11_18,
     "11.19": rule_11_19,
     "11.20": rule_11_20,
@@ -2534,27 +2534,27 @@ RULE_FUNCTIONS = {
     "11.40": rule_11_40,
     "11.41": rule_11_41,
     "11.42": rule_11_42,
-    "11.43": rule_11_43,
+    #"11.43": rule_11_43,
     "11.44": rule_11_44,
-    "11.45": rule_11_45,
+    #"11.45": rule_11_45,
     "11.46": rule_11_46,
     "11.47": rule_11_47,
     "11.48": rule_11_48,
     "11.49": rule_11_49,
     "11.50": rule_11_50,
-    "11.51": rule_11_51,
-    "11.52": rule_11_52,
-    "11.53": rule_11_53,
-    "11.54": rule_11_54,
-    "11.55": rule_11_55,
+    #"11.51": rule_11_51,
+    #"11.52": rule_11_52,
+    #"11.53": rule_11_53,
+    #"11.54": rule_11_54,
+    #"11.55": rule_11_55,
     "11.56": rule_11_56,
     "11.57": rule_11_57,
-    "11.58": rule_11_58,
+    #"11.58": rule_11_58,
     "11.59": rule_11_59,
     "11.60": rule_11_60,
-    "11.61": rule_11_61,
-    "11.62": rule_11_62,
+    #"11.61": rule_11_61,
+    #"11.62": rule_11_62,
     "11.63": rule_11_63,
-    "11.64": rule_11_64,
+    #"11.64": rule_11_64,
     "11.65": rule_11_65,
 }

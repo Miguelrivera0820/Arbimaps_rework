@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unicodedata
+from decimal import Decimal, ROUND_HALF_UP
 
 from .base import DatasetReader, RuleIssue
 
@@ -8,7 +9,7 @@ COMPONENT_SLUG = "economico"
 
 DEFAULT_RULE_IDS = frozenset({
     "4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8", "4.9",
-    "4.10", "4.11", "4.12", "4.13", "4.14", "4.15", "4.16", "4.17", "4.18",
+    "4.10", "4.11", "4.12", "4.13", "4.14", "4.16", "4.17", "4.18",
 })
 
 
@@ -1596,16 +1597,28 @@ def _iter_estructura_avaluo(helper: EconomicoHelper):
     yield from helper._iter_table_rows(("ILC_EstructuraAvaluo", "ilc_estructuraavaluo"))
 
 
+def _iter_avaluo_4_17(helper: EconomicoHelper):
+    # Paridad con QGIS: 4.17 valida tanto ILC_EstructuraAvaluo como ARB_AvaluoValor.
+    yield from helper._iter_table_rows((
+        "ILC_EstructuraAvaluo", "ilc_estructuraavaluo",
+        "ARB_AvaluoValor", "arb_avaluovalor",
+    ))
+
+
 def _avaluo_values(helper: EconomicoHelper, row: dict[str, object]) -> dict[str, float | None]:
     fields = {
-        "valor_comercial": ("valor_comercial", "Valor_Comercial"),
-        "valor_comercial_terreno": ("valor_comercial_terreno", "Valor_Comercial_Terreno"),
-        "valor_comercial_unidades": ("valor_comercial_total_unidadesconstruccion", "Valor_Comercial_Total_UnidadesConstruccion", "valor_comercial_total_unidades_construccion"),
-        "valor_catastral": ("valor_catastral", "Valor_Catastral"),
-        "valor_catastral_terreno": ("valor_catastral_terreno", "Valor_Catastral_Terreno"),
-        "valor_catastral_unidades": ("valor_catastral_total_unidadesconstruccion", "Valor_Catastral_Total_UnidadesConstruccion", "valor_catastral_total_unidades_construccion"),
+        "valor_comercial": ("valor_comercial", "Valor_Comercial", "avaluo_comercial", "Avaluo_Comercial"),
+        "valor_comercial_terreno": ("valor_comercial_terreno", "Valor_Comercial_Terreno", "avaluo_comercial_terreno", "Avaluo_Comercial_Terreno"),
+        "valor_comercial_unidades": ("valor_comercial_total_unidadesconstruccion", "Valor_Comercial_Total_UnidadesConstruccion", "valor_comercial_total_unidades_construccion", "avaluo_comercial_total_unidades_construccion", "Avaluo_Comercial_Total_Unidades_Construccion"),
+        "valor_catastral": ("valor_catastral", "Valor_Catastral", "avaluo_catastral", "Avaluo_Catastral"),
+        "valor_catastral_terreno": ("valor_catastral_terreno", "Valor_Catastral_Terreno", "avaluo_catastral_terreno", "Avaluo_Catastral_Terreno"),
+        "valor_catastral_unidades": ("valor_catastral_total_unidadesconstruccion", "Valor_Catastral_Total_UnidadesConstruccion", "valor_catastral_total_unidades_construccion", "avaluo_catastral_total_unidades_construccion", "Avaluo_Catastral_Total_Unidades_Construccion"),
     }
     return {key: _to_float(helper.get_field_value(row, aliases)) for key, aliases in fields.items()}
+
+
+def _redondear_al_mil(valor: Decimal | float | int) -> float:
+    return float(Decimal(str(valor)).quantize(Decimal("1e3"), rounding=ROUND_HALF_UP))
 
 
 def _rule_4_16(dataset: DatasetReader) -> list[RuleIssue]:
@@ -1618,11 +1631,28 @@ def _rule_4_16(dataset: DatasetReader) -> list[RuleIssue]:
 
 
 def _rule_4_17(dataset: DatasetReader) -> list[RuleIssue]:
-    helper = EconomicoHelper(dataset); issues: list[RuleIssue] = []
-    for table_name, row in _iter_estructura_avaluo(helper):
-        v = _avaluo_values(helper, row); total=v["valor_catastral"]; terreno=v["valor_catastral_terreno"]; unidades=v["valor_catastral_unidades"]
-        if total is None or terreno is None or unidades is None or total <= 0 or abs(total - (terreno + unidades)) > 0.01:
-            issues.append(helper.make_issue(row, rule_id="4.17", message="El avalúo catastral debe ser mayor que cero y corresponder a terreno + total de unidades de construcción.", details={"tabla":table_name, **v}))
+    helper = EconomicoHelper(dataset)
+    issues: list[RuleIssue] = []
+    for table_name, row in _iter_avaluo_4_17(helper):
+        v = _avaluo_values(helper, row)
+        total = v["valor_catastral"]
+        terreno = v["valor_catastral_terreno"]
+        unidades = v["valor_catastral_unidades"]
+        if total is None or terreno is None or unidades is None or total <= 0:
+            issues.append(helper.make_issue(row, rule_id="4.17", message="El avalúo catastral debe ser mayor que cero y estar diligenciado junto con terreno y unidades de construcción.", details={"tabla": table_name, **v}))
+            continue
+        try:
+            esperado = _redondear_al_mil(Decimal(str(terreno)) + Decimal(str(unidades)))
+            total_entero = round(total)
+            es_entero = abs(total - total_entero) <= 0.001
+            es_cerrado_al_mil = es_entero and int(total_entero) % 1000 == 0
+            coincide_suma_redondeada = abs(total - esperado) <= 0.01
+        except Exception:
+            esperado = None
+            es_cerrado_al_mil = False
+            coincide_suma_redondeada = False
+        if not (es_cerrado_al_mil and coincide_suma_redondeada):
+            issues.append(helper.make_issue(row, rule_id="4.17", message="El avalúo catastral debe ser mayor que cero, cerrado al mil más cercano sin decimales, y corresponder a la suma de terreno + unidades de construcción redondeada al mil.", details={"tabla": table_name, "esperado_al_mil": esperado, **v}))
     return issues
 
 
@@ -1874,7 +1904,8 @@ def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
     return issues
 
 
-def _rule_4_15(dataset: DatasetReader) -> list[RuleIssue]:
+
+#def _rule_4_15(dataset: DatasetReader) -> list[RuleIssue]:
     """
     Regla 4.15:
     Si Tipo_Calificacion es No_Convencional,
@@ -1929,7 +1960,7 @@ RULE_FUNCTIONS = {
     "4.12": _rule_4_12,
     "4.13": _rule_4_13,
     "4.14": _rule_4_14,
-    "4.15": _rule_4_15,
+    #"4.15": _rule_4_15,
     "4.16": _rule_4_16,
     "4.17": _rule_4_17,
     "4.18": _rule_4_18,

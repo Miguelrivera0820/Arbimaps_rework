@@ -1196,7 +1196,7 @@ def _rule_1_11(dataset: DatasetReader) -> list[RuleIssue]:
     return issues
 
 
-def _rule_1_12(dataset: DatasetReader) -> list[RuleIssue]:
+#def _rule_1_12(dataset: DatasetReader) -> list[RuleIssue]:
     helper = NumeroPredialHelper(dataset)
     issues: list[RuleIssue] = []
     relaciones: dict[str, dict[str, list[dict[str, object]]]] = {}
@@ -3212,7 +3212,7 @@ RULE_FUNCTIONS = {
     "1.9": _rule_1_9,
     "1.10": _rule_1_10,
     "1.11": _rule_1_11,
-    "1.12": _rule_1_12,
+    #"1.12": _rule_1_12,
     "1.13": _rule_1_13,
     "1.14": _rule_1_14,
     "1.15": _rule_1_15,
