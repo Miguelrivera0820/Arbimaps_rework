@@ -56,8 +56,53 @@ class GenerarNpnResponse(BaseModel):
     consecutivo_tramite: Optional[str]
     items: List[ItemPredioGenerado]
 
+class LiberarInactivasRequest(BaseModel):
+    dias_antiguedad: int = Field(30, description="Días de inactividad para considerar la reserva huérfana (por defecto 30)")
+
 class LiberarHomologadosRequest(BaseModel):
     codigos: List[str] = Field(..., description="Lista de códigos homologados a liberar/desmarcar de la reserva")
+
+class AsignarHomologadoExistenteRequest(BaseModel):
+    numeros_prediales: List[str] = Field(..., description="Lista de números prediales de 30 dígitos existentes")
+    consecutivo_tramite: Optional[str] = Field(None, description="Identificador o radicado del trámite")
+    observaciones: Optional[str] = Field(None, description="Notas u observaciones adicionales")
+
+class ItemPredioExistenteAsignado(BaseModel):
+    id_inventario: Optional[int] = None
+    codigo_homologado: str
+    numero_predial: str
+    estado: str
+    es_nueva_reserva: bool
+    origen_base: str
+    fecha_reserva: str
+
+class AsignarHomologadoExistenteResponse(BaseModel):
+    success: bool
+    total_solicitados: int
+    total_asignados: int
+    consecutivo_tramite: Optional[str]
+    items: List[ItemPredioExistenteAsignado]
+
+class ConsultarNpnsExistentesRequest(BaseModel):
+    numeros_prediales: List[str] = Field(..., description="Lista de números prediales de 30 dígitos a consultar")
+
+class ItemDiagnosticoNpn(BaseModel):
+    numero_predial: str
+    existe_base_principal: bool
+    existe_r1: bool
+    origen_base: str
+    tiene_homologado: bool
+    codigo_homologado_actual: Optional[str] = None
+    estado_homologado_actual: Optional[str] = None
+    fecha_homologacion: Optional[str] = None
+    requiere_nuevo_homologado: bool
+
+class ConsultarNpnsExistentesResponse(BaseModel):
+    success: bool
+    total_consultados: int
+    total_sin_homologado: int
+    total_con_homologado: int
+    items: List[ItemDiagnosticoNpn]
 
 # =========================================================
 # VALIDACIÓN DE ACCESO POR ROL
@@ -131,13 +176,24 @@ def resumen_inventario(
             FROM arbimaps_app.codigos_homologados;
         """)
         row = cur.fetchone() or {"disponibles": 0, "reservados": 0, "asignados": 0, "total": 0}
+        disp = row["disponibles"] or 0
+        umbral = 500
+        nivel = "OPTIMO"
+        if disp < 200:
+            nivel = "CRITICO"
+        elif disp < umbral:
+            nivel = "ADVERTENCIA"
+
         return {
             "success": True,
             "resumen": {
-                "disponibles": row["disponibles"],
-                "reservados": row["reservados"],
-                "asignados": row["asignados"],
-                "total": row["total"],
+                "disponibles": disp,
+                "reservados": row["reservados"] or 0,
+                "asignados": row["asignados"] or 0,
+                "total": row["total"] or 0,
+                "umbral_alerta": umbral,
+                "es_stock_bajo": disp < umbral,
+                "nivel_alerta": nivel
             }
         }
 
@@ -361,7 +417,7 @@ def generar_npn_y_reservar(
 
         nuevos_npns: List[dict] = []
         
-        if es_tramite_unidades and tipo_mut != "DESENGLOBE":
+        if es_tramite_unidades:
             # EN PH / CONDOMINIO / CEMENTERIOS / MEJORAS (9, 8, 7, 5):
             # Pos 18-21: Terreno matriz fijo
             # Pos 22: Condición (9, 8, 7, 5)
@@ -381,12 +437,7 @@ def generar_npn_y_reservar(
                         unidades_usadas.add(int(npn[26:30]))
                     except ValueError:
                         pass
-                elif npn.startswith(f"{prefijo_manzana}{terreno_fijo}") and npn[21] == primer_digito_cond:
-                    # También rastrear unidades globales dentro del mismo terreno/condición
-                    try:
-                        unidades_usadas.add(int(npn[26:30]))
-                    except ValueError:
-                        pass
+  
             
             max_unidad = max(unidades_usadas) if unidades_usadas else 0
             siguiente_unidad = max_unidad + 1 if max_unidad > 0 else 1
@@ -577,9 +628,9 @@ def liberar_homologados(
                 observaciones = NULL,
                 usuario = NULL,
                 fecha_asignacion = NULL
-            WHERE codigo_homologado = ANY(%s)
+            WHERE (codigo_homologado = ANY(%s) OR numero_predial = ANY(%s))
               AND estado = 'RESERVADO';
-        """, (payload.codigos,))
+        """, (payload.codigos, payload.codigos))
         afectados = cur.rowcount
         conn.commit()
         
@@ -609,9 +660,9 @@ def consolidar_homologados(
             UPDATE arbimaps_app.codigos_homologados
             SET estado = 'ASIGNADO',
                 fecha_asignacion = NOW()
-            WHERE codigo_homologado = ANY(%s)
+            WHERE (codigo_homologado = ANY(%s) OR numero_predial = ANY(%s))
               AND estado = 'RESERVADO';
-        """, (payload.codigos,))
+        """, (payload.codigos, payload.codigos))
         afectados = cur.rowcount
         conn.commit()
         
@@ -620,3 +671,326 @@ def consolidar_homologados(
             "codigos_consolidados": afectados,
             "mensaje": f"Se consolidaron exitosamente {afectados} códigos en estado definitivo (ASIGNADO)."
         }
+
+
+
+def _obtener_homologados_existentes_multi_schema(cur, schema_main: str, npns: List[str]) -> dict:
+    resultado = {}
+    if not npns:
+        return resultado
+
+    # 1. Buscar en arbimaps_app.codigos_homologados
+    cur.execute("""
+        SELECT id, codigo_homologado, numero_predial, estado, fecha_asignacion, fecha_cargue
+        FROM arbimaps_app.codigos_homologados
+        WHERE numero_predial = ANY(%s)
+          AND codigo_homologado IS NOT NULL 
+          AND codigo_homologado != ''
+    """, (npns,))
+    for r in cur.fetchall():
+        npn = r.get("numero_predial")
+        if npn and r.get("codigo_homologado"):
+            resultado[npn] = {
+                "id": r.get("id"),
+                "codigo_homologado": r.get("codigo_homologado"),
+                "estado": r.get("estado") or "RESERVADO",
+                "origen": "arbimaps_app.codigos_homologados",
+                "fecha": str(r.get("fecha_asignacion") or r.get("fecha_cargue") or "")
+            }
+
+    # 2. Buscar en a_base_principal.arb_predio
+    cur.execute(f"""
+        SELECT numero_predial, codigo_homologado
+        FROM {schema_main}.arb_predio
+        WHERE numero_predial = ANY(%s)
+          AND codigo_homologado IS NOT NULL 
+          AND codigo_homologado != ''
+    """, (npns,))
+    for r in cur.fetchall():
+        npn = r.get("numero_predial")
+        ch = r.get("codigo_homologado")
+        if npn and ch and npn not in resultado:
+            resultado[npn] = {
+                "id": None,
+                "codigo_homologado": ch,
+                "estado": "ASIGNADO",
+                "origen": "a_base_principal.arb_predio",
+                "fecha": ""
+            }
+
+    return resultado
+
+@router.post("/liberar-reservas-inactivas")
+def liberar_reservas_inactivas(
+    payload: LiberarInactivasRequest,
+    user: dict = Depends(_verificar_rol_autorizado),
+    tenant: TenantContext = Depends(get_current_tenant),
+    conn=Depends(get_tenant_db_connection),
+):
+    """
+    Libera automáticamente todas las reservas en estado 'RESERVADO'
+    que lleven inactivas más de N días (por defecto 30 días).
+    """
+    dias = max(1, payload.dias_antiguedad)
+    with conn.cursor() as cur:
+        cur.execute("""
+            UPDATE arbimaps_app.codigos_homologados
+            SET estado = 'DISPONIBLE',
+                numero_predial = NULL,
+                observaciones = NULL,
+                usuario = NULL,
+                fecha_asignacion = NULL
+            WHERE estado = 'RESERVADO'
+              AND (fecha_asignacion < NOW() - (%s || ' days')::INTERVAL OR fecha_asignacion IS NULL);
+        """, (dias,))
+        afectados = cur.rowcount
+        conn.commit()
+        
+        return {
+            "success": True,
+            "dias_antiguedad": dias,
+            "codigos_liberados": afectados,
+            "mensaje": f"Se liberaron exitosamente {afectados} reservas inactivas (> {dias} días) hacia la bolsa disponible."
+        }
+
+
+@router.post("/asignar-homologado-existentes", response_model=AsignarHomologadoExistenteResponse)
+def asignar_homologado_a_predios_existentes(
+    payload: AsignarHomologadoExistenteRequest,
+    user: dict = Depends(_verificar_rol_autorizado),
+    tenant: TenantContext = Depends(get_current_tenant),
+    conn=Depends(get_tenant_db_connection),
+):
+    """
+    Asigna o vincula un Código Homologado oficial disponible a NPNs existentes de 30 dígitos.
+    PROTECCIÓN ESTRICTA: Si un NPN ya posee un código homologado previamente asignado o reservado
+    (en arbimaps_app.codigos_homologados o a_base_principal.arb_predio), el sistema NO consumirá
+    un nuevo código de la bolsa ni modificará el código existente.
+    """
+    username = user.get("username") if isinstance(user, dict) else str(user)
+    
+    npns_solicitados = []
+    for raw_npn in payload.numeros_prediales:
+        clean_npn = "".join(filter(str.isdigit, str(raw_npn or ""))).zfill(30)[:30]
+        if len(clean_npn) == 30 and clean_npn not in npns_solicitados:
+            npns_solicitados.append(clean_npn)
+
+    if not npns_solicitados:
+        raise HTTPException(
+            status_code=400,
+            detail="No se ingresaron números prediales válidos de 30 dígitos."
+        )
+
+    if len(npns_solicitados) > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se permite procesar hasta 100 NPNs por solicitud."
+        )
+
+    schema_main = tenant.schemas.main or "a_base_principal"
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        # 1. Base principal y R1
+        cur.execute(f"SELECT DISTINCT numero_predial FROM {schema_main}.arb_predio WHERE numero_predial = ANY(%s)", (npns_solicitados,))
+        npns_en_base_principal = {r["numero_predial"] for r in cur.fetchall() if r.get("numero_predial")}
+
+        cur.execute("SELECT DISTINCT numero_predial FROM f_r1_r2.r1_predio_propietario WHERE numero_predial = ANY(%s)", (npns_solicitados,))
+        npns_en_r1 = {r["numero_predial"] for r in cur.fetchall() if r.get("numero_predial")}
+
+        # 2. Homologados existentes en codigos_homologados y arb_predio
+        homologados_previos_map = _obtener_homologados_existentes_multi_schema(cur, schema_main, npns_solicitados)
+
+        # NPNs que efectivamente requieren un nuevo código de la bolsa disponible
+        npns_sin_homologado = [npn for npn in npns_solicitados if npn not in homologados_previos_map]
+        cantidad_necesaria = len(npns_sin_homologado)
+
+        if cantidad_necesaria == 0:
+            conn.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail=f"Acción no permitida: Todos los {len(npns_solicitados)} predios ingresados ya cuentan con un código homologado oficial asignado previamente en el sistema. No se permite realizar asignaciones sobre predios previamente homologados."
+            )
+
+        filas_homologados_nuevos = []
+        if cantidad_necesaria > 0:
+            cur.execute("""
+                SELECT id, codigo_homologado
+                FROM arbimaps_app.codigos_homologados
+                WHERE estado = 'DISPONIBLE'
+                ORDER BY id ASC
+                LIMIT %s
+                FOR UPDATE SKIP LOCKED;
+            """, (cantidad_necesaria,))
+            filas_homologados_nuevos = cur.fetchall() or []
+
+            if len(filas_homologados_nuevos) < cantidad_necesaria:
+                conn.rollback()
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Inventario insuficiente en bolsa: Se requieren {cantidad_necesaria} códigos para los NPNs sin homologar pero solo hay {len(filas_homologados_nuevos)} disponibles."
+                )
+
+        items_resultado: List[ItemPredioExistenteAsignado] = []
+        fecha_actual_str = datetime.now(timezone.utc).isoformat()
+        idx_nuevo = 0
+
+        for npn in npns_solicitados:
+            if npn in npns_en_base_principal:
+                origen = "Base Principal (arb_predio)"
+            elif npn in npns_en_r1:
+                origen = "Catastro R1/R2 (r1_predio_propietario)"
+            else:
+                origen = "NPN Ingresado (No en Base R1)"
+
+            if npn in homologados_previos_map:
+                # MANTENER CÓDIGO EXISTENTE - NO MODIFICAR NI CONSUMIR BOLSA
+                h_previo = homologados_previos_map[npn]
+                items_resultado.append(ItemPredioExistenteAsignado(
+                    id_inventario=h_previo.get("id"),
+                    codigo_homologado=h_previo.get("codigo_homologado", ""),
+                    numero_predial=npn,
+                    estado=h_previo.get("estado", "ASIGNADO"),
+                    es_nueva_reserva=False,
+                    origen_base=origen,
+                    fecha_reserva=str(h_previo.get("fecha") or fecha_actual_str),
+                ))
+            else:
+                # ASIGNAR NUEVO CÓDIGO DE LA BOLSA
+                h_row = filas_homologados_nuevos[idx_nuevo]
+                idx_nuevo += 1
+
+                h_id = h_row["id"]
+                ch_codigo = h_row["codigo_homologado"]
+                obs_full = f"Asignación a NPN existente. Trámite {payload.consecutivo_tramite or 'S/N'}. {payload.observaciones or ''}".strip()
+
+                cur.execute("""
+                    UPDATE arbimaps_app.codigos_homologados
+                    SET estado = 'RESERVADO',
+                        numero_predial = %s,
+                        observaciones = %s,
+                        usuario = %s,
+                        fecha_asignacion = NOW()
+                    WHERE id = %s;
+                """, (npn, obs_full, username, h_id))
+
+                items_resultado.append(ItemPredioExistenteAsignado(
+                    id_inventario=h_id,
+                    codigo_homologado=ch_codigo,
+                    numero_predial=npn,
+                    estado="RESERVADO",
+                    es_nueva_reserva=True,
+                    origen_base=origen,
+                    fecha_reserva=fecha_actual_str,
+                ))
+
+        conn.commit()
+
+        return AsignarHomologadoExistenteResponse(
+            success=True,
+            total_solicitados=len(npns_solicitados),
+            total_asignados=len(items_resultado),
+            consecutivo_tramite=payload.consecutivo_tramite,
+            items=items_resultado,
+        )
+
+@router.post("/consultar-npns-existentes", response_model=ConsultarNpnsExistentesResponse)
+def consultar_npns_existentes_diagnostico(
+    payload: ConsultarNpnsExistentesRequest,
+    user: dict = Depends(_verificar_rol_autorizado),
+    tenant: TenantContext = Depends(get_current_tenant),
+    conn=Depends(get_tenant_db_connection),
+):
+    """
+    Consulta diagnóstica (solo lectura) de presencia e historial de homologación para una lista de NPNs.
+    - Verifica presencia en a_base_principal.arb_predio.
+    - Verifica presencia en f_r1_r2.r1_predio_propietario.
+    - Verifica si ya posee un código homologado en arbimaps_app.codigos_homologados.
+    """
+    npns_solicitados = []
+    for raw_npn in payload.numeros_prediales:
+        clean_npn = "".join(filter(str.isdigit, str(raw_npn or ""))).zfill(30)[:30]
+        if len(clean_npn) == 30 and clean_npn not in npns_solicitados:
+            npns_solicitados.append(clean_npn)
+
+    if not npns_solicitados:
+        raise HTTPException(
+            status_code=400,
+            detail="No se ingresaron números prediales válidos de 30 dígitos."
+        )
+
+    if len(npns_solicitados) > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se permite consultar hasta 100 NPNs por solicitud."
+        )
+
+    schema_main = tenant.schemas.main or "a_base_principal"
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        # 1. Base principal
+        cur.execute(f"SELECT DISTINCT numero_predial FROM {schema_main}.arb_predio WHERE numero_predial = ANY(%s)", (npns_solicitados,))
+        npns_en_base_principal = {r["numero_predial"] for r in cur.fetchall() if r.get("numero_predial")}
+
+        # 2. R1/R2
+        cur.execute("SELECT DISTINCT numero_predial FROM f_r1_r2.r1_predio_propietario WHERE numero_predial = ANY(%s)", (npns_solicitados,))
+        npns_en_r1 = {r["numero_predial"] for r in cur.fetchall() if r.get("numero_predial")}
+
+        # 3. Homologados
+        cur.execute("""
+            SELECT id, codigo_homologado, numero_predial, estado, fecha_asignacion, fecha_cargue
+            FROM arbimaps_app.codigos_homologados
+            WHERE numero_predial = ANY(%s)
+        """, (npns_solicitados,))
+        homologados_existentes_rows = cur.fetchall() or []
+        homologados_previos_map = _obtener_homologados_existentes_multi_schema(cur, schema_main, npns_solicitados)
+
+    items: List[ItemDiagnosticoNpn] = []
+    total_con_h = 0
+    total_sin_h = 0
+
+    for npn in npns_solicitados:
+        en_base = npn in npns_en_base_principal
+        en_r1 = npn in npns_en_r1
+
+        if en_base:
+            origen = "Base Principal (arb_predio)"
+        elif en_r1:
+            origen = "Catastro R1/R2 (r1_predio_propietario)"
+        else:
+            origen = "NPN Ingresado (No en Base R1)"
+
+        if npn in homologados_previos_map:
+            total_con_h += 1
+            h_info = homologados_previos_map[npn]
+            items.append(ItemDiagnosticoNpn(
+                numero_predial=npn,
+                existe_base_principal=en_base,
+                existe_r1=en_r1,
+                origen_base=origen,
+                tiene_homologado=True,
+                codigo_homologado_actual=h_info.get("codigo_homologado"),
+                estado_homologado_actual=h_info.get("estado"),
+                fecha_homologacion=str(h_info.get("fecha_asignacion") or h_info.get("fecha_cargue") or ""),
+                requiere_nuevo_homologado=False,
+            ))
+        else:
+            total_sin_h += 1
+            items.append(ItemDiagnosticoNpn(
+                numero_predial=npn,
+                existe_base_principal=en_base,
+                existe_r1=en_r1,
+                origen_base=origen,
+                tiene_homologado=False,
+                codigo_homologado_actual=None,
+                estado_homologado_actual=None,
+                fecha_homologacion=None,
+                requiere_nuevo_homologado=True,
+            ))
+
+    return ConsultarNpnsExistentesResponse(
+        success=True,
+        total_consultados=len(npns_solicitados),
+        total_sin_homologado=total_sin_h,
+        total_con_homologado=total_con_h,
+        items=items,
+    )
