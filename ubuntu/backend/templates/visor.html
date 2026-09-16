@@ -1572,7 +1572,12 @@
         continue;
       }
 
-      if (normalizedPart.endsWith("_cartografia")) {
+      if (
+        normalizedPart.endsWith("_cartografia") ||
+        normalizedPart.includes("cartografia") ||
+        normalizedPart.includes("c_cartografia_catastral") ||
+        normalizedPart === "c_cartografia_catastral"
+      ) {
         const publishedMatches = resolvePublishedCartografiaLayers(availableNames, namespace);
         if (publishedMatches.length) {
           publishedMatches.forEach(add);
@@ -1618,6 +1623,19 @@
         name: clean,
         title: layerTitleFromName(clean),
       });
+    }
+
+    // Auto-descubrimiento: Si existen capas cc_* publicadas en GeoServer y no fueron incluidas aun, agregarlas
+    const hasCartografia = resolved.some(
+      (r) =>
+        String(r.name || "").toLowerCase().startsWith("cc_") ||
+        String(r.name || "").toLowerCase().includes("cartografia"),
+    );
+    if (!hasCartografia) {
+      const autoMatches = resolvePublishedCartografiaLayers(availableNames, "");
+      if (autoMatches.length) {
+        autoMatches.forEach(add);
+      }
     }
 
     return resolved.length ? resolved : fallback;
@@ -1754,9 +1772,80 @@
       return row;
     };
 
+    // Separar capas entre Catastro y Cartografia Catastral
+    const catastroEntries = [];
+    const cartografiaEntries = [];
+
     wmsLayerEntries.forEach((entry) => {
-      box.appendChild(createLayerRow(entry));
+      const lower = String(entry.name || "").split(":").pop().toLowerCase();
+      if (lower.startsWith("cc_") || lower.includes("cartografia")) {
+        cartografiaEntries.push(entry);
+      } else {
+        catastroEntries.push(entry);
+      }
     });
+
+    const createGroupSection = (groupKey, groupTitle, entries) => {
+      if (!entries.length) return null;
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "vm-layer-group";
+
+      const head = document.createElement("div");
+      head.className = "vm-layer-group-head";
+      const isExpanded = layerGroupState[groupKey] !== false;
+
+      const titleEl = document.createElement("span");
+      titleEl.className = "vm-layer-group-title";
+      titleEl.textContent = groupTitle;
+
+      const metaWrap = document.createElement("div");
+      metaWrap.className = "d-flex align-items-center gap-2";
+
+      const activeCount = entries.filter((e) => e.layer.getVisible()).length;
+      const metaEl = document.createElement("span");
+      metaEl.className = "vm-layer-group-meta";
+      metaEl.textContent = `${activeCount}/${entries.length} act.`;
+
+      const iconEl = document.createElement("span");
+      iconEl.className = "vm-layer-group-icon";
+      iconEl.innerHTML = isExpanded ? "&#9660;" : "&#9654;";
+
+      metaWrap.appendChild(metaEl);
+      metaWrap.appendChild(iconEl);
+      head.appendChild(titleEl);
+      head.appendChild(metaWrap);
+
+      const body = document.createElement("div");
+      body.className = "vm-layer-group-body";
+      if (!isExpanded) {
+        body.classList.add("hidden");
+      }
+
+      entries.forEach((entry) => {
+        body.appendChild(createLayerRow(entry));
+      });
+
+      head.addEventListener("click", () => {
+        layerGroupState[groupKey] = !isExpanded;
+        renderLayerControls();
+      });
+
+      groupDiv.appendChild(head);
+      groupDiv.appendChild(body);
+      return groupDiv;
+    };
+
+    if (catastroEntries.length && cartografiaEntries.length) {
+      const catastroGroup = createGroupSection("catastro", "Base Catastral", catastroEntries);
+      if (catastroGroup) box.appendChild(catastroGroup);
+
+      const cartografiaGroup = createGroupSection("cartografia", "Cartografía Catastral", cartografiaEntries);
+      if (cartografiaGroup) box.appendChild(cartografiaGroup);
+    } else {
+      wmsLayerEntries.forEach((entry) => {
+        box.appendChild(createLayerRow(entry));
+      });
+    }
 
     const hideBtn = document.getElementById("vmHideLayers");
     if (hideBtn) {
@@ -2818,15 +2907,25 @@
     if (mapInstance) return;
 
     const resolvedLayersObj = await resolveConfiguredLayerEntries(GEOSERVER_LAYERS);
+    const layerRenderPriority = (name) => {
+      const n = String(name || "").split(":").pop().toLowerCase();
+      if (n.includes("vereda") || n.includes("sectorrural") || n.includes("sectorurbano")) return 10;
+      if (n.includes("perimetro")) return 20;
+      if (n.includes("manzana")) return 30;
+      if (n.includes("terrenohistorico")) return 40;
+      if (n.includes("terreno")) return 50;
+      if (n.includes("construccion")) return 60;
+      if (n.includes("unidadconstruccion")) return 70;
+      if (n.includes("nomenclatura") || n.includes("direccion")) return 80;
+      return 50;
+    };
+
     const resolvedLayers = resolvedLayersObj
       .slice()
       .sort((a, b) => {
-        const aName = String(a?.name || "").split(":").pop().toLowerCase();
-        const bName = String(b?.name || "").split(":").pop().toLowerCase();
-        const aIsCartografia = aName.startsWith("cc_");
-        const bIsCartografia = bName.startsWith("cc_");
-        if (aIsCartografia === bIsCartografia) return 0;
-        return aIsCartografia ? 1 : -1;
+        const pA = layerRenderPriority(a?.name);
+        const pB = layerRenderPriority(b?.name);
+        return pA - pB;
       })
       .map((l) => l.name);
 

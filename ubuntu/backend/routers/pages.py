@@ -95,9 +95,12 @@ def _default_visor_geoserver_layers(tenant: TenantContext | None) -> str:
 
         workspace = str(tenant.geoserver_workspace or "").strip()
         if workspace:
-            return f"{workspace}:Base_Principal"
+            return f"{workspace}:Base_Principal,{workspace}_CARTOGRAFIA"
 
-    return os.getenv("VISOR_GEOSERVER_LAYERS", "A_Base_Principal:Base_Principal")
+    return os.getenv(
+        "VISOR_GEOSERVER_LAYERS",
+        "A_Base_Principal:Base_Principal,NEIVA_CONSERVACION_CARTOGRAFIA",
+    )
 
 
 def _session_json_safe(value: Any) -> Any:
