@@ -504,7 +504,7 @@ def _expected_suffix_by_condicion(condicion: str) -> str | None:
         "VIA": "400000000",
         "PARQUE_CEMENTERIO_UNIDAD_PREDIAL": "700000000",
         "PARQUE_CEMENTERIO_MATRIZ": "700000000",
-        "INFORMAL": "200000000",
+        # "INFORMAL": "200000000",  # Deshabilitado: no validar campos 22-30 para predios con condicion Informal.
     }
     return mapping.get(condicion)
 

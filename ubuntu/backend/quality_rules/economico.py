@@ -1597,8 +1597,7 @@ def _iter_estructura_avaluo(helper: EconomicoHelper):
     yield from helper._iter_table_rows(("ILC_EstructuraAvaluo", "ilc_estructuraavaluo"))
 
 
-def _iter_avaluo_4_17(helper: EconomicoHelper):
-    # Paridad con QGIS: 4.17 valida tanto ILC_EstructuraAvaluo como ARB_AvaluoValor.
+def _iter_avaluo_4_11(helper: EconomicoHelper):
     yield from helper._iter_table_rows((
         "ILC_EstructuraAvaluo", "ilc_estructuraavaluo",
         "ARB_AvaluoValor", "arb_avaluovalor",
@@ -1621,7 +1620,7 @@ def _redondear_al_mil(valor: Decimal | float | int) -> float:
     return float(Decimal(str(valor)).quantize(Decimal("1e3"), rounding=ROUND_HALF_UP))
 
 
-def _rule_4_16(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset); issues: list[RuleIssue] = []
     for table_name, row in _iter_estructura_avaluo(helper):
         v = _avaluo_values(helper, row); total=v["valor_comercial"]; terreno=v["valor_comercial_terreno"]; unidades=v["valor_comercial_unidades"]
@@ -1630,10 +1629,10 @@ def _rule_4_16(dataset: DatasetReader) -> list[RuleIssue]:
     return issues
 
 
-def _rule_4_17(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset)
     issues: list[RuleIssue] = []
-    for table_name, row in _iter_avaluo_4_17(helper):
+    for table_name, row in _iter_avaluo_4_11(helper):
         v = _avaluo_values(helper, row)
         total = v["valor_catastral"]
         terreno = v["valor_catastral_terreno"]
@@ -1656,7 +1655,7 @@ def _rule_4_17(dataset: DatasetReader) -> list[RuleIssue]:
     return issues
 
 
-def _rule_4_18(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset); issues: list[RuleIssue] = []
     for table_name, row in _iter_estructura_avaluo(helper):
         v = _avaluo_values(helper, row)
@@ -1674,9 +1673,9 @@ def _rule_4_18(dataset: DatasetReader) -> list[RuleIssue]:
     return issues
 
 
-def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_13(dataset: DatasetReader) -> list[RuleIssue]:
     """
-    Regla 4.10:
+    Regla 4.13:
     Si el tipo de unidad de construcción es Conservación y protección ambiental,
     la tipología asociada también debe ser de Conservación.
     """
@@ -1698,7 +1697,7 @@ def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.10",
+                    rule_id="4.13",
                     message=(
                         "Cuando el tipo de unidad de construccion es Conservacion y proteccion ambiental, "
                         "solamente se pueden asociar tipologias de conservacion."
@@ -1716,7 +1715,7 @@ def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -1749,7 +1748,7 @@ def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.11",
+                    rule_id="4.14",
                     message=(
                         "Cuando el Tipo de Calificacion es Tipologia, "
                         "el campo CT_Tipo_Tipologia debe estar diligenciado."
@@ -1766,7 +1765,7 @@ def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_15(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -1799,7 +1798,7 @@ def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.12",
+                    rule_id="4.15",
                     message=(
                         "Cuando el Tipo de Calificacion es Tipologia, "
                         "el campo CT_Conservacion_Tipologia debe estar diligenciado."
@@ -1816,9 +1815,9 @@ def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def _rule_4_13(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_16(dataset: DatasetReader) -> list[RuleIssue]:
     """
-    Regla 4.13:
+    Regla 4.16:
     Si Tipo_Calificacion es No_Convencional,
     entonces Tipo_Unidad_Construccion debe ser Anexo.
 
@@ -1844,7 +1843,7 @@ def _rule_4_13(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.13",
+                    rule_id="4.16",
                     message=(
                         "Cuando el Tipo_Calificacion es No_Convencional, "
                         "el Tipo_Unidad_Construccion debe ser Anexo."
@@ -1863,10 +1862,9 @@ def _rule_4_13(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-
-def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_17(dataset: DatasetReader) -> list[RuleIssue]:
     """
-    Regla 4.14:
+    Regla 4.17:
     Si Tipo_Calificacion es No_Convencional,
     el campo CNC_Tipo_Anexo debe estar diligenciado.
     """
@@ -1886,7 +1884,7 @@ def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.14",
+                    rule_id="4.17",
                     message=(
                         "Cuando el Tipo_Calificacion es No_Convencional, "
                         "el campo CNC_Tipo_Anexo debe estar diligenciado."
@@ -1903,11 +1901,9 @@ def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-
-
-#def _rule_4_15(dataset: DatasetReader) -> list[RuleIssue]:
+#def _rule_4_18(dataset: DatasetReader) -> list[RuleIssue]:
     """
-    Regla 4.15:
+    Regla 4.18:
     Si Tipo_Calificacion es No_Convencional,
     el campo CNC_Conservacion_Anexo debe estar diligenciado.
     """
@@ -1927,7 +1923,7 @@ def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.15",
+                    rule_id="4.18",
                     message=(
                         "Cuando el Tipo_Calificacion es No_Convencional, "
                         "el campo CNC_Conservacion_Anexo debe estar diligenciado."
@@ -1960,8 +1956,8 @@ RULE_FUNCTIONS = {
     "4.12": _rule_4_12,
     "4.13": _rule_4_13,
     "4.14": _rule_4_14,
-    #"4.15": _rule_4_15,
+    "4.15": _rule_4_15,
     "4.16": _rule_4_16,
     "4.17": _rule_4_17,
-    "4.18": _rule_4_18,
+    #"4.18": _rule_4_18,
 }

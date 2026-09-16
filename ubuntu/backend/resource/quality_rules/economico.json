@@ -13,7 +13,7 @@
     },
     {
       "id": "4.10",
-      "description": "Para unidades de conservacion y proteccion ambiental, en caso de usos de calificación por tipologías, solamente se pueden asociar tipologías conservacion.",
+      "description": "En la base catastral final (producto de la actualizacion catastral) el avaluo comercial registrado debe corresponder a la sumatoria del avalúo comercial de terreno mas el avaluo comercial total de las unidades de construcción y este valor debe se mayor a \"0\".",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Comercial = ILC_EstructuraAvaluo.Valor_Comercial_Terreno + ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion y > \"0\"",
@@ -22,16 +22,16 @@
     },
     {
       "id": "4.11",
-      "description": "Si el tipo de calificacion es por tipologias, el campo tipo de tipologia  no pude se NULL o vacio.",
-      "classes": "ILC_EstructuraAvaluo",
+      "description": "En la base catastral final (producto de la actualizacion catastral) el avaluo catastral registrado debe ser un valor cerrado al mil más cercano sin decimales, mayor a \"0\", y corresponder a la sumatoria del avalúo catastral de terreno más el avalúo catastral total de las unidades de construcción redondeada al mil más cercano.",
+      "classes": "ILC_EstructuraAvaluo\nARB_AvaluoValor",
       "variables": "Valor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
-      "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Catastral = ILC_EstructuraAvaluo.Valor_Catastral_Terreno + ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion > \"0\"",
+      "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Catastral = RedondeoAlMil(ILC_EstructuraAvaluo.Valor_Catastral_Terreno + ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion) > \"0\" (sin decimales)",
       "component": "Economico",
       "sheet_slug": "economico"
     },
     {
       "id": "4.12",
-      "description": "Si el tipo de calificacion es por tipologias, el campo conservacion de tipologia  no pude se NULL o vacio.",
+      "description": "En la base catastral final (producto de la actualizacion catastral) los campos de ILC_EstructuraAvaluo referentes a avalúo comercial, deben ser mayores a los de avalúo catastral  y este valor debe se mayor a \"0\".",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion\nValor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral)\nILC_EstructuraAvaluo.Valor_Comercial > ILC_EstructuraAvaluo.Valor_Catastral\nILC_EstructuraAvaluo.Valor_Catastral > 60% de ILC_EstructuraAvaluo.Valor_Comercial\nILC_EstructuraAvaluo.Valor_Comercial_Terreno > ILC_EstructuraAvaluo.Valor_Catastral_Terreno\nILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion > ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion\n\nLos valores (ILC_EstructuraAvaluo.Valor_Comercial, ILC_EstructuraAvaluo.Valor_Catastral, ILC_EstructuraAvaluo.Valor_Comercial_Terreno, ILC_EstructuraAvaluo.Valor_Catastral_Terreno, ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion, ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion) > \"0\"",
@@ -40,7 +40,7 @@
     },
     {
       "id": "4.13",
-      "description": "Si el tipo de calificacion es No convencional, el tipo de unidad de unidad de construccion debe correponder a anexos.",
+      "description": "Para unidades de conservacion y proteccion ambiental, en caso de usos de calificación por tipologías, solamente se pueden asociar tipologías conservacion.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Comercial = ILC_EstructuraAvaluo.Valor_Comercial_Terreno + ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion y > \"0\"",
@@ -49,7 +49,7 @@
     },
     {
       "id": "4.14",
-      "description": "Si el tipo de calificacion es No convencional, el campo tipo de anexo  no pude se NULL o vacio.",
+      "description": "Si el tipo de calificacion es por tipologias, el campo tipo de tipologia  no pude se NULL o vacio.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Catastral = ILC_EstructuraAvaluo.Valor_Catastral_Terreno + ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion > \"0\"",
@@ -58,7 +58,7 @@
     },
     {
       "id": "4.15",
-      "description": "Si el tipo de calificacion es No convencional, el campo conservacion de anexo  no pude se NULL o vacio.",
+      "description": "Si el tipo de calificacion es por tipologias, el campo conservacion de tipologia  no pude se NULL o vacio.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion\nValor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral)\nILC_EstructuraAvaluo.Valor_Comercial > ILC_EstructuraAvaluo.Valor_Catastral\nILC_EstructuraAvaluo.Valor_Catastral > 60% de ILC_EstructuraAvaluo.Valor_Comercial\nILC_EstructuraAvaluo.Valor_Comercial_Terreno > ILC_EstructuraAvaluo.Valor_Catastral_Terreno\nILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion > ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion\n\nLos valores (ILC_EstructuraAvaluo.Valor_Comercial, ILC_EstructuraAvaluo.Valor_Catastral, ILC_EstructuraAvaluo.Valor_Comercial_Terreno, ILC_EstructuraAvaluo.Valor_Catastral_Terreno, ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion, ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion) > \"0\"",
@@ -67,17 +67,16 @@
     },
     {
       "id": "4.16",
-      "description": "En la base catastral final (producto de la actualizacion catastral) el avaluo comercial registrado debe corresponder a la sumatoria del avalúo comercial de terreno mas el avaluo comercial total de las unidades de construcción y este valor debe se mayor a \"0\".",
+      "description": "Si el tipo de calificacion es No convencional, el tipo de unidad de unidad de construccion debe correponder a anexos.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Comercial = ILC_EstructuraAvaluo.Valor_Comercial_Terreno + ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion y > \"0\"",
       "component": "Economico",
       "sheet_slug": "economico"
     },
-    
     {
       "id": "4.17",
-      "description": "En la base catastral final (producto de la actualizacion catastral) el avaluo catastral registrado debe corresponder a la sumatoria del avalúo catastral de terreno mas el avaluo catastral total de las unidade de construcción  y este valor debe se mayor a \"0\".",
+      "description": "Si el tipo de calificacion es No convencional, el campo tipo de anexo  no pude se NULL o vacio.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Catastral = ILC_EstructuraAvaluo.Valor_Catastral_Terreno + ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion > \"0\"",
@@ -86,7 +85,7 @@
     },
     {
       "id": "4.18",
-      "description": "En la base catastral final (producto de la actualizacion catastral) los campos de ILC_EstructuraAvaluo referentes a avalúo comercial, deben ser mayores a los de avalúo catastral  y este valor debe se mayor a \"0\".",
+      "description": "Si el tipo de calificacion es No convencional, el campo conservacion de anexo  no pude se NULL o vacio.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion\nValor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral)\nILC_EstructuraAvaluo.Valor_Comercial > ILC_EstructuraAvaluo.Valor_Catastral\nILC_EstructuraAvaluo.Valor_Catastral > 60% de ILC_EstructuraAvaluo.Valor_Comercial\nILC_EstructuraAvaluo.Valor_Comercial_Terreno > ILC_EstructuraAvaluo.Valor_Catastral_Terreno\nILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion > ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion\n\nLos valores (ILC_EstructuraAvaluo.Valor_Comercial, ILC_EstructuraAvaluo.Valor_Catastral, ILC_EstructuraAvaluo.Valor_Comercial_Terreno, ILC_EstructuraAvaluo.Valor_Catastral_Terreno, ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion, ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion) > \"0\"",
