@@ -504,20 +504,12 @@ def sincronizar_predios_a_f_r1_r2(
                 dpto = npn_val[:2] if len(npn_val) >= 2 else "41"
                 mpio = npn_val[2:5] if len(npn_val) >= 5 else "001"
 
-                # 3. Consultar Área de Terreno
-                area_terreno = predio_row.get("area_catastral_terreno") or 0.00
-                cur.execute(
-                    f"""
-                    SELECT area_terreno
-                    FROM {schema_source}.arb_terreno
-                    WHERE predio = %s
-                    LIMIT 1;
-                    """,
-                    (id_predio,),
-                )
-                terreno_row = cur.fetchone()
-                if terreno_row and terreno_row.get("area_terreno") is not None:
-                    area_terreno = terreno_row["area_terreno"]
+                # 3. Area de Terreno (se toma directamente de arb_predio.area_catastral_terreno para r1_predio_propietario.area_terreno)
+                area_terreno = predio_row.get("area_catastral_terreno")
+                if area_terreno is None:
+                    area_terreno = predio_row.get("area_terreno")
+                if area_terreno is None:
+                    area_terreno = 0.00
 
                 # 4. Consultar Dirección
                 direccion = None
