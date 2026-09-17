@@ -22,7 +22,7 @@ except Exception:
 COMPONENT_SLUG = "topologico"
 
 DEFAULT_RULE_IDS = frozenset({
-    "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7",
+    "5.1", "5.2", "5.3", "5.4", "5.5", "5.7",
 })
 
 
@@ -1522,102 +1522,105 @@ def _rule_5_5(dataset: DatasetReader) -> list[RuleIssue]:
     return issues
 
 
-def _rule_5_6(dataset: DatasetReader) -> list[RuleIssue]:
-    helper = TopologicoHelper(dataset)
-    issues: list[RuleIssue] = []
-    alias_index = _predio_alias_index(helper)
-
-    terrenos_por_predio = _terrenos_por_predio(helper, alias_index)
-    construccion_predios = _construccion_predios_by_id(helper, alias_index)
-    construcciones_por_id = _construcciones_por_id(helper)
-
-    for table_name, row in helper.iter_unidad_construccion():
-        geom_uc = _load_geometry(helper.get_field_value(row, _geometry_fields()))
-        if geom_uc is None:
-            continue
-
-        unidad_id = helper.identify(row)
-        construccion_refs = helper.all_keys(row, _unidad_construccion_ref_fields())
-        construcciones_asociadas: dict[str, dict[str, object]] = {}
-        for construccion_ref in construccion_refs:
-            construccion = construcciones_por_id.get(str(construccion_ref).strip())
-            if construccion is None:
-                continue
-            key = str(construccion.get("tid") or construccion_ref)
-            construcciones_asociadas.setdefault(key, construccion)
-
-        # La topologia debe respetar tambien la relacion UnidadConstruccion -> Construccion.
-        # Antes solo se validaba contra el terreno, por lo que una unidad podia sobresalir
-        # de su construccion y aun asi aprobar la regla 5.6.
-        if construcciones_asociadas and not any(
-            _geom_contains(construccion["geom"], geom_uc)
-            for construccion in construcciones_asociadas.values()
-        ):
-            construccion_ids = [
-                construccion.get("tid")
-                for construccion in construcciones_asociadas.values()
-            ]
-            construccion_ids_texto = ", ".join(
-                _display_id(cid, "sin_id_construccion") for cid in construccion_ids
-            ) or "sin_id_construccion"
-            pair_id = _pair_ref(unidad_id, construccion_ids_texto)
-            issues.append(
-                helper.make_issue(
-                    row,
-                    rule_id="5.6",
-                    message=(
-                        f"La unidad de construccion con ID {_display_id(unidad_id)} no esta "
-                        f"completamente contenida dentro de la construccion asociada con ID "
-                        f"{construccion_ids_texto}."
-                    ),
-                    details={
-                        "tabla": table_name,
-                        "tipo_validacion": "unidad_dentro_construccion",
-                        "id_construccion": construccion_ids,
-                        "id_uconstruccion": unidad_id,
-                        "construccion_refs_unidad": sorted(construccion_refs),
-                        "par_validacion": pair_id,
-                        "object_ref": pair_id,
-                    },
-                )
-            )
-
-        planta_ubicacion = helper.get_field_value(row, ("planta_ubicacion", "Planta_Ubicacion"))
-        if _to_int(planta_ubicacion) != 1:
-            continue
-
-        predio_refs = _predio_refs_for_unidad(helper, row, construccion_predios, alias_index)
-        if not predio_refs:
-            continue
-
-        for predio_ref in predio_refs:
-            for terreno in terrenos_por_predio.get(str(predio_ref), []):
-                if _geom_contains_5_6(terreno["geom"], geom_uc):
-                    continue
-
-                id_terreno = _display_id(terreno["tid"])
-                pair_id = _pair_ref(unidad_id, terreno["tid"])
-                issues.append(
-                    helper.make_issue(
-                        row,
-                        rule_id="5.6",
-                        message=(
-                            f"La unidad de construccion con ID {_display_id(unidad_id)} no esta "
-                            f"completamente contenida dentro del terreno asociado con ID {id_terreno}."
-                        ),
-                        details={
-                            "tabla": table_name,
-                            "tipo_validacion": "unidad_dentro_terreno",
-                            "id_terreno": terreno["tid"],
-                            "id_uconstruccion": unidad_id,
-                            "predio": predio_ref,
-                            "par_validacion": pair_id,
-                            "object_ref": pair_id,
-                        },
-                    )
-                )
-
-    return issues
+# --- REGLA 5.6 DESHABILITADA TEMPORALMENTE ---
+# #def _rule_5_6(dataset: DatasetReader) -> list[RuleIssue]:
+#     helper = TopologicoHelper(dataset)
+#     issues: list[RuleIssue] = []
+#     alias_index = _predio_alias_index(helper)
+#
+#     terrenos_por_predio = _terrenos_por_predio(helper, alias_index)
+#     construccion_predios = _construccion_predios_by_id(helper, alias_index)
+#     construcciones_por_id = _construcciones_por_id(helper)
+#
+#     for table_name, row in helper.iter_unidad_construccion():
+#         geom_uc = _load_geometry(helper.get_field_value(row, _geometry_fields()))
+#         if geom_uc is None:
+#             continue
+#
+#         unidad_id = helper.identify(row)
+#         construccion_refs = helper.all_keys(row, _unidad_construccion_ref_fields())
+#         construcciones_asociadas: dict[str, dict[str, object]] = {}
+#         for construccion_ref in construccion_refs:
+#             construccion = construcciones_por_id.get(str(construccion_ref).strip())
+#             if construccion is None:
+#                 continue
+#             key = str(construccion.get("tid") or construccion_ref)
+#             construcciones_asociadas.setdefault(key, construccion)
+#
+#         # La topologia debe respetar tambien la relacion UnidadConstruccion -> Construccion.
+#         # Antes solo se validaba contra el terreno, por lo que una unidad podia sobresalir
+#         # de su construccion y aun asi aprobar la regla 5.6.
+#         if construcciones_asociadas and not any(
+#             _geom_contains(construccion["geom"], geom_uc)
+#             for construccion in construcciones_asociadas.values()
+#         ):
+#             construccion_ids = [
+#                 construccion.get("tid")
+#                 for construccion in construcciones_asociadas.values()
+#             ]
+#             construccion_ids_texto = ", ".join(
+#                 _display_id(cid, "sin_id_construccion") for cid in construccion_ids
+#             ) or "sin_id_construccion"
+#             pair_id = _pair_ref(unidad_id, construccion_ids_texto)
+#             issues.append(
+#                 helper.make_issue(
+#                     row,
+#                     rule_id="5.6",
+#                     message=(
+#                         f"La unidad de construccion con ID {_display_id(unidad_id)} no esta "
+#                         f"completamente contenida dentro de la construccion asociada con ID "
+#                         f"{construccion_ids_texto}."
+#                     ),
+#                     details={
+#                         "tabla": table_name,
+#                         "tipo_validacion": "unidad_dentro_construccion",
+#                         "id_construccion": construccion_ids,
+#                         "id_uconstruccion": unidad_id,
+#                         "construccion_refs_unidad": sorted(construccion_refs),
+#                         "par_validacion": pair_id,
+#                         "object_ref": pair_id,
+#                     },
+#                 )
+#             )
+#
+#         planta_ubicacion = helper.get_field_value(row, ("planta_ubicacion", "Planta_Ubicacion"))
+#         if _to_int(planta_ubicacion) != 1:
+#             continue
+#
+#         predio_refs = _predio_refs_for_unidad(helper, row, construccion_predios, alias_index)
+#         if not predio_refs:
+#             continue
+#
+#         for predio_ref in predio_refs:
+#             for terreno in terrenos_por_predio.get(str(predio_ref), []):
+#                 if _geom_contains_5_6(terreno["geom"], geom_uc):
+#                     continue
+#
+#                 id_terreno = _display_id(terreno["tid"])
+#                 pair_id = _pair_ref(unidad_id, terreno["tid"])
+#                 issues.append(
+#                     helper.make_issue(
+#                         row,
+#                         rule_id="5.6",
+#                         message=(
+#                             f"La unidad de construccion con ID {_display_id(unidad_id)} no esta "
+#                             f"completamente contenida dentro del terreno asociado con ID {id_terreno}."
+#                         ),
+#                         details={
+#                             "tabla": table_name,
+#                             "tipo_validacion": "unidad_dentro_terreno",
+#                             "id_terreno": terreno["tid"],
+#                             "id_uconstruccion": unidad_id,
+#                             "predio": predio_ref,
+#                             "par_validacion": pair_id,
+#                             "object_ref": pair_id,
+#                         },
+#                     )
+#                 )
+#
+#     return issues
+#
+# --- FIN REGLA 5.6 DESHABILITADA ---
 
 def _rule_5_7(dataset: DatasetReader) -> list[RuleIssue]:
     helper = TopologicoHelper(dataset)
@@ -1714,6 +1717,6 @@ RULE_FUNCTIONS = {
     "5.3": _rule_5_3,
     "5.4": _rule_5_4,
     "5.5": _rule_5_5,
-    "5.6": _rule_5_6,
+    # "5.6": _rule_5_6,
     "5.7": _rule_5_7,
 }
