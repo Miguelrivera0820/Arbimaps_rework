@@ -964,7 +964,7 @@ def _rule_1_7(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def _rule_1_8(dataset: DatasetReader) -> list[RuleIssue]:
+#def _rule_1_8(dataset: DatasetReader) -> list[RuleIssue]:
     helper = NumeroPredialHelper(dataset)
     issues: list[RuleIssue] = []
     for table_name, row in helper.iter_predios():
@@ -3208,7 +3208,7 @@ RULE_FUNCTIONS = {
     "1.5": _rule_1_5,
     "1.6": _rule_1_6,
     "1.7": _rule_1_7,
-    "1.8": _rule_1_8,
+    #"1.8": _rule_1_8,
     "1.9": _rule_1_9,
     "1.10": _rule_1_10,
     "1.11": _rule_1_11,

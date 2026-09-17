@@ -388,10 +388,22 @@ class EconomicoHelper:
         message: str,
         details: dict[str, object] | None = None,
     ) -> RuleIssue:
-        fixed_details = details or {}
+        fixed_details = dict(details or {})
 
         if "class" not in fixed_details and "tabla" in fixed_details:
             fixed_details["class"] = fixed_details["tabla"]
+
+        # Conserva la relación al predio para que el reporte Web/Excel pueda
+        # resolver el NPN aun cuando el objeto económico anidado no tenga TID.
+        predio_ref = self.get_field_value(
+            row,
+            (
+                "predio", "arb_predio", "ilc_predio",
+                "arb_predio_avaluo", "cca_predio_avaluo", "ilc_predio_avaluo",
+            ),
+        )
+        if predio_ref and "predio" not in fixed_details:
+            fixed_details["predio"] = predio_ref
 
         return RuleIssue(
             rule_id=rule_id,
@@ -1625,7 +1637,7 @@ def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
     for table_name, row in _iter_estructura_avaluo(helper):
         v = _avaluo_values(helper, row); total=v["valor_comercial"]; terreno=v["valor_comercial_terreno"]; unidades=v["valor_comercial_unidades"]
         if total is None or terreno is None or unidades is None or total <= 0 or abs(total - (terreno + unidades)) > 0.01:
-            issues.append(helper.make_issue(row, rule_id="4.16", message="El avalúo comercial debe ser mayor que cero y corresponder a terreno + total de unidades de construcción.", details={"tabla":table_name, **v}))
+            issues.append(helper.make_issue(row, rule_id="4.10", message="El avalúo comercial debe ser mayor que cero y corresponder a terreno + total de unidades de construcción.", details={"tabla":table_name, **v}))
     return issues
 
 
@@ -1638,7 +1650,7 @@ def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
         terreno = v["valor_catastral_terreno"]
         unidades = v["valor_catastral_unidades"]
         if total is None or terreno is None or unidades is None or total <= 0:
-            issues.append(helper.make_issue(row, rule_id="4.17", message="El avalúo catastral debe ser mayor que cero y estar diligenciado junto con terreno y unidades de construcción.", details={"tabla": table_name, **v}))
+            issues.append(helper.make_issue(row, rule_id="4.11", message="El avalúo catastral debe ser mayor que cero y estar diligenciado junto con terreno y unidades de construcción.", details={"tabla": table_name, **v}))
             continue
         try:
             esperado = _redondear_al_mil(Decimal(str(terreno)) + Decimal(str(unidades)))
@@ -1651,7 +1663,7 @@ def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
             es_cerrado_al_mil = False
             coincide_suma_redondeada = False
         if not (es_cerrado_al_mil and coincide_suma_redondeada):
-            issues.append(helper.make_issue(row, rule_id="4.17", message="El avalúo catastral debe ser mayor que cero, cerrado al mil más cercano sin decimales, y corresponder a la suma de terreno + unidades de construcción redondeada al mil.", details={"tabla": table_name, "esperado_al_mil": esperado, **v}))
+            issues.append(helper.make_issue(row, rule_id="4.11", message="El avalúo catastral debe ser mayor que cero, cerrado al mil más cercano sin decimales, y corresponder a la suma de terreno + unidades de construcción redondeada al mil.", details={"tabla": table_name, "esperado_al_mil": esperado, **v}))
     return issues
 
 
@@ -1669,7 +1681,7 @@ def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
                 and v["valor_comercial_unidades"] > v["valor_catastral_unidades"]
             )
         if bad:
-            issues.append(helper.make_issue(row, rule_id="4.18", message="Los avalúos comerciales deben ser mayores a los catastrales, el catastral debe superar el 60% del comercial y todos los valores deben ser mayores que cero.", details={"tabla":table_name, **v}))
+            issues.append(helper.make_issue(row, rule_id="4.12", message="Los avalúos comerciales deben ser mayores a los catastrales, el catastral debe superar el 60% del comercial y todos los valores deben ser mayores que cero.", details={"tabla":table_name, **v}))
     return issues
 
 

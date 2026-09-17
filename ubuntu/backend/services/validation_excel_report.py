@@ -665,7 +665,11 @@ def build_validation_errors_excel(report: dict[str, Any]) -> bytes:
         workbook.writestr("docProps/app.xml", _app_properties_xml())
         workbook.writestr("xl/workbook.xml", _workbook_xml(sheets))
         workbook.writestr("xl/_rels/workbook.xml.rels", _workbook_relationships_xml(len(sheets)))
-        workbook.writestr("xl/styles.xml", _styles_xml())
+        # Los comentarios XML dentro de <fonts>/<fills>/<borders>/<cellXfs> son
+        # tolerados por Excel, pero algunos lectores OOXML los interpretan como
+        # elementos de estilo y rechazan el archivo. Se eliminan al serializar.
+        styles_xml = re.sub(r"<!--.*?-->", "", _styles_xml(), flags=re.S)
+        workbook.writestr("xl/styles.xml", styles_xml)
 
         for index, sheet in enumerate(sheets, start=1):
             workbook.writestr(
