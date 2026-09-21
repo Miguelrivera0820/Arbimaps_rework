@@ -1,0 +1,297 @@
+/* MÓDULO REPORTES SINIC - DISEÑO OFICIAL NEIVA (SPLIT SCREEN 50/50) */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  --mn-deep: #063622;
+  --mn-green: #0b5138;
+  --mn-teal: #0c706f;
+  --mn-aqua: #079f99;
+  --mn-emerald: #08a56b;
+  --mn-mint: #c4d5cc;
+  --mn-sage: #a5cb85;
+  --mn-pale: #d1dcd6;
+  --mn-gray: #ecefed;
+  --mn-soft: #ffffff;
+  --mn-line: #c7d4cd;
+  --mn-muted: #52655b;
+  --mn-dark-text: #0f172a;
+  --mn-gradient: linear-gradient(120deg, #063622 0%, #0b5138 58%, #0c706f 145%);
+  --mn-card-shadow: 0 8px 22px rgba(6, 54, 34, 0.08);
+}
+
+.sinic-container {
+  display: flex;
+  width: 100%;
+  min-height: 680px;
+  height: calc(100vh - 110px);
+  background-color: var(--mn-gray);
+  color: var(--mn-dark-text);
+  overflow: hidden;
+  font-family: "Poppins", sans-serif;
+  border-radius: 20px;
+  border: 1px solid var(--mn-line);
+  box-shadow: var(--mn-card-shadow);
+  padding: 8px;
+  gap: 8px;
+}
+
+/* MITAD IZQUIERDA: GIS PANEL 50% */
+.sinic-gis-panel {
+  flex: 0 0 50%;
+  width: 50%;
+  height: 100%;
+  position: relative;
+  border-radius: 16px;
+  border: 1px solid var(--mn-line);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mn-soft);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.sinic-gis-header {
+  padding: 12px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--mn-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+}
+
+.sinic-gis-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--mn-deep);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-sinic {
+  background-color: var(--mn-emerald);
+  color: #ffffff;
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.sinic-search-box {
+  display: flex;
+  gap: 6px;
+  max-width: 340px;
+}
+
+.sinic-search-box input {
+  border-radius: 8px;
+  border: 1px solid var(--mn-line);
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+
+.sinic-search-box input:focus {
+  border-color: var(--mn-green);
+  box-shadow: 0 0 0 3px rgba(11, 81, 56, 0.15);
+}
+
+.btn-neiva-green {
+  background-color: var(--mn-green);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-neiva-green:hover {
+  background-color: var(--mn-deep);
+  color: #ffffff;
+}
+
+.sinic-map {
+  flex: 1;
+  width: 100%;
+  min-height: 400px;
+  background: #f8fafc;
+  z-index: 1;
+}
+
+.sinic-gis-toolbar {
+  position: absolute;
+  top: 65px;
+  right: 16px;
+  z-index: 999;
+  display: flex;
+  gap: 6px;
+}
+
+.sinic-gis-toolbar button {
+  background: #ffffff;
+  color: var(--mn-deep);
+  border: 1px solid var(--mn-line);
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.sinic-gis-toolbar button:hover {
+  background: var(--mn-soft);
+  color: var(--mn-green);
+}
+
+.sinic-predio-card {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 999;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--mn-line);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 10px 30px rgba(6, 54, 34, 0.15);
+}
+
+.text-neiva-deep {
+  color: var(--mn-deep) !important;
+}
+
+.text-neiva-green {
+  color: var(--mn-green) !important;
+}
+
+.text-neiva-teal {
+  color: var(--mn-teal) !important;
+}
+
+/* MITAD DERECHA: PANEL DE CONTROL 50% */
+.sinic-control-panel {
+  flex: 0 0 50%;
+  width: 50%;
+  height: 100%;
+  padding: 16px;
+  overflow-y: auto;
+  background-color: var(--mn-soft);
+  border-radius: 16px;
+  border: 1px solid var(--mn-line);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.sinic-header-card {
+  background: var(--mn-gradient);
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(6, 54, 34, 0.18);
+}
+
+.sinic-stat-card {
+  background: #ffffff;
+  border: 1px solid var(--mn-line);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease;
+}
+
+.sinic-stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.sinic-stat-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--mn-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.sinic-stat-val {
+  font-weight: 700;
+  margin-top: 4px;
+  margin-bottom: 0;
+  font-size: 1.25rem;
+}
+
+/* TABS STYLING NEIVA */
+.sinic-tabs {
+  border-bottom: 2px solid var(--mn-line);
+}
+
+.sinic-tabs .nav-link {
+  color: var(--mn-muted);
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.sinic-tabs .nav-link:hover {
+  color: var(--mn-deep);
+}
+
+.sinic-tabs .nav-link.active {
+  color: var(--mn-green);
+  background: transparent;
+  border-bottom-color: var(--mn-green);
+}
+
+.sinic-tab-body {
+  flex: 1;
+}
+
+.sinic-table-wrapper {
+  max-height: calc(100vh - 350px);
+  min-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--mn-line);
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.sinic-table-wrapper table {
+  margin-bottom: 0;
+}
+
+.sinic-table-wrapper th {
+  background: #f1f5f9;
+  color: var(--mn-deep);
+  font-weight: 600;
+  border-bottom: 2px solid var(--mn-line);
+}
+
+.sinic-table-wrapper td {
+  color: var(--mn-dark-text);
+}
+
+.text-xs {
+  font-size: 0.78rem !important;
+}
+
+.sinic-alertas-wrapper {
+  max-height: calc(100vh - 360px);
+  overflow-y: auto;
+}
+
+.btn-neiva-action {
+  background: var(--mn-gradient);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.btn-neiva-action:hover {
+  opacity: 0.95;
+  color: #ffffff;
+}

@@ -21,6 +21,7 @@ effective_role in ['digitalizador', 'reconocedor'] %}
 'validacion_xtf': 'Validación XTF',
 'sincronizacion_mergin': 'Sincronización Mergin',
 'panel_control': 'Panel de control',
+'reportes_sinic': 'Reportes SINIC',
 'solicitudes_asignaciones': 'Solicitudes de asignación',
 'notificaciones': 'Notificaciones',
 'edicion_asignaciones': 'Edición de asignaciones'
@@ -94,7 +95,10 @@ effective_role in ['digitalizador', 'reconocedor'] %}
   <link rel="stylesheet" href="{{ rp }}/static/css/sincronizacion_mergin_neiva.css?v=1" />
   {% elif view == 'notificaciones' %}
   <link rel="stylesheet" href="{{ rp }}/static/css/notificaciones.css?v=1" />
-  {% elif view == 'panel_control' %}
+  {% elif view == 'reportes_sinic' %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="{{ rp }}/static/css/sinic/reportes_sinic.css?v=5" />
+{% elif view == 'panel_control' %}
   <link rel="stylesheet" href="{{ rp }}/static/css/panel/panel_control_neiva.css?v=1" />
   {% elif view == 'solicitudes_asignaciones' %}
   <link rel="stylesheet" href="{{ rp }}/static/css/asignaciones/S_asignaciones_neiva.css?v=1" />
@@ -243,6 +247,14 @@ effective_role in ['digitalizador', 'reconocedor'] %}
                 <span>Panel de control</span>
               </a>
 
+              {% if effective_role in ['admin', 'soporte'] %}
+              <a class="menuBtn sidebar-link {{ 'active' if view == 'reportes_sinic' else '' }}"
+                href="{{ rp }}/panel/reportes_sinic">
+                <i class="bi bi-file-earmark-code"></i>
+                <span>Reportes SINIC</span>
+              </a>
+              {% endif %}
+
               {# <div class="px-3">
                 <hr class="sidebar-divider w-100 mt-3 mb-0" />
               </div>
@@ -361,7 +373,7 @@ effective_role in ['digitalizador', 'reconocedor'] %}
             <main class="main flex-grow-1">
               <div class="content-shell h-100 overflow-auto px-0 px-md-1 px-xl-2 pt-1 pb-0">
                 <div
-                  class="page-header {% if view == 'visor' or view == 'usuarios' or view == 'restriccion_predios' %}d-none{% endif %}">
+                  class="page-header {% if view == 'visor' or view == 'usuarios' or view == 'restriccion_predios' or view == 'reportes_sinic' %}d-none{% endif %}">
                   <div>
                   </div>
                 </div>
@@ -376,8 +388,8 @@ effective_role in ['digitalizador', 'reconocedor'] %}
                   'detalle' %} {% include "asignaciones_detalle.html" %} {%
                   elif asig_tab == 'editar_predio' %} {% include "editar_predio.html" %} {%
                   else %} {% include "asignaciones_cargas.html" %} {% endif %}
-                  {% elif view == 'panel_control' %} {% include
-                  "panel_control.html" %} {% elif view == 'solicitudes_asignaciones' %} {% include
+{% elif view == 'panel_control' %} {% include
+                  "panel_control.html" %} {% elif view == 'reportes_sinic' %} {% include "reportes_sinic.html" %} {% elif view == 'solicitudes_asignaciones' %} {% include
                   "solicitudes_asignaciones.html" %} {% elif view == 'usuarios' %} {%
                   include "usuarios.html" %} {% elif view == 'validacion_xtf'
                   %} {% set validacion_embed = True %} {% include
@@ -714,6 +726,10 @@ effective_role in ['digitalizador', 'reconocedor'] %}
     window.addEventListener("load", syncFixedPanelBars);
   </script>
 
+    {% if view == 'reportes_sinic' %}
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="{{ rp }}/static/js/sinic/reportes_sinic.js?v=7"></script>
+  {% endif %}
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
