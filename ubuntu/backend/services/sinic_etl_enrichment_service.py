@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class SinicEtlEnrichmentService:
     """
     Servicio de Enriquecimiento y Fortalecimiento ETL LADM-COL SINIC v1.0.
-    Aplica de forma autónoma las 6 etapas de sincronización de datos de origen (a_base_principal y f_r1_r2)
+    Aplica de forma autónoma las 7 etapas de sincronización de datos de origen (a_base_principal y f_r1_r2)
     hacia la estructura g_sinic para garantizar el cumplimiento de las 149 reglas oficiales de calidad.
     """
 
@@ -26,7 +26,7 @@ class SinicEtlEnrichmentService:
 
     def ejecutar_enriquecimiento_completo(self) -> Dict[str, Any]:
         """
-        Ejecuta las 6 etapas del ETL de fortalecimiento SINIC.
+        Ejecuta las 7 etapas del ETL de fortalecimiento SINIC.
         """
         conn = self._get_connection()
         cur = conn.cursor()
@@ -154,6 +154,21 @@ class SinicEtlEnrichmentService:
                 WHERE (altura IS NULL OR altura <= 0);
             """)
             reporte['etapa5_alturas_construccion_normalizadas'] = cur.rowcount
+
+            # -----------------------------------------------------------------
+            # ETAPA 6: Migración de Matrícula Inmobiliaria
+            # -----------------------------------------------------------------
+            logger.info("Ejecutando Etapa 6: Migración de Matrícula Inmobiliaria...")
+            sql_mat = """
+                UPDATE g_sinic.sinic_predio p
+                SET matricula_inmobiliaria = a.matricula_inmobiliaria
+                FROM a_base_principal.arb_predio a
+                WHERE a.t_id = p.t_id
+                  AND a.matricula_inmobiliaria IS NOT NULL
+                  AND (p.matricula_inmobiliaria IS NULL OR p.matricula_inmobiliaria != a.matricula_inmobiliaria);
+            """
+            cur.execute(sql_mat)
+            reporte['etapa6_matriculas_migradas'] = cur.rowcount
 
             conn.commit()
             return {

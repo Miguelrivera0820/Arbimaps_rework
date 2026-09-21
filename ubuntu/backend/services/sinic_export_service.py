@@ -131,6 +131,7 @@ class SINICExportService:
                         p.tipo AS tipo_raw,
                         p.condicion_predio AS condicion_predio_raw,
                         p.destinacion_economica AS dest_fisica,
+                        p.matricula_inmobiliaria,
                         COALESCE(p.area_catastral_terreno, 0.0) AS area_catastral_terreno,
                         '41' AS departamento,
                         '001' AS municipio
@@ -180,6 +181,7 @@ class SINICExportService:
                             144
                         ) AS destinacion_economica,
                         bf.area_catastral_terreno,
+                        bf.matricula_inmobiliaria,
                         r1.vigencia AS vigencia_r1
                     FROM base_fisica bf
                     LEFT JOIN r1_vigencia_maxima r1 ON bf.npn_fisico = r1.npn_r1
@@ -211,6 +213,7 @@ class SINICExportService:
                         END AS condicion_predio,
                         c.destinacion_economica,
                         c.area_catastral_terreno,
+                        c.matricula_inmobiliaria,
                         c.t_id::text AS local_id,
                         'LADMCOL_SINIC_V1_0' AS espacio_de_nombres,
                         c.vigencia_r1
@@ -219,7 +222,7 @@ class SINICExportService:
                 INSERT INTO g_sinic.sinic_predio (
                     t_id, t_basket, t_ili_tid, departamento, municipio,
                     numero_predial_nacional, codigo_homologado,
-                    tipo_predio, condicion_predio, destinacion_economica, area_catastral_terreno,
+                    tipo_predio, condicion_predio, destinacion_economica, area_catastral_terreno, matricula_inmobiliaria,
                     vigencia_actualizacion_catastral, estado, tipo, comienzo_vida_util_version, espacio_de_nombres, local_id
                 )
                 SELECT 
@@ -234,6 +237,7 @@ class SINICExportService:
                     condicion_predio,
                     destinacion_economica,
                     area_catastral_terreno,
+                    matricula_inmobiliaria,
                     CURRENT_DATE,
                     105,
                     1,
