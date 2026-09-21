@@ -346,9 +346,25 @@ class SINICExportService:
                 for r in rows
             ]
 
-    def obtener_geojson_terrenos(self, conn, limit: Optional[int] = None) -> Dict[str, Any]:
+    def obtener_geojson_terrenos(self, conn, limit: Optional[int] = 5000, bbox: Optional[str] = None) -> Dict[str, Any]:
         with conn.cursor() as cur:
-            sql = """
+            where_clauses = ["t.geometria IS NOT NULL"]
+            params = []
+
+            if bbox:
+                try:
+                    parts = [float(x.strip()) for x in bbox.split(',')]
+                    if len(parts) == 4:
+                        # min_lng, min_lat, max_lng, max_lat in 4326
+                        where_clauses.append("t.geometria && ST_Transform(ST_MakeEnvelope(%s, %s, %s, %s, 4326), 9377)")
+                        params.extend(parts)
+                except Exception as ex:
+                    logger.warning(f"BBOX inválido recibido '{bbox}': {ex}")
+
+            where_sql = " AND ".join(where_clauses)
+
+            # Use ST_SimplifyPreserveTopology (0.5m) to dramatically reduce payload size and speed up rendering
+            sql = f"""
                 SELECT jsonb_build_object(
                     'type', 'FeatureCollection',
                     'features', COALESCE(jsonb_agg(features.feature), '[]'::jsonb)
@@ -357,7 +373,7 @@ class SINICExportService:
                     SELECT jsonb_build_object(
                         'type', 'Feature',
                         'id', t.t_id,
-                        'geometry', ST_AsGeoJSON(ST_Transform(t.geometria, 4326))::jsonb,
+                        'geometry', ST_AsGeoJSON(ST_Transform(ST_SimplifyPreserveTopology(t.geometria, 0.5), 4326))::jsonb,
                         'properties', jsonb_build_object(
                             't_id', t.t_id,
                             'local_id', t.local_id,
@@ -368,12 +384,13 @@ class SINICExportService:
                     FROM g_sinic.cr_terreno t
                     LEFT JOIN g_sinic.col_uebaunit u ON t.t_id = u.ue_cr_terreno
                     LEFT JOIN g_sinic.sinic_predio p ON u.baunit = p.t_id
-                    WHERE t.geometria IS NOT NULL
+                    WHERE {where_sql}
             """
-            if limit:
+            if limit and limit > 0:
                 sql += f" LIMIT {limit}"
             sql += ") AS features;"
-            cur.execute(sql)
+
+            cur.execute(sql, params)
             res = cur.fetchone()
             return res[0] if res and res[0] else {"type": "FeatureCollection", "features": []}
 

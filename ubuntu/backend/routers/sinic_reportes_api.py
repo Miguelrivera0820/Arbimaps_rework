@@ -130,15 +130,16 @@ def descargar_paquete_zip(
 
 @router.get("/capas-geojson/terrenos")
 def obtener_capas_geojson_terrenos(
-    limit: Optional[int] = None,
+    limit: Optional[int] = 5000,
+    bbox: Optional[str] = None,
     user: dict = Depends(_verificar_rol_admin_o_soporte),
     conn=Depends(get_tenant_db_connection)
 ):
     """
-    Capas GeoJSON de terrenos/predios para renderizado interactivo en Leaflet.
+    Capas GeoJSON de terrenos/predios optimizadas con simplificación espacial (0.5m) y bbox.
     """
     try:
-        geojson = sinic_service.obtener_geojson_terrenos(conn, limit=limit)
+        geojson = sinic_service.obtener_geojson_terrenos(conn, limit=limit, bbox=bbox)
         return geojson
     except Exception as e:
         logger.error(f"Error al obtener GeoJSON terrenos SINIC: {e}", exc_info=True)
