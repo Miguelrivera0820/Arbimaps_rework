@@ -214,6 +214,7 @@ class SINICExportService:
                         c.destinacion_economica,
                         c.area_catastral_terreno,
                         c.matricula_inmobiliaria,
+                        CASE WHEN c.matricula_inmobiliaria IS NOT NULL THEN '200' ELSE NULL END AS codigo_orip,
                         c.t_id::text AS local_id,
                         'LADMCOL_SINIC_V1_0' AS espacio_de_nombres,
                         c.vigencia_r1
@@ -221,7 +222,7 @@ class SINICExportService:
                 )
                 INSERT INTO g_sinic.sinic_predio (
                     t_id, t_basket, t_ili_tid, departamento, municipio,
-                    numero_predial_nacional, codigo_homologado,
+                    numero_predial_nacional, codigo_homologado, codigo_orip,
                     tipo_predio, condicion_predio, destinacion_economica, area_catastral_terreno, matricula_inmobiliaria,
                     vigencia_actualizacion_catastral, estado, tipo, comienzo_vida_util_version, espacio_de_nombres, local_id
                 )
@@ -233,6 +234,7 @@ class SINICExportService:
                     municipio,
                     npn_unico,
                     ch_unico,
+                    codigo_orip,
                     tipo_predio,
                     condicion_predio,
                     destinacion_economica,

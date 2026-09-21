@@ -161,11 +161,12 @@ class SinicEtlEnrichmentService:
             logger.info("Ejecutando Etapa 6: Migración de Matrícula Inmobiliaria...")
             sql_mat = """
                 UPDATE g_sinic.sinic_predio p
-                SET matricula_inmobiliaria = a.matricula_inmobiliaria
+                SET matricula_inmobiliaria = a.matricula_inmobiliaria,
+                    codigo_orip = '200'
                 FROM a_base_principal.arb_predio a
                 WHERE a.t_id = p.t_id
                   AND a.matricula_inmobiliaria IS NOT NULL
-                  AND (p.matricula_inmobiliaria IS NULL OR p.matricula_inmobiliaria != a.matricula_inmobiliaria);
+                  AND (p.matricula_inmobiliaria IS NULL OR p.matricula_inmobiliaria != a.matricula_inmobiliaria OR p.codigo_orip IS NULL OR p.codigo_orip != '200');
             """
             cur.execute(sql_mat)
             reporte['etapa6_matriculas_migradas'] = cur.rowcount
