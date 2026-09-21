@@ -131,7 +131,13 @@ class SINICExportService:
                         p.tipo AS tipo_raw,
                         p.condicion_predio AS condicion_predio_raw,
                         p.destinacion_economica AS dest_fisica,
-                        p.matricula_inmobiliaria,
+                        CASE 
+                            WHEN p.matricula_inmobiliaria IS NOT NULL 
+                             AND CAST(p.matricula_inmobiliaria AS TEXT) LIKE '200%' 
+                             AND LENGTH(CAST(p.matricula_inmobiliaria AS TEXT)) >= 6 
+                                THEN CAST(SUBSTRING(CAST(p.matricula_inmobiliaria AS TEXT) FROM 4) AS BIGINT)
+                            ELSE p.matricula_inmobiliaria
+                        END AS matricula_inmobiliaria,
                         COALESCE(p.area_catastral_terreno, 0.0) AS area_catastral_terreno,
                         '41' AS departamento,
                         '001' AS municipio
