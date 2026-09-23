@@ -1,4 +1,5 @@
 import logging
+import re
 import os
 import shutil
 import tempfile
@@ -406,8 +407,11 @@ def _process_export_job(
                     ili2pg_cmd=ILI2PG_CMD,
                     timeout_sec=ILI2PG_TIMEOUT_SEC,
                 )
+            raw_titulo = (asignacion.get("titulo") or "").strip()
+            slug_titulo = re.sub(r"[^\w\-]+", "_", raw_titulo).strip("_")
+            prefix = f"{slug_titulo}_" if slug_titulo else ""
             file_name = (
-                f"asignacion_{tenant.municipality_code}_{asignacion_id}_"
+                f"{prefix}asignacion_{tenant.municipality_code}_{asignacion_id}_"
                 f"{(asignacion.get('usuario_asignado') or '').strip()}_{uuid4().hex[:8]}.xtf"
             )
             done_msg = f"XTF generado. Modo: {export_mode}."
@@ -682,7 +686,10 @@ def descargar_paquete_asignacion(
     except Exception:
         conn.rollback()
 
+    raw_titulo = (asignacion.get("titulo") or "").strip()
+    slug_titulo = re.sub(r"[^\w\-]+", "_", raw_titulo).strip("_")
     filename_parts = [
+        slug_titulo,
         "asignacion",
         str(asignacion_id),
         asignacion.get("usuario_asignado") or "",

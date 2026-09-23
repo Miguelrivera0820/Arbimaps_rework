@@ -182,7 +182,7 @@ def _extract_retorno_xtf_bids(xtf_path: str) -> list[str]:
 
 
 _RETURN_FILENAME_ASSIGNMENT_RE = re.compile(
-    r"^asignacion(?:_[a-z0-9]+)?_(?P<assignment_id>\d+)_",
+    r"^(?:.*?_)?asignacion(?:_[a-z0-9]+)?_(?P<assignment_id>\d+)_",
     re.IGNORECASE,
 )
 
