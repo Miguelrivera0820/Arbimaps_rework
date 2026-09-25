@@ -283,7 +283,7 @@
 </style>
 
 <link rel="stylesheet" href="{{ rp }}/static/css/buscar/informacion_predio.css" />
-<div class="content-modulo-detalles container-fluid px-0 mb-5">
+<div class="content-modulo-detalles container-fluid px-2 px-md-3 mb-5">
   <div class="row g-4 ">
     <!-- IZQUIERDA -->
     <div class="col-12 col-lg-8 col-xl-9 h-100">
@@ -470,12 +470,13 @@
       </div>
     </div>
 
-    <div class="container-fluid">
-      <div class="row g-4 mt-4 align-items-stretch ">
-        <!-- COLUMNA IZQUIERDA -->
-        <div class="col-12 col-md-6 col-xl-6 col-custom-izq px-0 ">
+    <div class="w-100">
+      <!-- FILA SUPERIOR: TARJETA ASIGNACIÓN + VISOR MAPA -->
+      <div class="row g-4 align-items-stretch">
+        <!-- COLUMNA IZQUIERDA: TARJETA ASIGNACIÓN -->
+        <div class="col-12 col-lg-6 col-custom-izq px-2 ps-md-0 px-md-3 d-flex flex-column">
 
-          <div class="unified-detail-card p-4 mt-0 shadow">
+          <div class="unified-detail-card p-4  mt-0 shadow h-100 d-flex flex-column justify-content-between">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 pb-3">
               <h2 class="fw-bold mb-0 text-white" style="font-size: 1rem;">
                 Asignación: <span id="d_titulo">-</span>
@@ -488,7 +489,7 @@
             </div>
 
             <!-- METADATA ROW -->
-            <div class="container-fluid pt-2 " style="border-top: 1px solid #afde375d;">
+            <div class="w-100 pt-2 px-0" style="border-top: 1px solid #afde375d;">
               <div class="row g-3 align-items-center py-2">
                 <!-- COL 1: COORDINADOR -->
                 <div class="col-12 col-md-6 meta-col-separator">
@@ -569,10 +570,11 @@
             <div id="d_devolucion_link_row" class="d-none"></div>
 
             <!-- STATISTICS CARDS (FICHAS SUPERIORES UNIFICADAS) -->
-            <div class="container mt-3">
-              <div class="row g-2">
+            <div class="w-100 mt-3 px-0">
+              <!-- Fila 1: Alcance / Insumo Asignado -->
+              <div class="row g-2 mb-2">
                 <!-- Card 1: Asignados (Principales) -->
-                <div class="col-12 col-sm-6 col-md-3 px-1">
+                <div class="col-6 px-1">
                   <div class="stat-card stat-card-left h-100">
                     <div class="stat-card-icon-wrap stat-card-icon-blue">
                       <i class="fa-solid fa-map-location-dot fs-5"></i>
@@ -584,8 +586,8 @@
                   </div>
                 </div>
 
-                <!-- Card 2: Colindantes (Nuevo al lado de Asignados) -->
-                <div class="col-12 col-sm-6 col-md-3 px-1">
+                <!-- Card 2: Colindantes -->
+                <div class="col-6 px-1">
                   <div class="stat-card stat-card-left h-100" style="border-left: 4px solid #0284c7;">
                     <div class="stat-card-icon-wrap" style="background: rgba(2, 132, 199, 0.15); color: #0284c7;">
                       <i class="fa-solid fa-draw-polygon fs-5"></i>
@@ -596,16 +598,19 @@
                     </div>
                   </div>
                 </div>
+              </div>
 
+              <!-- Fila 2: Novedades / Trámite -->
+              <div class="row g-2" id="rowNovedadesCards">
                 <!-- Card 3: Eliminados (Cancelados) -->
-                <div class="col-12 col-sm-6 col-md-3 px-1">
+                <div class="col px-1" id="card_elim_wrap">
                   <div class="stat-card stat-card-right stat-card-border-red h-100">
                     <div class="min-w-0">
                       <small class="d-block stat-card-title">Predios Eliminados</small>
                       <span id="d_elim" class="d-block stat-card-value">0</span>
                     </div>
                     <div class="stat-card-icon-wrap stat-card-icon-red">
-                      <svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd"
                           d="M16.7409 1.82115C17.0419 2.00527 17.2225 2.33225 17.2225 2.68462L17.2193 7.14482C16.592 6.88768 15.9076 6.748 15.1915 6.748C13.5756 6.748 12.1181 7.46544 11.1359 8.60192V5.44962L7.08027 4.0941V13.1256L10.2867 14.1954C10.5434 14.9097 10.8888 15.5763 11.2373 16.1573C11.3672 16.3731 11.5003 16.5858 11.6365 16.789L6.14557 14.9541L2.467 16.7985C2.15332 16.9573 1.78261 16.9382 1.48161 16.7541C1.1806 16.57 1 16.243 1 15.8906V4.71631C1 4.33219 1.21545 3.97982 1.56082 3.80522L5.61644 1.77353C5.85724 1.6529 6.1329 1.63385 6.38954 1.71956L12.0738 3.6211L15.7555 1.7767C16.0692 1.61798 16.4399 1.63703 16.7409 1.82115Z"
                           fill="#CD2023" />
@@ -618,14 +623,14 @@
                 </div>
 
                 <!-- Card 4: Nuevos -->
-                <div class="col-12 col-sm-6 col-md-3 px-1">
+                <div class="col px-1" id="card_new_wrap">
                   <div class="stat-card stat-card-right stat-card-border-green h-100">
                     <div class="min-w-0">
                       <small class="d-block stat-card-title">Predios Nuevos</small>
                       <span id="d_new" class="d-block stat-card-value">0</span>
                     </div>
                     <div class="stat-card-icon-wrap stat-card-icon-green">
-                      <svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <g clip-path="url(#clip0_4588_2618)">
                           <path fill-rule="evenodd" clip-rule="evenodd"
                             d="M16.7409 1.82115C17.0419 2.00527 17.2225 2.33225 17.2225 2.68462L17.2193 7.14482C16.592 6.88768 15.9076 6.748 15.1915 6.748C13.5756 6.748 12.1181 7.46544 11.1359 8.60192V5.44962L7.08027 4.0941V13.1256L10.2867 14.1954C10.5434 14.9097 10.8888 15.5763 11.2373 16.1573C11.3672 16.3731 11.5003 16.5858 11.6365 16.789L6.14557 14.9541L2.467 16.7985C2.15332 16.9573 1.78261 16.9382 1.48161 16.7541C1.1806 16.57 1 16.243 1 15.8906V4.71631C1 4.33219 1.21545 3.97982 1.56082 3.80522L5.61644 1.77353C5.85724 1.6529 6.1329 1.63385 6.38954 1.71956L12.0738 3.6211L15.7555 1.7767C16.0692 1.61798 16.4399 1.63703 16.7409 1.82115Z"
@@ -643,83 +648,39 @@
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          <div class="col-12 mt-3">
-            <div class="info-basic-panel h-100 shadow">
-              <div class="d-flex align-items-start align-items-md-center justify-content-between gap-3 flex-wrap">
-                <div>
-                  <h4 class="title mb-1">Desglose Predios</h4>
-                  <p class="sub mb-0">
-                    Consulta los predios correspondientes a esta asignación
-                  </p>
-                </div>
-              </div>
-
-              <hr class="info-basic-divider my-3 mb-4">
-
-              <div class="asigDetailPanel">
-                <div class="row g-4">
-                  <div class="col-12">
-                    <div class="asigDetailTableWrap asig-table-light h-100">
-                      <div class="table-responsive">
-                        <table id="tablaPredios" class="asigDetailTable table mb-0">
-                          <thead>
-                            <tr>
-                              <!-- <th>Editar</th> -->
-                              <th class="text-center">T_ID</th>
-                              <th class="text-center">Número predial</th>
-                              <th class="text-center">Rol Predio</th>
-                              <th class="text-center">Estado</th>
-                            </tr>
-                          </thead>
-                          <tbody id="asigDetallePrediosBody"></tbody>
-                        </table>
-                      </div>
+                <!-- Card 5: Matriz -->
+                <div class="col px-1" id="card_matriz_wrap" style="display: none;">
+                  <div class="stat-card stat-card-right stat-card-border-purple h-100">
+                    <div class="min-w-0">
+                      <small class="d-block stat-card-title">Predios Matriz</small>
+                      <span id="d_matriz" class="d-block stat-card-value">0</span>
+                    </div>
+                    <div class="stat-card-icon-wrap stat-card-icon-purple">
+                      <i class="fa-solid fa-sitemap fs-6"></i>
                     </div>
                   </div>
                 </div>
-
-                <div class="row g-3 mt-3 d-none">
-                  <div class="col-12 col-md-6">
-                    <small class="d-block text-muted">Dataset principal</small>
-                    <small id="d_main" class="fw-semibold d-block">-</small>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <small class="d-block text-muted">Workspace</small>
-                    <small id="d_work" class="fw-semibold d-block">-</small>
-                  </div>
-                  <div class="col-12">
-                    <small class="d-block text-muted">Error</small>
-                    <small id="d_error" class="fw-semibold d-block">-</small>
-                  </div>
-                </div>
-
-                <div id="asigDetailMsg" class="mt-3">Ingresa un id y presiona Buscar.</div>
               </div>
             </div>
           </div>
 
         </div> <!-- Cierre Columna Izquierda -->
 
-        <!-- COLUMNA DERECHA: VISOR -->
-        <div class="col-12 col-md-6 col-xl-6 col-custom-der d-flex flex-column pe-0">
-          <div class="rounded-4 overflow-hidden shadow border-0 tarjeta-visor-predio-edit h-100 d-flex flex-column">
+        <!-- COLUMNA DERECHA: VISOR (Mismo tamaño que la tarjeta de asignación) -->
+        <div class="col-12 col-lg-6 col-custom-der d-flex flex-column px-2 px-md-0">
+          <div class="shadow border-0 tarjeta-visor-predio-edit h-100 d-flex flex-column overflow-hidden"
+            style="border-radius: 24px;">
 
-            <div class="card-body p-0 m-0 position-relative rounded-4 overflow-hidden flex-grow-1"
-              style="min-height: 400px;">
-              <div id="map" class="w-100 h-100 m-0 p-0"></div>
+            <div class="card-body p-0 m-0 position-relative overflow-hidden flex-grow-1 h-100"
+              style="min-height: 280px;">
+              <div id="map" class="position-absolute top-0 start-0 w-100 h-100 m-0 p-0"></div>
               <div
                 class="vp-map-tools-edit position-absolute top-0 end-0 mt-2 me-2 d-flex flex-column gap-1 align-items-end"
                 style="z-index: 1000;">
                 <button type="button" class="vp-map-btn-edit btn btn-light btn-sm px-2 py-1 w-auto" id="btnZoomPredio">
                   Zoom predio
                 </button>
-                <!-- <button type="button" class="vp-map-btn-edit btn btn-light btn-sm px-2 py-1 w-auto" id="btnZoomProyecto">
-              Ver proyecto
-            </button> -->
               </div>
               <!-- Leyenda / Convenciones del Mapa -->
               <div class="vp-map-legend position-absolute bottom-0 start-0 m-3 p-2 rounded-3 shadow-none">
@@ -746,7 +707,63 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> <!-- Cierre Fila Superior -->
+
+      <!-- FILA INFERIOR: TABLA DESGLOSE PREDIOS (COL-10) -->
+      <div class="row  mt-3 ">
+        <div class="col-12 col-lg-12 px-2 px-md-5">
+          <div class="info-basic-panel shadow">
+            <div class="d-flex align-items-start align-items-md-center justify-content-between gap-3 flex-wrap">
+              <div>
+                <h4 class="title mb-1">Desglose Predios</h4>
+                <p class="sub mb-0">
+                  Consulta los predios correspondientes a esta asignación
+                </p>
+              </div>
+            </div>
+
+            <hr class="info-basic-divider my-3 mb-4">
+
+            <div class="asigDetailPanel">
+              <div class="row g-4">
+                <div class="col-12">
+                  <div class="asigDetailTableWrap asig-table-light h-100">
+                    <table id="tablaPredios" class="asigDetailTable table mb-0 w-100">
+                      <thead>
+                        <tr>
+                          <!-- <th>Editar</th> -->
+                          <th class="text-center">T_ID</th>
+                          <th class="text-center">Número predial</th>
+                          <th class="text-center">Rol Predio</th>
+                          <th class="text-center">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody id="asigDetallePrediosBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-3 d-none">
+                <div class="col-12 col-md-6">
+                  <small class="d-block text-muted">Dataset principal</small>
+                  <small id="d_main" class="fw-semibold d-block">-</small>
+                </div>
+                <div class="col-12 col-md-6">
+                  <small class="d-block text-muted">Workspace</small>
+                  <small id="d_work" class="fw-semibold d-block">-</small>
+                </div>
+                <div class="col-12">
+                  <small class="d-block text-muted">Error</small>
+                  <small id="d_error" class="fw-semibold d-block">-</small>
+                </div>
+              </div>
+
+              <div id="asigDetailMsg" class="mt-3">Ingresa un id y presiona Buscar.</div>
+            </div>
+          </div>
+        </div>
+      </div> <!-- Cierre Fila Inferior -->
     </div>
 
     <!-- Cierre Main Row -->
@@ -1949,3 +1966,14 @@
     };
     </script>
     <script src="{{ rp }}/static/js/asignaciones/asignaciones_detalle.js?v={{ range(1000, 9999)|random }}"></script>
+    <script>
+      (function () {
+        const mapEl = document.getElementById("map");
+        if (mapEl && window.ResizeObserver) {
+          const ro = new ResizeObserver(() => {
+            window.dispatchEvent(new Event('resize'));
+          });
+          ro.observe(mapEl);
+        }
+      })();
+    </script>

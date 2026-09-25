@@ -87,6 +87,19 @@
     gap: 4px;
   }
 
+  .sync-badge-matriz {
+    background-color: #f3e8ff;
+    color: #7e22ce;
+    border: 1px solid #d8b4fe;
+    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .sync-notice-box {
     background-color: #f8fafc;
     border-left: 4px solid #0A2C1B;
@@ -213,12 +226,15 @@
               <span class="sync-stat-pill shadow-sm" style="background-color:#f0fdf4;color:#15803d;border:1px solid #86efac;">
                 📐 Colindantes (Soporte): <strong id="modalSyncTotalColindantes">0</strong>
               </span>
+              <span class="sync-stat-pill shadow-sm" id="pillSyncMatriz" style="background-color:#f3e8ff;color:#7e22ce;border:1px solid #d8b4fe;display:none;">
+                <i class="fa-solid fa-sitemap me-1"></i> Predio Matriz: <strong id="modalSyncTotalMatriz">0</strong>
+              </span>
             </div>
 
             <!-- Informational Notice on Business Rules -->
             <div class="sync-notice-box mb-3 shadow-sm">
               <i class="fa-solid fa-circle-info text-success me-1"></i>
-              <strong>Regla de sincronización:</strong> Los predios marcados como <strong>Asignación</strong> seguirán el flujo integral (validación completa, actualización de atributos alfanuméricos e hijas, y Reverse ETL a R1/R2). Para los <strong>Colindantes</strong> únicamente se validará topología y se sincronizará su terreno a la base principal (sin Reverse ETL).
+              <strong>Regla de sincronización:</strong> Los predios marcados como <strong>Asignación</strong> seguirán el flujo integral (validación completa, actualización de atributos alfanuméricos e hijas, y Reverse ETL a R1/R2). Los predios <strong>Matriz</strong> sincronizan su información únicamente a la base principal (sin Reverse ETL a R1/R2). Para los <strong>Colindantes</strong> únicamente se validará topología y se sincronizará su terreno a la base principal (sin Reverse ETL).
             </div>
 
             <!-- Predios Table Container -->

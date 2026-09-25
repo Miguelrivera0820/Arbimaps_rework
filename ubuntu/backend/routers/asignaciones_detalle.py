@@ -398,6 +398,7 @@ class AsignacionDetalleResponse(BaseModel):
     total_colindantes: int = 0
     total_eliminados: int = 0
     total_nuevos: int = 0
+    total_matriz: int = 0
     predios: List[AsignacionPredioDetalle] = Field(default_factory=list)
     comentarios: List[AsignacionComentario] = Field(default_factory=list)
 
@@ -1689,18 +1690,45 @@ def obtener_detalle_asignacion(
     predios_rows = asignaciones_repo.list_predios_asignacion(conn, tenant, asignacion_id)
 
     schema_work_name = _safe_ident(_read_schema_work(tenant), fallback="")
+    schema_main_name = _safe_ident(_read_schema_main(tenant), fallback="")
     auto_cancelled = set()
     auto_new = set()
-    if has_valid_work and schema_work_name:
-        assignment_npns = [str(r.get("numero_predial_nacional") or "").strip() for r in predios_rows if r.get("numero_predial_nacional")]
-        if assignment_npns:
-            auto_cancelled = asignaciones_repo.auto_detect_cancelled_predios_sql(conn, schema_work_name, npns=assignment_npns)
-            auto_new = asignaciones_repo.auto_detect_new_predios_sql(conn, schema_work_name, npns=assignment_npns)
+    auto_matriz = set()
+    assignment_npns = [str(r.get("numero_predial_nacional") or "").strip() for r in predios_rows if r.get("numero_predial_nacional")]
+
+    if has_valid_work and schema_work_name and assignment_npns:
+        auto_cancelled = asignaciones_repo.auto_detect_cancelled_predios_sql(conn, schema_work_name, npns=assignment_npns)
+        auto_new = asignaciones_repo.auto_detect_new_predios_sql(conn, schema_work_name, npns=assignment_npns)
+        try:
+            with conn.cursor() as cur_m:
+                cur_m.execute(f"""
+                    SELECT DISTINCT BTRIM(p.numero_predial::text)
+                    FROM {schema_work_name}.arb_predio p
+                    WHERE (p.condicion_predio = 1509 OR BTRIM(p.condicion_predio::text) = '1509')
+                      AND BTRIM(p.numero_predial::text) = ANY(%s)
+                """, (assignment_npns,))
+                auto_matriz = {str(r[0]).strip() for r in cur_m.fetchall() if r and r[0]}
+        except Exception:
+            pass
+
+    if not auto_matriz and schema_main_name and assignment_npns:
+        try:
+            with conn.cursor() as cur_m:
+                cur_m.execute(f"""
+                    SELECT DISTINCT BTRIM(p.numero_predial::text)
+                    FROM {schema_main_name}.arb_predio p
+                    WHERE (p.condicion_predio = 1509 OR BTRIM(p.condicion_predio::text) = '1509')
+                      AND BTRIM(p.numero_predial::text) = ANY(%s)
+                """, (assignment_npns,))
+                auto_matriz = {str(r[0]).strip() for r in cur_m.fetchall() if r and r[0]}
+        except Exception:
+            pass
 
     c_principal = 0
     c_colindante = 0
     c_eliminado = 0
     c_nuevo = 0
+    c_matriz = 0
 
     def _display_name(first_name: Optional[str], last_name: Optional[str], username: Optional[str]) -> Optional[str]:
         full_name = " ".join(part for part in (first_name, last_name) if part).strip()
@@ -1713,7 +1741,11 @@ def obtener_detalle_asignacion(
     for row in predios_rows:
         npn = str(row.get("numero_predial_nacional") or "").strip()
         rol = str(row.get("rol_predio") or "principal").lower()
-        if npn in auto_cancelled or rol == "cancelado":
+        if rol == "matriz" or (npn in auto_matriz and rol != "cancelado"):
+            resolved_rol = "matriz"
+            c_matriz += 1
+            c_principal += 1
+        elif npn in auto_cancelled or rol == "cancelado":
             resolved_rol = "cancelado"
             c_eliminado += 1
         elif npn in auto_new or rol == "nuevo" or row.get("predio_t_id") is None:
@@ -1743,9 +1775,11 @@ def obtener_detalle_asignacion(
         total_colindantes = c_colindante
         total_eliminados = c_eliminado
         total_nuevos = c_nuevo
+        total_matriz = c_matriz
     else:
         total_colindantes = 0
         total_nuevos = max(total_nuevos, c_nuevo)
+        total_matriz = c_matriz
 
     comentarios: List[AsignacionComentario] = []
     for row in comentarios_rows:
@@ -1799,6 +1833,7 @@ def obtener_detalle_asignacion(
         total_colindantes=total_colindantes,
         total_eliminados=total_eliminados,
         total_nuevos=total_nuevos,
+        total_matriz=total_matriz,
         predios=predios,
         comentarios=comentarios,
     )
@@ -3259,6 +3294,39 @@ def _auto_sync_asignacion_predio_roles_and_new_predios(
                 """,
                 (asignacion_id, work_datasetname, asignacion_id),
             )
+
+            # 3. Detectar y marcar predios matriz (condicion_predio = 1509 o catalogo Matriz)
+            has_condicion = _table_exists(cur, schema_work, "arb_condicionprediotipo")
+            condicion_join = f"""
+                LEFT JOIN {schema_work}.arb_condicionprediotipo cp ON cp.t_id = p.condicion_predio
+            """ if has_condicion else ""
+            condicion_match = """
+                AND (
+                    p.condicion_predio = 1509
+                    OR BTRIM(p.condicion_predio::text) = '1509'
+                    OR (cp.dispname ILIKE '%%Matriz%%' OR cp.ilicode ILIKE '%%Matriz%%')
+                )
+            """ if has_condicion else """
+                AND (p.condicion_predio = 1509 OR BTRIM(p.condicion_predio::text) = '1509')
+            """
+            cur.execute(
+                f"""
+                UPDATE {asignacion_predio_tbl} ap
+                SET rol_predio = 'matriz'
+                WHERE ap.asignacion_id = %s
+                  AND LOWER(COALESCE(ap.rol_predio, '')) NOT IN ('cancelado', 'matriz')
+                  AND BTRIM(ap.numero_predial_nacional::text) IN (
+                      SELECT BTRIM(p.numero_predial::text)
+                      FROM {schema_work}.arb_predio p
+                      JOIN {schema_work}.t_ili2db_basket b ON b.t_id = p.t_basket
+                      JOIN {schema_work}.t_ili2db_dataset d ON d.t_id = b.dataset
+                      {condicion_join}
+                      WHERE d.datasetname = %s
+                        {condicion_match}
+                  );
+                """,
+                (asignacion_id, work_datasetname),
+            )
     except Exception as exc:
         logger.warning("Error en _auto_sync_asignacion_predio_roles_and_new_predios para asignacion %s: %s", asignacion_id, exc)
 
@@ -4033,17 +4101,54 @@ def inspeccionar_retorno_xtf(
         except Exception as repo_err:
             logger.warning("Fallo get_asignacion_predio_roles en inspeccionar_retorno_xtf: %s", repo_err)
 
+        # Detectar NPNs matrices desde el workspace b_asignaciones_arb si ya existen
+        matriz_npns = set()
+        try:
+            connection_manager = request.app.state.tenant_connection_manager
+            with connection_manager.connection(tenant) as conn:
+                schema_work = (getattr(tenant.schemas, "work", None) or "b_asignaciones_arb")
+                with conn.cursor() as cur:
+                    if _table_exists(cur, schema_work, "arb_predio"):
+                        cur.execute(f"""
+                            SELECT DISTINCT BTRIM(p.numero_predial::text)
+                            FROM {schema_work}.arb_predio p
+                            JOIN {schema_work}.t_ili2db_basket b ON b.t_id = p.t_basket
+                            JOIN {schema_work}.t_ili2db_dataset d ON d.t_id = b.dataset
+                            WHERE (p.condicion_predio = 1509 OR BTRIM(p.condicion_predio::text) = '1509')
+                              AND d.datasetname LIKE %s
+                        """, (f"%_{asignacion_id}",))
+                        for r in cur.fetchall():
+                            if r and r[0]:
+                                matriz_npns.add(str(r[0]).strip())
+        except Exception:
+            pass
+
         predios_info = []
         c_asignacion = 0
         c_colindante = 0
+        c_matriz = 0
 
         norm_roles = {str(k).strip(): str(v).strip().lower() for k, v in roles.items() if k}
 
         for idx, p in enumerate(raw_predios, 1):
             npn = str(p.get("numero_predial") or "").strip()
             rol_clean = norm_roles.get(npn, "")
+            condicion_val = str(p.get("condicion") or "").strip().lower()
 
-            if rol_clean == "colindante":
+            is_matriz = (
+                rol_clean == "matriz"
+                or npn in matriz_npns
+                or "matriz" in condicion_val
+                or condicion_val == "1509"
+                or "ph.matriz" in condicion_val
+            )
+
+            if is_matriz and rol_clean != "cancelado":
+                rol_tipo = "matriz"
+                rol_display = "Predio Matriz"
+                c_matriz += 1
+                c_asignacion += 1
+            elif rol_clean == "colindante":
                 rol_tipo = "colindante"
                 rol_display = "Colindante (Soporte)"
                 c_colindante += 1
@@ -4076,6 +4181,7 @@ def inspeccionar_retorno_xtf(
                 "rol": rol_tipo,
                 "rol_display": rol_display,
                 "es_colindante": rol_tipo == "colindante",
+                "es_matriz": rol_tipo == "matriz",
                 "es_asignacion": rol_tipo != "colindante",
             })
 
@@ -4085,6 +4191,7 @@ def inspeccionar_retorno_xtf(
             "total_predios": len(predios_info),
             "total_asignacion": c_asignacion,
             "total_colindantes": c_colindante,
+            "total_matriz": c_matriz,
             "predios": predios_info,
         }
     except HTTPException:
@@ -4889,7 +4996,7 @@ def sincronizar_produccion(
                     FROM {asignacion_predio_table} ap
                     WHERE ap.asignacion_id = %s
                       AND ap.activo IS DISTINCT FROM FALSE
-                      AND LOWER(COALESCE(ap.rol_predio, 'principal')) NOT IN ('colindante')
+                      AND LOWER(COALESCE(ap.rol_predio, 'principal')) NOT IN ('colindante', 'matriz')
                     UNION
                     SELECT DISTINCT sp.numero_predial_nacional
                     FROM _arb_sync_selected_predio sp
@@ -4897,7 +5004,7 @@ def sincronizar_produccion(
                         SELECT 1 FROM {asignacion_predio_table} ap_col
                         WHERE ap_col.asignacion_id = %s
                           AND BTRIM(ap_col.numero_predial_nacional::text) = BTRIM(sp.numero_predial_nacional::text)
-                          AND LOWER(COALESCE(ap_col.rol_predio, 'principal')) = 'colindante'
+                          AND LOWER(COALESCE(ap_col.rol_predio, 'principal')) IN ('colindante', 'matriz')
                     );
                     """,
                     (asignacion_id, asignacion_id)
