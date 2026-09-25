@@ -329,9 +329,9 @@ class SINICExportService:
         self._asegurar_tabla_versiones(conn)
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT id, codigo_version, fecha_corte, fecha_generacion, tipo_entrega,
+                SELECT id, version_code, fecha_corte, fecha_generacion, tipo_entrega,
                        total_predios, total_terrenos, total_construcciones, checksum_sha256,
-                       nombre_archivo_xtf, ruta_relativa_storage, usuario_generador
+                       nombre_archivo_xtf, ruta_relativa_storage, usuario
                 FROM arbimaps_app.sinic_versiones
                 ORDER BY fecha_generacion DESC;
             """)
