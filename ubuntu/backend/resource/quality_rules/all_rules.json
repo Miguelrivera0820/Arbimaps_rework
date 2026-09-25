@@ -37,7 +37,6 @@
       "slug": "obligatorias",
       "rule_count": 70
     }
-
   ],
   "rules": [
     {
@@ -384,19 +383,19 @@
     },
     {
       "id": "1.44",
-      "description": "Si existe registro en contacto visita, no puede relacionar tipo documento igual a NIT",
+      "description": "Cuando el resultado de la visita es Exitoso y existen datos de quien atendió, el tipo de documento debe estar diligenciado y no puede ser NIT.",
       "classes": "ILC_ContactoVisita",
       "variables": "Tipo_Documento_Quien_Atendio",
-      "technical_rule": "Si existe ILC_ContactoVisita, entonces ILC_ContactoVisita.Tipo_Documento_Quien_Atendio <> \"NIT\"",
+      "technical_rule": "Si ILC_Predio.Resultado_Visita = \"Exitoso\" y existe dato de quien atendió, entonces Tipo_Documento_Quien_Atendio debe estar diligenciado y ser diferente de \"NIT\".",
       "component": "Administrativo",
       "sheet_slug": "administrativo"
     },
     {
       "id": "1.45",
-      "description": "Si existe registro en contacto visita, el número de documento de quien atendió debe contener solamente caracteres numéricos",
+      "description": "Cuando el resultado de la visita es Exitoso y existen datos de quien atendió, el número de documento debe estar diligenciado y contener solamente caracteres numéricos.",
       "classes": "ILC_ContactoVisita",
       "variables": "Numero_Documento_Quien_Atendio",
-      "technical_rule": "Si existe ILC_ContactoVisita, entonces ILC_ContactoVisita.Numero_Documento_Quien_Atendio = \"Caracteres numéricos\"",
+      "technical_rule": "Si ILC_Predio.Resultado_Visita = \"Exitoso\" y existe dato de quien atendió, entonces Numero_Documento_Quien_Atendio debe estar diligenciado y contener solo caracteres numéricos.",
       "component": "Administrativo",
       "sheet_slug": "administrativo"
     },
@@ -411,10 +410,10 @@
     },
     {
       "id": "1.47",
-      "description": "Si existe información en contacto de visita y el campo autoriza notificaciones es verdadero, entonces el campo celular y/o correo electrónico debe estar diligenciado",
+      "description": "Solo cuando el resultado de la visita es Exitoso, si autoriza notificaciones es verdadero debe estar diligenciado celular y/o correo electrónico.",
       "classes": "ILC_ContactoVisita",
       "variables": "Autoriza_Notificaciones\nCelular\nCorreo_Electronico",
-      "technical_rule": "Si ILC_ContactoVisita.Autoriza_Notificaciones = \"Verdadero\", entonces ILC_ContactoVisita.Celular y/o ILC_ContactoVisita.Correo_Electronico debe estar diligenciado",
+      "technical_rule": "Si ILC_Predio.Resultado_Visita = \"Exitoso\" y Autoriza_Notificaciones = \"Verdadero\", entonces Celular y/o Correo_Electronico debe estar diligenciado.",
       "component": "Administrativo",
       "sheet_slug": "administrativo"
     },
@@ -618,10 +617,10 @@
     },
     {
       "id": "2.2",
-      "description": "Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).",
+      "description": "Los predios con condición Informal solo pueden estar asociados a derechos de Posesión u Ocupación y no deben tener matrícula inmobiliaria. Para predios de tipo Privado con condición distinta de Informal y derecho de Dominio, la matrícula inmobiliaria es obligatoria.",
       "classes": "ILC_Derecho\nILC_Predio",
-      "variables": "Tipo\nTipo\n\nMatricula_Inmobiliaria",
-      "technical_rule": "ILC_Predio.Tipo = “Privado” y  ILC_Derecho.Tipo = “Dominio” entonces, ILC_Predio.Matricula_Inmobiliaria <> NULL \n\nLC_Derecho.Tipo = “Posesion” o \"Ocupacion\" entonces, ILC_Predio.Matricula_Inmobiliaria = NULL",
+      "variables": "Tipo\nTipo\nCondicion_Predio\nMatricula_Inmobiliaria",
+      "technical_rule": "Si ILC_Predio.Condicion_Predio = “Informal”, entonces ILC_Derecho.Tipo debe ser “Posesion” u “Ocupacion” e ILC_Predio.Matricula_Inmobiliaria = NULL. Si ILC_Predio.Tipo = “Privado”, ILC_Predio.Condicion_Predio <> “Informal” e ILC_Derecho.Tipo = “Dominio”, entonces ILC_Predio.Matricula_Inmobiliaria <> NULL.",
       "component": "Juridico",
       "sheet_slug": "juridico"
     },
@@ -744,10 +743,10 @@
     },
     {
       "id": "2.4",
-      "description": "Los predios con tipo de predio: Privado no deben estar asociados a derechos de “ocupación”",
+      "description": "Los predios de tipo Privado asociados a derechos de Ocupación deben tener condición de predio Informal.",
       "classes": "ILC_Derecho\nILC_Predio",
-      "variables": "Tipo\nTipo",
-      "technical_rule": "ILC_Predio.Tipo = “Privado”  entonces  ILC_Derecho.Tipo <> “Ocupación”",
+      "variables": "Tipo\nTipo\nCondicion_Predio",
+      "technical_rule": "ILC_Predio.Tipo = “Privado” e ILC_Derecho.Tipo = “Ocupacion” entonces ILC_Predio.Condicion_Predio = “Informal”.",
       "component": "Juridico",
       "sheet_slug": "juridico"
     },
@@ -906,10 +905,10 @@
     },
     {
       "id": "3.20",
-      "description": "Para las unidades de construcción, el dato area_construida diligenciada y el área calculada del polígono debe ser igual.",
-      "classes": "CR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Area_construccion\nGeometria_area",
-      "technical_rule": "(ILC_CaracteristicasUnidadConstruccion.area_construida) - CR_UnidadConstruccion.geometria)/(ILC_CaracteristicasUnidadConstruccion.area_construida) <= 1",
+      "description": "Para las unidades de construcción, el área declarada debe coincidir con la suma del campo Area_Unidad_Construccion, con tolerancia del 1%. La regla no aplica a PH, Parque Cementerio ni Informal.",
+      "classes": "ARB_UnidadConstruccion\nARB_CaracteristicasUnidadConstruccion\nARB_Predio",
+      "variables": "Area_Unidad_Construccion\nArea_Construida\nArea_Privada_Construida\nCondicion_Predio",
+      "technical_rule": "Para Condicion_Predio distinta de PH.Matriz, PH.Unidad_Predial, Parque_Cementerio.Matriz, Parque_Cementerio.Unidad_Predial e Informal, comparar la suma de ARB_UnidadConstruccion.Area_Unidad_Construccion por predio/característica contra ARB_CaracteristicasUnidadConstruccion.Area_Construida, con tolerancia del 1%. Para Condominio.Unidad_Predial comparar contra Area_Privada_Construida.",
       "component": "Fisico",
       "sheet_slug": "fisico"
     },
@@ -996,7 +995,7 @@
     },
     {
       "id": "4.10",
-      "description": "Para unidades de conservacion y proteccion ambiental, en caso de usos de calificación por tipologías, solamente se pueden asociar tipologías conservacion.",
+      "description": "En la base catastral final (producto de la actualizacion catastral) el avaluo comercial registrado debe corresponder a la sumatoria del avalúo comercial de terreno mas el avaluo comercial total de las unidades de construcción y este valor debe se mayor a \"0\".",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Comercial = ILC_EstructuraAvaluo.Valor_Comercial_Terreno + ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion y > \"0\"",
@@ -1005,16 +1004,16 @@
     },
     {
       "id": "4.11",
-      "description": "Si el tipo de calificacion es por tipologias, el campo tipo de tipologia  no pude se NULL o vacio.",
-      "classes": "ILC_EstructuraAvaluo",
+      "description": "En la base catastral final (producto de la actualizacion catastral) el avaluo catastral registrado debe ser un valor cerrado al mil más cercano sin decimales, mayor a \"0\", y corresponder a la sumatoria del avalúo catastral de terreno más el avalúo catastral total de las unidades de construcción redondeada al mil más cercano.",
+      "classes": "ILC_EstructuraAvaluo\nARB_AvaluoValor",
       "variables": "Valor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
-      "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Catastral = ILC_EstructuraAvaluo.Valor_Catastral_Terreno + ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion > \"0\"",
+      "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Catastral = RedondeoAlMil(ILC_EstructuraAvaluo.Valor_Catastral_Terreno + ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion) > \"0\" (sin decimales)",
       "component": "Economico",
       "sheet_slug": "economico"
     },
     {
       "id": "4.12",
-      "description": "Si el tipo de calificacion es por tipologias, el campo conservacion de tipologia  no pude se NULL o vacio.",
+      "description": "En la base catastral final (producto de la actualizacion catastral) los campos de ILC_EstructuraAvaluo referentes a avalúo comercial, deben ser mayores a los de avalúo catastral  y este valor debe se mayor a \"0\".",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion\nValor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral)\nILC_EstructuraAvaluo.Valor_Comercial > ILC_EstructuraAvaluo.Valor_Catastral\nILC_EstructuraAvaluo.Valor_Catastral > 60% de ILC_EstructuraAvaluo.Valor_Comercial\nILC_EstructuraAvaluo.Valor_Comercial_Terreno > ILC_EstructuraAvaluo.Valor_Catastral_Terreno\nILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion > ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion\n\nLos valores (ILC_EstructuraAvaluo.Valor_Comercial, ILC_EstructuraAvaluo.Valor_Catastral, ILC_EstructuraAvaluo.Valor_Comercial_Terreno, ILC_EstructuraAvaluo.Valor_Catastral_Terreno, ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion, ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion) > \"0\"",
@@ -1023,7 +1022,7 @@
     },
     {
       "id": "4.13",
-      "description": "Si el tipo de calificacion es No convencional, el tipo de unidad de unidad de construccion debe correponder a anexos.",
+      "description": "Para unidades de conservacion y proteccion ambiental, en caso de usos de calificación por tipologías, solamente se pueden asociar tipologías conservacion.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Comercial = ILC_EstructuraAvaluo.Valor_Comercial_Terreno + ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion y > \"0\"",
@@ -1032,7 +1031,7 @@
     },
     {
       "id": "4.14",
-      "description": "Si el tipo de calificacion es No convencional, el campo tipo de anexo  no pude se NULL o vacio.",
+      "description": "Si el tipo de calificacion es por tipologias, el campo tipo de tipologia  no pude se NULL o vacio.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Catastral = ILC_EstructuraAvaluo.Valor_Catastral_Terreno + ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion > \"0\"",
@@ -1041,7 +1040,7 @@
     },
     {
       "id": "4.15",
-      "description": "Si el tipo de calificacion es No convencional, el campo conservacion de anexo  no pude se NULL o vacio.",
+      "description": "Si el tipo de calificacion es por tipologias, el campo conservacion de tipologia  no pude se NULL o vacio.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion\nValor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral)\nILC_EstructuraAvaluo.Valor_Comercial > ILC_EstructuraAvaluo.Valor_Catastral\nILC_EstructuraAvaluo.Valor_Catastral > 60% de ILC_EstructuraAvaluo.Valor_Comercial\nILC_EstructuraAvaluo.Valor_Comercial_Terreno > ILC_EstructuraAvaluo.Valor_Catastral_Terreno\nILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion > ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion\n\nLos valores (ILC_EstructuraAvaluo.Valor_Comercial, ILC_EstructuraAvaluo.Valor_Catastral, ILC_EstructuraAvaluo.Valor_Comercial_Terreno, ILC_EstructuraAvaluo.Valor_Catastral_Terreno, ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion, ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion) > \"0\"",
@@ -1050,17 +1049,16 @@
     },
     {
       "id": "4.16",
-      "description": "En la base catastral final (producto de la actualizacion catastral) el avaluo comercial registrado debe corresponder a la sumatoria del avalúo comercial de terreno mas el avaluo comercial total de las unidades de construcción y este valor debe se mayor a \"0\".",
+      "description": "Si el tipo de calificacion es No convencional, el tipo de unidad de unidad de construccion debe correponder a anexos.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Comercial = ILC_EstructuraAvaluo.Valor_Comercial_Terreno + ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion y > \"0\"",
       "component": "Economico",
       "sheet_slug": "economico"
     },
-    
     {
       "id": "4.17",
-      "description": "En la base catastral final (producto de la actualizacion catastral) el avaluo catastral registrado debe corresponder a la sumatoria del avalúo catastral de terreno mas el avaluo catastral total de las unidade de construcción  y este valor debe se mayor a \"0\".",
+      "description": "Si el tipo de calificacion es No convencional, el campo tipo de anexo  no pude se NULL o vacio.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral) ILC_EstructuraAvaluo.Valor_Catastral = ILC_EstructuraAvaluo.Valor_Catastral_Terreno + ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion > \"0\"",
@@ -1069,7 +1067,7 @@
     },
     {
       "id": "4.18",
-      "description": "En la base catastral final (producto de la actualizacion catastral) los campos de ILC_EstructuraAvaluo referentes a avalúo comercial, deben ser mayores a los de avalúo catastral  y este valor debe se mayor a \"0\".",
+      "description": "Si el tipo de calificacion es No convencional, el campo conservacion de anexo  no pude se NULL o vacio.",
       "classes": "ILC_EstructuraAvaluo",
       "variables": "Valor_Comercial\nValor_Comercial_Terreno\nValor_Comercial_Total_UnidadesConstruccion\nValor_Catastral\nValor_Catastral_Terreno\nValor_Catastral_Total_UnidadesConstruccion",
       "technical_rule": "En la base catastral final (producto de la actualizacion catastral)\nILC_EstructuraAvaluo.Valor_Comercial > ILC_EstructuraAvaluo.Valor_Catastral\nILC_EstructuraAvaluo.Valor_Catastral > 60% de ILC_EstructuraAvaluo.Valor_Comercial\nILC_EstructuraAvaluo.Valor_Comercial_Terreno > ILC_EstructuraAvaluo.Valor_Catastral_Terreno\nILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion > ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion\n\nLos valores (ILC_EstructuraAvaluo.Valor_Comercial, ILC_EstructuraAvaluo.Valor_Catastral, ILC_EstructuraAvaluo.Valor_Comercial_Terreno, ILC_EstructuraAvaluo.Valor_Catastral_Terreno, ILC_EstructuraAvaluo.Valor_Comercial_Total_UnidadesConstruccion, ILC_EstructuraAvaluo.Valor_Catastral_Total_UnidadesConstruccion) > \"0\"",
@@ -1195,7 +1193,7 @@
     },
     {
       "id": "5.6",
-      "description": "Cada unidad de construcción con planta de ubicación 1 debe estar completamente contenida dentro del terreno asociado al predio.",
+      "description": "Cada unidad de construcción debe estar completamente contenida dentro de su construcción asociada; además, las unidades con planta de ubicación 1 deben estar completamente contenidas dentro del terreno asociado al predio.",
       "classes": null,
       "variables": null,
       "technical_rule": null,
@@ -1217,7 +1215,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad\nMatricula_Inmobiliaria",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Desenglobe_Venta_Parcial\" o \"Desenglobe_Division_Material\",  entonces ILC_Predio.Matricula_Inmobiliaria debe estar diligenciado y <> '0'",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1226,7 +1224,7 @@
       "classes": "ILC_Predio",
       "variables": "Numero_Predial\nNumero_Predial_Nacional\nTipo_Novedad",
       "technical_rule": "Si el tramite es \"Englobe_Nuevo_FMI\", entonces debe tener al menos 4 registros y cumplir lo siguiente:\n(1)\n ILC_EstructuraNovedadNumeroPredial.Numero_predial =ILC_Predio.Numero_Predial_Nacional y ILC_Predio.Numero_Predial_Nacional = R1.Numero_Predial. \n(2)\nTodos los predios deben relacionar ILC_EstructuraNovedadNumeroPredial.tipo_novedad = \"Englobe_Nuevo_ FMI\" y ILC_EstructuraNovedadNumeroPredial.tipo_novedad = \"Cancelacion_por_Englobe\"\n(3) si  ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad = \"Englobe_Nuevo_FMI\" entonces deben relacionar el mismo LC_Predio.Numero_Predial_Nacional y El digito 18 de ILC_Predio.Numero_Predial_Nacional debe ser \"9\" o \"A\" - \"Z\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1235,7 +1233,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Numero_Predial\nTipo_Novedad",
       "technical_rule": "Si \nILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Cancelacion\" o \"Cancelación_por_Desenglobe\" o \"Cancelacion_por_Englobe\", entonces \n(1) El digito 18 de ILC_EstructuraNovedadNumeroPredial.Numero_Predial debe ser numérico y  <> '9'\n(2) El digito 22 de ILC_EstructuraNovedadNumeroPredial.Numero_Predial debe ser <> \"2\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1244,7 +1242,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Numero_Predial\nNumero_Predial_Nacional",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Cancelacion\" o \"Cancelación_por_Desenglobe\" o \"Cancelacion_por_Englobe\", entonces ILC_Predio.Numero_Predial_Nacional  = ILC_EstructuraNovedadNumeroPredial.Numero_Predial",
-      "component": "Novedades",  
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1253,7 +1251,7 @@
       "classes": "ILC_Predio\nILC_DatosAdicionalesLevantamientoCatastral",
       "variables": "Tipo_Novedad\nObservaciones",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Cancelacion\", entonces\nILC_DatosAdicionalesLevantamientoCatastral.Observaciones debe tener la respectiva explicación",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1262,7 +1260,7 @@
       "classes": "ILC_Predio\nILC_EstructuraNovedadNumeroPredial\ncol_ueBaunit",
       "variables": "Numero_Predial_Nacional\nTipo_Novedad",
       "technical_rule": "Si ILC_Predio.Numero_Predial_Nacional tiene asociado ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad  = \"Cancelacion\" o \"Cancelación_por_Desenglobe\" o \"Cancelacion_por_Englobe\", entonces no debe asociar ningún registro en col_ueBaunit",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1271,7 +1269,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad\nNumero_Predial\nNumero_Predial_Nacional",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a  \n\"Cambio_Numero_Predial​_Mejora_a_Informal\" o\n\"Cambio_Numero_Predial​_Mejora_a_Formal\" o\n\"Cambio_Numero_Predial​_NPH_a_Informal\" o\n\"Cambio_Numero_Predial​_NPH_a_Condominio\" o\n\"Cambio_Numero_Predial​_NPH_a_PH\" o\n\"Cambio_Numero_Predial​_NPH_a_Via\" o\n\"Cambio_Numero_Predial​_NPH_a_Bien_de_Uso_Publico\" o\n\"Cambio_Numero_Predial​_PH_a_Condominio\" o\n\"Cambio_Numero_Predial​_Condominio_a_PH\" o\n\"Cambio_Numero_Predial​_Condominio_a_NPH\" o\n\"Cambio_Numero_Predial​_Urbano_a_Rural\" o\n\"Cambio_Numero_Predial​_Rural_a_Urbano\" o\n\"Cambio_Numero_Predial​_Manzana_a_Manzana\" o\n\"Cambio_Numero_Predial​_Vereda_a_Vereda\" o\n\"Cambio_Numero_Predial​_municipio_a_municipio\", entonces \nILC_Predio.Numero_Predial_Nacional <> ILC_EstructuraNovedadNumeroPredial.Numero_Predial y ILC_EstructuraNovedadNumeroPredial.Numero_Predial no debe estar contenido en la tabla ILC_Predio.Numero_Predial_Nacional",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1280,7 +1278,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial",
       "variables": "Numero_Predial\nTipo_Novedad",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a  \n\"Cambio_Numero_Predial​_Mejora_a_Informal\" o\n\"Cambio_Numero_Predial​_Mejora_a_Formal\" o\n\"Cambio_Numero_Predial​_NPH_a_Informal\" o\n\"Cambio_Numero_Predial​_NPH_a_Condominio\" o\n\"Cambio_Numero_Predial​_NPH_a_PH\" o\n\"Cambio_Numero_Predial​_NPH_a_Via\" o\n\"Cambio_Numero_Predial​_NPH_a_Bien_de_Uso_Publico\" o\n\"Cambio_Numero_Predial​_PH_a_Condominio\" o\n\"Cambio_Numero_Predial​_Condominio_a_PH\" o\n\"Cambio_Numero_Predial​_Condominio_a_NPH\" o\n\"Cambio_Numero_Predial​_Urbano_a_Rural\" o\n\"Cambio_Numero_Predial​_Rural_a_Urbano\" o\n\"Cambio_Numero_Predial​_Manzana_a_Manzana\" o\n\"Cambio_Numero_Predial​_Vereda_a_Vereda\" o\n\"Cambio_Numero_Predial​_municipio_a_municipio\", entonces \nEl digito 18 de ILC_EstructuraNovedadNumeroPredial.Numero_Predial debe ser numérico y <> 'A -Z' y/o el El digito 22 de ILC_EstructuraNovedadNumeroPredial.Numero_Predial debe ser <> '2'",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1298,7 +1296,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad Numero_Predial_Nacional",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a  \n\"Cambio_Numero_Predial​_Mejora_a_Informal\" o\n\"Cambio_Numero_Predial​_Mejora_a_Formal\" o\n\"Cambio_Numero_Predial​_NPH_a_Informal\" o\n\"Cambio_Numero_Predial​_NPH_a_Condominio\" o\n\"Cambio_Numero_Predial​_NPH_a_PH\" o\n\"Cambio_Numero_Predial​_NPH_a_Via\" o\n\"Cambio_Numero_Predial​_NPH_a_Bien_de_Uso_Publico\" o\n\"Cambio_Numero_Predial​_PH_a_Condominio\" o\n\"Cambio_Numero_Predial​_Condominio_a_PH\" o\n\"Cambio_Numero_Predial​_Condominio_a_NPH\" o\n\"Cambio_Numero_Predial​_Urbano_a_Rural\" o\n\"Cambio_Numero_Predial​_Rural_a_Urbano\" o\n\"Cambio_Numero_Predial​_Manzana_a_Manzana\" o\n\"Cambio_Numero_Predial​_Vereda_a_Vereda\" o\n\"Cambio_Numero_Predial​_municipio_a_municipio\"\nentonces: \nEl digito 18 de ILC_Predio.Numero_Predial_Nacional debe ser igual a \"A\" - \"Z\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1307,7 +1305,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad\nNumero_Predial\nNumero_Predial_Nacional",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Predio_Nuevo\", entonces\nILC_EstructuraNovedadNumeroPredial.Numero_Predial = ILC_Predio.Numero_Predial_Nacional",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1316,7 +1314,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nR1",
       "variables": "Tipo_Novedad\nNumero_Predial\nR1",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Desenglobe_Venta_Parcial\" o \"Desenglobe_Division_Material\", entonces ILC_EstructuraNovedadNumeroPredial.Numero_Predial debe estar contenido en Registro 1 (R1) de insumo inicial o periódico.",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1325,7 +1323,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad\nNumero_Predial\nNumero_Predial_Nacional",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Predio_Nuevo\", entonces\nEl digito 18 de LC_Predio.Numero_Predial_Nacional y ILC_EstructuraNovedadNumeroPredial.Numero_Predial debe ser igual a \"A\" - \"Z\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1334,7 +1332,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio\nR1",
       "variables": "Tipo_Novedad\nNumero_Predial\nNumero_Predial_Nacional\nR1",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Predio_Nuevo\", entonces\nILC_EstructuraNovedadNumeroPredial.Numero_Predial <> Registro 1 (R1) de insumo inicial o periódico y ILC_Predio.Numero_Predial_Nacional <> Registro 1 (R1) de insumo inicial o periódico",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1343,7 +1341,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial",
       "variables": "Tipo_Novedad\nNumero_Predial",
       "technical_rule": "Si \nILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Predio_Nuevo\", entonces el digito 22 de ILC_EstructuraNovedadNumeroPredial.Numero_Predial <> \"5\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1352,7 +1350,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio\nR1",
       "variables": "Numero_Predial\nNumero_Predial_Nacional\nR1",
       "technical_rule": "Todos los predios de Registro 1 (R1) de insumo inicial o periódico deben tener asociado un registro en  ILC_EstructuraNovedadNumeroPredial.Numero_Predial o en ILC_Predio.Numero_Predial_Nacional",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1361,7 +1359,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial",
       "variables": "Numero_Predial\nTipo_Novedad",
       "technical_rule": "Un mismo ILC_EstructuraNovedadNumeroPredial.Numero_Predial no puede tener dos registros con ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad = \"Cambio_Numero_Predial_%\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1388,7 +1386,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nR1",
       "variables": "Numero_Predial\nTipo_Novedad\nR1",
       "technical_rule": "Todo R1.Numero_Predial que en su digito 22 contenga un 5 debe tener su correspondiente ILC_EstructuraNovedadNumeroPredial.Numero_Predial y registrar ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad = \"Cambio_Numero_Predial_Mejora_a%\"\no\nILC_EstructuraNovedadNumeroPredial.Tipo_Novedad = \"Cancelacion\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1397,7 +1395,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad\nNumero_Predial\nNumero_Predial_Nacional",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Desenglobe_Venta_Parcial\" o \"Desenglobe_Division_Material\", entonces ILC_Predio.Numero_Predial_Nacional  y  ILC_EstructuraNovedadNumeroPredial.Numero_Predial  en la posición 22 debe ser <> '2'",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1406,7 +1404,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad\nNumero_Predial\nNumero_Predial_Nacional",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Desenglobe_Venta_Parcial\", entonces se deben tener almenos 2 registros de esta novedad asociados al mismo ILC_EstructuraNovedadNumeroPredial.Numero_Predial  de los cuales:\n(1) Uno de los registros debe ser ILC_Predio.Numero_Predial_Nacional  = ILC_EstructuraNovedadNumeroPredial.Numero_Predial  \n(2) En los demas registros El digito 18 de ILC_Predio.Numero_Predial_Nacional debe ser \"9\" o \"A\" - \"Z\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1424,7 +1422,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad\nMatricula_Inmobiliaria",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Englobe_Nuevo_FMI\" o \"Englobe_Mantiene_FMI\", entonces  ILC_Predio.Matricula_Inmobiliaria debe estar diligenciado y <> '0'",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1433,7 +1431,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nR1",
       "variables": "Tipo_Novedad\nNumero_Predial",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Englobe_Nuevo_FMI\" o \"Englobe_Mantiene_FMI\", entonces \nILC_EstructuraNovedadNumeroPredial.Numero_Predial debe estar contenido en Registro 1 (R1) de insumo inicial o periódico.",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1442,7 +1440,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio",
       "variables": "Tipo_Novedad\nNumero_Predial\nNumero_Predial_Nacional",
       "technical_rule": "Si ILC_EstructuraNovedadNumeroPredial.Tipo_Novedad corresponde a \"Englobe_Nuevo_FMI\" o \"Englobe_Mantiene_FMI\", entonces ILC_Predio.Numero_Predial_Nacional  y  ILC_EstructuraNovedadNumeroPredial.Numero_Predial   en su posición 22 de ber <> '2'",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1451,7 +1449,7 @@
       "classes": "ILC_EstructuraNovedadNumeroPredial\nILC_Predio\nR1",
       "variables": "Numero_Predial\nNumero_Predial_Nacional\nTipo_Novedad\nR1",
       "technical_rule": "Si el tramite es \"Englobe_Mantiene_FMI\", entonces debe tener al menos 3 registros y cumplir lo siguiente:\n(1)\n ILC_EstructuraNovedadNumeroPredial.Numero_predial =ILC_Predio.Numero_Predial_Nacional y ILC_Predio.Numero_Predial_Nacional = R1.Numero_Predial. \n(2)\nTodos los predios deben relacionar ILC_EstructuraNovedadNumeroPredial.tipo_novedad = \"Englobe_Mantiene_ FMI\" y relacionar un mismo ILC_Predio.Numero_Predial_Nacional y solo uno de ellos debe registrar ILC_EstructuraNovedadNumeroPredial.Numero_Predial = ILC_Predio.Numero_Predial_Nacional\n(3) si  ILC_EstructuraNovedadNumeroPredial.Numero_Predial  <> ILC_Predio.Numero_Predial_Nacional entonces se debe tener un segundo registro donde ILC_EstructuraNovedadNumeroPredial.tipo_novedad = \"Cancelacion_por _Englobe\"",
-      "component": "Novedades", 
+      "component": "Novedades",
       "sheet_slug": "novedades"
     },
     {
@@ -1618,7 +1616,7 @@
     },
     {
       "id": "11.13",
-      "description": "El predio no tiene datos de quien atendió la visita",
+      "description": "Solo cuando el resultado de la visita es Exitoso, el predio debe tener diligenciados los datos de quien atendió la visita.",
       "classes": null,
       "variables": null,
       "technical_rule": null,
@@ -1627,7 +1625,7 @@
     },
     {
       "id": "11.14",
-      "description": "Predios sin información de autorización de notificacione",
+      "description": "Solo cuando el resultado de la visita es Exitoso, el predio debe tener diligenciada la autorización de notificaciones.",
       "classes": null,
       "variables": null,
       "technical_rule": null,

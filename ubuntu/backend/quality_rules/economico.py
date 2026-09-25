@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unicodedata
+from decimal import Decimal, ROUND_HALF_UP
 
 from .base import DatasetReader, RuleIssue
 
@@ -8,7 +9,7 @@ COMPONENT_SLUG = "economico"
 
 DEFAULT_RULE_IDS = frozenset({
     "4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8", "4.9",
-    "4.10", "4.11", "4.12", "4.13", "4.14", "4.15", "4.16", "4.17", "4.18",
+    "4.10", "4.11", "4.12", "4.13", "4.14", "4.16", "4.17", "4.18",
 })
 
 
@@ -387,10 +388,22 @@ class EconomicoHelper:
         message: str,
         details: dict[str, object] | None = None,
     ) -> RuleIssue:
-        fixed_details = details or {}
+        fixed_details = dict(details or {})
 
         if "class" not in fixed_details and "tabla" in fixed_details:
             fixed_details["class"] = fixed_details["tabla"]
+
+        # Conserva la relación al predio para que el reporte Web/Excel pueda
+        # resolver el NPN aun cuando el objeto económico anidado no tenga TID.
+        predio_ref = self.get_field_value(
+            row,
+            (
+                "predio", "arb_predio", "ilc_predio",
+                "arb_predio_avaluo", "cca_predio_avaluo", "ilc_predio_avaluo",
+            ),
+        )
+        if predio_ref and "predio" not in fixed_details:
+            fixed_details["predio"] = predio_ref
 
         return RuleIssue(
             rule_id=rule_id,
@@ -1596,37 +1609,65 @@ def _iter_estructura_avaluo(helper: EconomicoHelper):
     yield from helper._iter_table_rows(("ILC_EstructuraAvaluo", "ilc_estructuraavaluo"))
 
 
+def _iter_avaluo_4_11(helper: EconomicoHelper):
+    yield from helper._iter_table_rows((
+        "ILC_EstructuraAvaluo", "ilc_estructuraavaluo",
+        "ARB_AvaluoValor", "arb_avaluovalor",
+    ))
+
+
 def _avaluo_values(helper: EconomicoHelper, row: dict[str, object]) -> dict[str, float | None]:
     fields = {
-        "valor_comercial": ("valor_comercial", "Valor_Comercial"),
-        "valor_comercial_terreno": ("valor_comercial_terreno", "Valor_Comercial_Terreno"),
-        "valor_comercial_unidades": ("valor_comercial_total_unidadesconstruccion", "Valor_Comercial_Total_UnidadesConstruccion", "valor_comercial_total_unidades_construccion"),
-        "valor_catastral": ("valor_catastral", "Valor_Catastral"),
-        "valor_catastral_terreno": ("valor_catastral_terreno", "Valor_Catastral_Terreno"),
-        "valor_catastral_unidades": ("valor_catastral_total_unidadesconstruccion", "Valor_Catastral_Total_UnidadesConstruccion", "valor_catastral_total_unidades_construccion"),
+        "valor_comercial": ("valor_comercial", "Valor_Comercial", "avaluo_comercial", "Avaluo_Comercial"),
+        "valor_comercial_terreno": ("valor_comercial_terreno", "Valor_Comercial_Terreno", "avaluo_comercial_terreno", "Avaluo_Comercial_Terreno"),
+        "valor_comercial_unidades": ("valor_comercial_total_unidadesconstruccion", "Valor_Comercial_Total_UnidadesConstruccion", "valor_comercial_total_unidades_construccion", "avaluo_comercial_total_unidades_construccion", "Avaluo_Comercial_Total_Unidades_Construccion"),
+        "valor_catastral": ("valor_catastral", "Valor_Catastral", "avaluo_catastral", "Avaluo_Catastral"),
+        "valor_catastral_terreno": ("valor_catastral_terreno", "Valor_Catastral_Terreno", "avaluo_catastral_terreno", "Avaluo_Catastral_Terreno"),
+        "valor_catastral_unidades": ("valor_catastral_total_unidadesconstruccion", "Valor_Catastral_Total_UnidadesConstruccion", "valor_catastral_total_unidades_construccion", "avaluo_catastral_total_unidades_construccion", "Avaluo_Catastral_Total_Unidades_Construccion"),
     }
     return {key: _to_float(helper.get_field_value(row, aliases)) for key, aliases in fields.items()}
 
 
-def _rule_4_16(dataset: DatasetReader) -> list[RuleIssue]:
+def _redondear_al_mil(valor: Decimal | float | int) -> float:
+    return float(Decimal(str(valor)).quantize(Decimal("1e3"), rounding=ROUND_HALF_UP))
+
+
+def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset); issues: list[RuleIssue] = []
     for table_name, row in _iter_estructura_avaluo(helper):
         v = _avaluo_values(helper, row); total=v["valor_comercial"]; terreno=v["valor_comercial_terreno"]; unidades=v["valor_comercial_unidades"]
         if total is None or terreno is None or unidades is None or total <= 0 or abs(total - (terreno + unidades)) > 0.01:
-            issues.append(helper.make_issue(row, rule_id="4.16", message="El avalúo comercial debe ser mayor que cero y corresponder a terreno + total de unidades de construcción.", details={"tabla":table_name, **v}))
+            issues.append(helper.make_issue(row, rule_id="4.10", message="El avalúo comercial debe ser mayor que cero y corresponder a terreno + total de unidades de construcción.", details={"tabla":table_name, **v}))
     return issues
 
 
-def _rule_4_17(dataset: DatasetReader) -> list[RuleIssue]:
-    helper = EconomicoHelper(dataset); issues: list[RuleIssue] = []
-    for table_name, row in _iter_estructura_avaluo(helper):
-        v = _avaluo_values(helper, row); total=v["valor_catastral"]; terreno=v["valor_catastral_terreno"]; unidades=v["valor_catastral_unidades"]
-        if total is None or terreno is None or unidades is None or total <= 0 or abs(total - (terreno + unidades)) > 0.01:
-            issues.append(helper.make_issue(row, rule_id="4.17", message="El avalúo catastral debe ser mayor que cero y corresponder a terreno + total de unidades de construcción.", details={"tabla":table_name, **v}))
+#def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
+    helper = EconomicoHelper(dataset)
+    issues: list[RuleIssue] = []
+    for table_name, row in _iter_avaluo_4_11(helper):
+        v = _avaluo_values(helper, row)
+        total = v["valor_catastral"]
+        terreno = v["valor_catastral_terreno"]
+        unidades = v["valor_catastral_unidades"]
+        if total is None or terreno is None or unidades is None or total <= 0:
+            issues.append(helper.make_issue(row, rule_id="4.11", message="El avalúo catastral debe ser mayor que cero y estar diligenciado junto con terreno y unidades de construcción.", details={"tabla": table_name, **v}))
+            continue
+        try:
+            esperado = _redondear_al_mil(Decimal(str(terreno)) + Decimal(str(unidades)))
+            total_entero = round(total)
+            es_entero = abs(total - total_entero) <= 0.001
+            es_cerrado_al_mil = es_entero and int(total_entero) % 1000 == 0
+            coincide_suma_redondeada = abs(total - esperado) <= 0.01
+        except Exception:
+            esperado = None
+            es_cerrado_al_mil = False
+            coincide_suma_redondeada = False
+        if not (es_cerrado_al_mil and coincide_suma_redondeada):
+            issues.append(helper.make_issue(row, rule_id="4.11", message="El avalúo catastral debe ser mayor que cero, cerrado al mil más cercano sin decimales, y corresponder a la suma de terreno + unidades de construcción redondeada al mil.", details={"tabla": table_name, "esperado_al_mil": esperado, **v}))
     return issues
 
 
-def _rule_4_18(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset); issues: list[RuleIssue] = []
     for table_name, row in _iter_estructura_avaluo(helper):
         v = _avaluo_values(helper, row)
@@ -1640,13 +1681,13 @@ def _rule_4_18(dataset: DatasetReader) -> list[RuleIssue]:
                 and v["valor_comercial_unidades"] > v["valor_catastral_unidades"]
             )
         if bad:
-            issues.append(helper.make_issue(row, rule_id="4.18", message="Los avalúos comerciales deben ser mayores a los catastrales, el catastral debe superar el 60% del comercial y todos los valores deben ser mayores que cero.", details={"tabla":table_name, **v}))
+            issues.append(helper.make_issue(row, rule_id="4.12", message="Los avalúos comerciales deben ser mayores a los catastrales, el catastral debe superar el 60% del comercial y todos los valores deben ser mayores que cero.", details={"tabla":table_name, **v}))
     return issues
 
 
-def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_13(dataset: DatasetReader) -> list[RuleIssue]:
     """
-    Regla 4.10:
+    Regla 4.13:
     Si el tipo de unidad de construcción es Conservación y protección ambiental,
     la tipología asociada también debe ser de Conservación.
     """
@@ -1668,7 +1709,7 @@ def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.10",
+                    rule_id="4.13",
                     message=(
                         "Cuando el tipo de unidad de construccion es Conservacion y proteccion ambiental, "
                         "solamente se pueden asociar tipologias de conservacion."
@@ -1686,7 +1727,7 @@ def _rule_4_10(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -1719,7 +1760,7 @@ def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.11",
+                    rule_id="4.14",
                     message=(
                         "Cuando el Tipo de Calificacion es Tipologia, "
                         "el campo CT_Tipo_Tipologia debe estar diligenciado."
@@ -1736,7 +1777,7 @@ def _rule_4_11(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_15(dataset: DatasetReader) -> list[RuleIssue]:
     helper = EconomicoHelper(dataset)
     issues: list[RuleIssue] = []
 
@@ -1769,7 +1810,7 @@ def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.12",
+                    rule_id="4.15",
                     message=(
                         "Cuando el Tipo de Calificacion es Tipologia, "
                         "el campo CT_Conservacion_Tipologia debe estar diligenciado."
@@ -1786,9 +1827,9 @@ def _rule_4_12(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-def _rule_4_13(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_16(dataset: DatasetReader) -> list[RuleIssue]:
     """
-    Regla 4.13:
+    Regla 4.16:
     Si Tipo_Calificacion es No_Convencional,
     entonces Tipo_Unidad_Construccion debe ser Anexo.
 
@@ -1814,7 +1855,7 @@ def _rule_4_13(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.13",
+                    rule_id="4.16",
                     message=(
                         "Cuando el Tipo_Calificacion es No_Convencional, "
                         "el Tipo_Unidad_Construccion debe ser Anexo."
@@ -1833,10 +1874,9 @@ def _rule_4_13(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-
-def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
+def _rule_4_17(dataset: DatasetReader) -> list[RuleIssue]:
     """
-    Regla 4.14:
+    Regla 4.17:
     Si Tipo_Calificacion es No_Convencional,
     el campo CNC_Tipo_Anexo debe estar diligenciado.
     """
@@ -1856,7 +1896,7 @@ def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.14",
+                    rule_id="4.17",
                     message=(
                         "Cuando el Tipo_Calificacion es No_Convencional, "
                         "el campo CNC_Tipo_Anexo debe estar diligenciado."
@@ -1873,10 +1913,9 @@ def _rule_4_14(dataset: DatasetReader) -> list[RuleIssue]:
 
     return issues
 
-
-def _rule_4_15(dataset: DatasetReader) -> list[RuleIssue]:
+#def _rule_4_18(dataset: DatasetReader) -> list[RuleIssue]:
     """
-    Regla 4.15:
+    Regla 4.18:
     Si Tipo_Calificacion es No_Convencional,
     el campo CNC_Conservacion_Anexo debe estar diligenciado.
     """
@@ -1896,7 +1935,7 @@ def _rule_4_15(dataset: DatasetReader) -> list[RuleIssue]:
             issues.append(
                 helper.make_issue(
                     row,
-                    rule_id="4.15",
+                    rule_id="4.18",
                     message=(
                         "Cuando el Tipo_Calificacion es No_Convencional, "
                         "el campo CNC_Conservacion_Anexo debe estar diligenciado."
@@ -1925,12 +1964,12 @@ RULE_FUNCTIONS = {
     "4.8": _rule_4_8,
     "4.9": _rule_4_9,
     "4.10": _rule_4_10,
-    "4.11": _rule_4_11,
+    #"4.11": _rule_4_11,
     "4.12": _rule_4_12,
     "4.13": _rule_4_13,
     "4.14": _rule_4_14,
     "4.15": _rule_4_15,
     "4.16": _rule_4_16,
     "4.17": _rule_4_17,
-    "4.18": _rule_4_18,
+    #"4.18": _rule_4_18,
 }

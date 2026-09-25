@@ -1246,54 +1246,90 @@ def _rule_3_19(dataset: DatasetReader) -> list[RuleIssue]:
             ))
     return issues
 
-def _rule_3_20(dataset: DatasetReader) -> list[RuleIssue]:
-    """Compara el área declarada con la suma geométrica de las unidades (tolerancia 1%).
+_AREA_UNIDAD_CONSTRUCCION_320_FIELDS = (
+    "Area_Unidad_Construccion", "area_unidad_construccion",
+)
 
-    Para PH/Condominio Unidad_Predial se compara Área_Privada_Construida, porque
-    3.18 exige que Área_Construida sea cero. Para las demás condiciones se usa
-    Área_Construida.
+def _area_unidad_construccion_320(row: dict[str, object], helper: FisicoHelper) -> float | None:
+    """Lee el área almacenada del polígono de ARB_UnidadConstruccion; no recalcula geometría."""
+    raw = helper.get_field_value(row, _AREA_UNIDAD_CONSTRUCCION_320_FIELDS)
+    value = _to_float(raw)
+    return None if value is None else float(value)
+
+def _rule_3_20(dataset: DatasetReader) -> list[RuleIssue]:
+    """Compara el área declarada con Area_Unidad_Construccion (tolerancia 1%).
+
+    La regla no aplica a PH (matriz o unidad), Parque Cementerio (matriz o unidad)
+    ni Informal. En Condominio.Unidad_Predial se compara Area_Privada_Construida;
+    en las demás condiciones aplicables se compara Area_Construida.
     """
     helper = FisicoHelper(dataset)
     issues: list[RuleIssue] = []
-    condiciones_privada = {"PH.Unidad_Predial", "Condominio.Unidad_Predial"}
+    condiciones_exentas = {
+        "PH.Matriz", "PH.Unidad_Predial",
+        "Parque_Cementerio.Matriz", "Parque_Cementerio.Unidad_Predial",
+        "Informal",
+    }
+    condiciones_privada = {"Condominio.Unidad_Predial"}
     groups: dict[tuple[str, str], dict[str, object]] = {}
+
     for _, predio, _, unidad, caracteristica_table, caracteristica in _iter_caracteristicas_con_predio(dataset):
+        condicion_raw = helper.get_field_value(predio, ("condicion_predio", "Condicion_Predio"))
+        condicion = _condicion_predio_ilicode(condicion_raw)
+        if condicion in condiciones_exentas:
+            continue
+
+        area_unidad = _area_unidad_construccion_320(unidad, helper)
+        if area_unidad is None:
+            continue
+
         predio_key = helper.identify(predio) or str(id(predio))
         car_key = helper.identify(caracteristica) or str(id(caracteristica))
         key = (predio_key, car_key)
-        item = groups.setdefault(key, {"predio": predio, "caracteristica": caracteristica,
-                                       "tabla": caracteristica_table, "area": 0.0, "unidades": set()})
+        item = groups.setdefault(key, {
+            "predio": predio, "caracteristica": caracteristica, "tabla": caracteristica_table,
+            "area_unidad": 0.0, "unidades": set(),
+            "condicion_raw": condicion_raw, "condicion": condicion,
+        })
         unidades = item["unidades"]
         assert isinstance(unidades, set)
         uid = helper.identify(unidad) or str(id(unidad))
         if uid in unidades:
             continue
         unidades.add(uid)
-        item["area"] = float(item["area"]) + _area_unidad(unidad, helper)
+        item["area_unidad"] = float(item["area_unidad"]) + area_unidad
+
     for item in groups.values():
-        predio = item["predio"]; caracteristica = item["caracteristica"]
-        assert isinstance(predio, dict) and isinstance(caracteristica, dict)
-        condicion_raw = helper.get_field_value(predio, ("condicion_predio", "Condicion_Predio"))
-        condicion = _condicion_predio_ilicode(condicion_raw)
+        caracteristica = item["caracteristica"]
+        assert isinstance(caracteristica, dict)
+        condicion = str(item["condicion"] or "")
         usa_privada = condicion in condiciones_privada
         campo = "area_privada_construida" if usa_privada else "area_construida"
         declarada_raw = helper.get_field_value(caracteristica, (campo,))
         declarada = _to_float(declarada_raw)
         if declarada is None:
             continue
-        geom = float(item["area"]); decl = float(declarada)
-        porcentaje = (0.0 if geom == 0 else float("inf")) if decl == 0 else abs(decl - geom) / abs(decl) * 100.0
+
+        area_unidad = float(item["area_unidad"])
+        decl = float(declarada)
+        porcentaje = (0.0 if area_unidad == 0 else float("inf")) if decl == 0 else abs(decl - area_unidad) / abs(decl) * 100.0
         if porcentaje > 1.0:
             issues.append(helper.make_issue(
                 caracteristica, rule_id="3.20",
-                message=(f"Error en área {'privada construida' if usa_privada else 'construida'}: el valor diligenciado "
-                         f"({round(decl, 4)}) no coincide, dentro de la tolerancia del 1%, con el área calculada de las unidades ({round(geom, 4)})."),
-                details={"tabla": item["tabla"], "condicion_predio": condicion_raw,
-                         "condicion_predio_ilicode": condicion, "campo_comparado": campo,
-                         "area_declarada": round(decl, 6), "area_total_calculada": round(geom, 6),
-                         "diferencia": round(decl - geom, 2),
-                         "diferencia_porcentual": None if porcentaje == float("inf") else round(porcentaje, 4),
-                         "tolerancia_porcentual": 1.0},
+                message=(
+                    f"Error en área {'privada construida' if usa_privada else 'construida'}: el valor diligenciado "
+                    f"({round(decl, 4)}) no coincide, dentro de la tolerancia del 1%, con la suma de "
+                    f"Area_Unidad_Construccion ({round(area_unidad, 4)})."
+                ),
+                details={
+                    "tabla": item["tabla"], "condicion_predio": item["condicion_raw"],
+                    "condicion_predio_ilicode": condicion, "campo_comparado": campo,
+                    "campo_area_poligono": "Area_Unidad_Construccion",
+                    "area_declarada": round(decl, 6), "area_unidad_construccion": round(area_unidad, 6),
+                    "diferencia": round(decl - area_unidad, 2),
+                    "diferencia_porcentual": None if porcentaje == float("inf") else round(porcentaje, 4),
+                    "tolerancia_porcentual": 1.0,
+                },
             ))
     return issues
 

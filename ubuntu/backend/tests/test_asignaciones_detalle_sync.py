@@ -457,3 +457,37 @@ def test_procesar_retorno_xtf_rejects_filename_from_other_assignment(monkeypatch
     exc = exc_info.value
     assert getattr(exc, "status_code", None) == 409
     assert "fue generado para la asignacion 143" in str(getattr(exc, "detail", "")).lower()
+
+
+def test_extract_assignment_id_supports_title_prefix():
+    # Formato anterior sin titulo
+    assert asignaciones_detalle._extract_assignment_id_from_generated_xtf_filename("asignacion_sucre_143_juan_manuel_abcd1234.xtf") == 143
+    assert asignaciones_detalle._extract_assignment_id_from_generated_xtf_filename("asignacion_143_juan_manuel.xtf") == 143
+
+    # Nuevo formato con titulo de asignacion al principio
+    assert asignaciones_detalle._extract_assignment_id_from_generated_xtf_filename("Asignacion-001_asignacion_sucre_143_juan_manuel_abcd1234.xtf") == 143
+    assert asignaciones_detalle._extract_assignment_id_from_generated_xtf_filename("Lote_Norte_asignacion_143_juan_manuel.xtf") == 143
+
+
+def test_procesar_retorno_xtf_rejects_filename_with_title_prefix_from_other_assignment(monkeypatch):
+    _patch_common(monkeypatch)
+
+    tenant = _tenant()
+    archivo = UploadFile(
+        filename="Asignacion-001_asignacion_sucre_143_juan_manuel_abcd1234.xtf",
+        file=BytesIO(b"<xtf/>"),
+    )
+
+    with pytest.raises(Exception) as exc_info:
+        asignaciones_detalle._procesar_retorno_xtf(
+            tenant,
+            _FakeConnectionManager(),
+            146,
+            archivo,
+            {"username": "coord1", "role": "coordinador"},
+            publish_to_main=True,
+        )
+
+    exc = exc_info.value
+    assert getattr(exc, "status_code", None) == 409
+    assert "fue generado para la asignacion 143" in str(getattr(exc, "detail", "")).lower()

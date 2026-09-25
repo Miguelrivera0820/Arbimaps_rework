@@ -1,0 +1,312 @@
+<div class="sinic-container">
+  <!-- MITAD IZQUIERDA: VISOR GIS INTERACTIVO (50%) -->
+  <div class="sinic-gis-panel">
+    <div class="sinic-gis-header">
+      <div class="sinic-gis-title">
+        <i class="bi bi-geo-alt-fill text-neiva-green"></i>
+        <span>Visor GIS - Capas LADM-COL <span class="badge badge-sinic">g_sinic</span></span>
+      </div>
+      <div class="sinic-search-box">
+        <input type="text" id="sinicNpnSearch" class="form-control form-control-sm" placeholder="Buscar NPN (30 dígitos) o Homologado..." />
+        <button class="btn btn-sm btn-neiva-green px-3" onclick="buscarPredioSinic()">
+          <i class="bi bi-search"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAP CONTAINER -->
+    <div id="sinicGisMap" class="sinic-map"></div>
+
+    <!-- GIS TOOLBAR OVERLAY -->
+    <div class="sinic-gis-toolbar">
+      <button class="btn btn-sm" onclick="resetMapSinic()" title="Reiniciar Vista">
+        <i class="bi bi-aspect-ratio"></i> Reorientar
+      </button>
+      <button class="btn btn-sm" onclick="toggleLayerSinic('terrenos')" title="Conmutar Terrenos">
+        <i class="bi bi-layers"></i> Terrenos
+      </button>
+      <button class="btn btn-sm" onclick="toggleBasemapSinic()" title="Cambiar Satelital / Mapa">
+        <i class="bi bi-map"></i> Mapa / Satélite
+      </button>
+    </div>
+
+    <!-- DETALLE PREDIAL INSPECCIÓN INFERIOR -->
+    <div id="sinicPredioDetailCard" class="sinic-predio-card d-none">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+        <h6 class="mb-0 text-neiva-deep font-weight-bold" id="sinicCardTitle"><i class="bi bi-building"></i> Predio NPN</h6>
+        <button class="btn-close btn-sm" onclick="cerrarCardPredioSinic()"></button>
+      </div>
+      <div class="row g-2 text-xs">
+        <div class="col-6"><strong>Homologado:</strong> <span id="sinicCardCh" class="text-secondary">-</span></div>
+        <div class="col-6"><strong>FMI:</strong> <span id="sinicCardFmi" class="text-secondary">-</span></div>
+        <div class="col-6"><strong>Área Terreno:</strong> <span id="sinicCardArea" class="text-neiva-green font-weight-bold">-</span> m²</div>
+        <div class="col-6"><strong>Destinación:</strong> <span id="sinicCardDest" class="text-secondary">-</span></div>
+        <div class="col-12 mt-1"><strong>Propietario(s):</strong> <span id="sinicCardProp" class="text-dark font-weight-500">-</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MITAD DERECHA: PANEL DE CONTROL & EXPORTADOR (50%) -->
+  <div class="sinic-control-panel">
+    <!-- PANEL HEADER & METRICAS -->
+    <div class="sinic-header-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="mb-1 text-white font-weight-bold"><i class="bi bi-shield-check me-2"></i>Módulo Reportes SINIC</h4>
+          <p class="text-white-50 small mb-0">Gestión de Transferencia y Consistencia Lógica LADM-COL v1.0</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button id="btnSyncGSinic" class="btn btn-light text-neiva-deep btn-sm font-weight-bold shadow-sm px-3" onclick="sincronizarBaseSinic()" title="Sincronizar esquema g_sinic desde la base activa">
+            <i class="bi bi-arrow-repeat me-1"></i> Actualizar Base SINIC
+          </button>
+          <span id="sinicQualityBadge" class="badge bg-light text-success fs-6 px-3 py-2 shadow-sm">Estado: ÓPTIMO</span>
+        </div>
+      </div>
+
+      <!-- METRICAS STATS -->
+      <div class="row g-2 mt-3">
+        <div class="col-3">
+          <div class="sinic-stat-card">
+            <span class="sinic-stat-label">Predios Activos</span>
+            <h5 class="sinic-stat-val text-neiva-deep" id="statPredios">-</h5>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="sinic-stat-card">
+            <span class="sinic-stat-label">Terrenos GIS</span>
+            <h5 class="sinic-stat-val text-neiva-green" id="statTerrenos">-</h5>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="sinic-stat-card">
+            <span class="sinic-stat-label">Construcciones</span>
+            <h5 class="sinic-stat-val text-neiva-teal" id="statConstrucciones">-</h5>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="sinic-stat-card">
+            <span class="sinic-stat-label">Entregas D:\</span>
+            <h5 class="sinic-stat-val text-success" id="statEntregas">-</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAVEGACIÓN PESTAÑAS -->
+    <ul class="nav nav-tabs sinic-tabs mt-3" id="sinicTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-versiones-tab" data-bs-toggle="tab" data-bs-target="#tab-versiones" type="button">
+          <i class="bi bi-clock-history me-1"></i> Trazabilidad & Versiones
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-generador-tab" data-bs-toggle="tab" data-bs-target="#tab-generador" type="button">
+          <i class="bi bi-box-arrow-up-right me-1"></i> Generador XTF
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-preflight-tab" data-bs-toggle="tab" data-bs-target="#tab-preflight" type="button">
+          <i class="bi bi-clipboard-data me-1"></i> Validadores Pre-Flight
+        </button>
+      </li>
+          <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-validador-oficial-tab" data-bs-toggle="tab" data-bs-target="#tab-validador-oficial" type="button" onclick="ejecutarValidacionSinic()">
+          <i class="bi bi-shield-check me-1"></i> Validador LADM-COL v1.0
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content sinic-tab-body mt-2" id="sinicTabContent">
+      <!-- TAB 1: HISTORIAL DE VERSIONES -->
+      <div class="tab-pane fade show active" id="tab-versiones" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small">Carpeta oficial: <code>D:\20250711_CONSERVACION NEIVA\20260915_MODULO TRANSFERENCIA SINIC</code></span>
+          <button class="btn btn-sm btn-outline-success" onclick="cargarHistorialVersionesSinic()">
+            <i class="bi bi-arrow-clockwise"></i> Actualizar
+          </button>
+        </div>
+
+        <div class="table-responsive sinic-table-wrapper shadow-sm">
+          <table class="table table-hover table-sm text-xs align-middle">
+            <thead>
+              <tr>
+                <th>Código Versión</th>
+                <th>Fecha Corte</th>
+                <th>Tipo</th>
+                <th>Predios</th>
+                <th>Hash SHA-256</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="sinicVersionesTbody">
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">Cargando trazabilidad...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: GENERADOR & EXPORTADOR XTF -->
+      <div class="tab-pane fade" id="tab-generador" role="tabpanel">
+        <div class="card bg-white border p-3 shadow-sm rounded-12">
+          <h6 class="text-neiva-deep mb-3 font-weight-bold"><i class="bi bi-gear-wide-connected me-1"></i>Empaquetado de Entrega SINIC (.ZIP / .XTF)</h6>
+          
+          <div class="mb-3">
+            <label class="form-label text-xs font-weight-600 text-secondary">Tipo de Corte de Entrega</label>
+            <select id="sinicTipoEntrega" class="form-select form-select-sm bg-light text-dark">
+              <option value="TOTAL" selected>TOTAL - Base Completa Predial y Cartográfica</option>
+              <option value="DELTA">DELTA - Solo Novedades y Trámites Recientes</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-xs font-weight-600 text-secondary">Observaciones de la Entrega</label>
+            <textarea id="sinicObsEntrega" class="form-control form-control-sm bg-light text-dark" rows="2" placeholder="Notas sobre los trámites o lote transferido..."></textarea>
+          </div>
+
+          <!-- BARRA DE PROGRESO -->
+          <div id="sinicProgressContainer" class="mb-3 d-none">
+            <div class="d-flex justify-content-between text-xs mb-1">
+              <span id="sinicProgressStatus" class="text-neiva-green font-weight-600">Ejecutando ETL LADM-COL...</span>
+              <span id="sinicProgressPercent" class="text-neiva-deep font-weight-bold">0%</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+              <div id="sinicProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <button id="btnGenerarXtf" class="btn btn-neiva-action w-100 py-2" onclick="ejecutarGeneracionXtfSinic()">
+            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Generar y Guardar Entrega XTF en Unidad D:\
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 3: PRE-FLIGHT QUALITY CHECKER -->
+      <div class="tab-pane fade" id="tab-preflight" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="text-neiva-deep mb-0 font-weight-bold"><i class="bi bi-shield-exclamation me-1"></i>Reglas de Consistencia Lógica IGAC/SINIC</h6>
+          <button class="btn btn-sm btn-outline-success" onclick="ejecutarPreflightSinic()">
+            <i class="bi bi-play-fill"></i> Correr Diagnóstico Ahora
+          </button>
+        </div>
+
+        <div id="sinicAlertasContainer" class="sinic-alertas-wrapper">
+          <div class="alert alert-light border text-xs mb-2 shadow-sm">
+            <i class="bi bi-info-circle me-1 text-neiva-green"></i> Seleccione "Correr Diagnóstico Ahora" para evaluar las reglas CLBD, CLP, CLI y CLUC sobre la base de Neiva.
+          </div>
+        </div>
+      </div>
+          <!-- TAB 4: VALIDADOR LADM-COL SINIC V1.0 OFICIAL -->
+      <div class="tab-pane fade" id="tab-validador-oficial" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h6 class="mb-0 text-neiva-deep font-weight-bold"><i class="bi bi-patch-check me-1"></i> Evaluador de Reglas Oficiales (Reglas de Calidad LADM-COL SINIC v1.0)</h6>
+            <small class="text-muted">Consistencia Lógica BD, Estructura y Topología</small>
+          </div>
+          <button class="btn btn-sm btn-neiva-green" onclick="ejecutarValidacionSinic()">
+            <i class="bi bi-arrow-repeat me-1"></i> Re-evaluar Reglas
+          </button>
+        </div>
+
+        <!-- RESUMEN PUNTAJE -->
+        <div class="row g-2 mb-3">
+          <div class="col-3">
+            <div class="p-2 border rounded text-center bg-light shadow-sm">
+              <span class="text-xs text-muted d-block">Puntaje Global Calidad</span>
+              <span id="valPctPuntaje" class="fs-4 font-weight-bold text-success">--%</span>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 border rounded text-center bg-light shadow-sm">
+              <span class="text-xs text-muted d-block">Puntos Oficiales Obtenidos</span>
+              <span id="valPuntosStats" class="fs-5 font-weight-bold text-neiva-deep">0.0 / 0.0</span>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 border rounded text-center bg-light shadow-sm">
+              <span class="text-xs text-muted d-block">Reglas Aprobadas / Evaluadas</span>
+              <span id="valStatsReglas" class="fs-5 font-weight-bold text-dark">0 / 0</span>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 border rounded text-center bg-light shadow-sm">
+              <span class="text-xs text-muted d-block">Estado Dictamen</span>
+              <span id="valEstadoDictamen" class="badge bg-secondary mt-1">EN ESPERA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLA DE REGLAS OFICIALES -->
+        <div class="table-responsive sinic-table-wrapper shadow-sm">
+          <table class="table table-hover table-sm text-xs align-middle mb-0">
+            <thead>
+              <tr class="table-light">
+                <th style="width: 50px;">ID</th>
+                <th style="width: 70px;">Nivel</th>
+                <th style="width: 130px;">Abreviatura</th>
+                <th style="width: 180px;">Tipo / Componente</th>
+                <th>Descripción Oficial</th>
+                <th style="width: 110px;">Resultado</th>
+                <th style="width: 200px;">Detalles</th>
+              </tr>
+            </thead>
+            <tbody id="valReglasTbody">
+              <tr>
+                <td colspan="7" class="text-center text-muted py-4">Haga clic en 'Re-evaluar Reglas' para iniciar el diagnóstico...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE PROGRESO DE ACTUALIZACIÓN BASE SINIC -->
+<div class="modal fade" id="sinicSyncProgressModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-12">
+      <div class="modal-header bg-neiva-gradient text-white">
+        <h5 class="modal-title font-weight-bold"><i class="bi bi-arrow-repeat me-2"></i>Actualizando Base SINIC (g_sinic)</h5>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-secondary small mb-3">Sincronizando 100% de la información predial y cartográfica desde <code>a_base_principal</code> hacia el esquema <code>g_sinic</code> (LADM-COL v1.0)...</p>
+        
+        <!-- BARRA DE PROGRESO -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between text-xs font-weight-bold mb-1">
+            <span id="syncProgressLabel" class="text-neiva-green">Iniciando transferencia ETL...</span>
+            <span id="syncProgressPercent" class="text-neiva-deep">0%</span>
+          </div>
+          <div class="progress" style="height: 12px; background-color: #e9ecef;">
+            <div id="syncProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- LISTA DE PASOS DE SINCRONIZACIÓN -->
+        <div class="sinic-step-list text-xs space-y-2">
+          <div id="step-0" class="d-flex align-items-center text-muted py-1">
+            <i class="bi bi-circle me-2" id="icon-step-0"></i>
+            <span>Limpieza de esquemas previos y baskets LADM-COL</span>
+          </div>
+          <div id="step-1" class="d-flex align-items-center text-muted py-1">
+            <i class="bi bi-circle me-2" id="icon-step-1"></i>
+            <span>Transferencia de <strong>102,348 Terrenos GIS</strong> (geometría 3D)</span>
+          </div>
+          <div id="step-2" class="d-flex align-items-center text-muted py-1">
+            <i class="bi bi-circle me-2" id="icon-step-2"></i>
+            <span>Transferencia del <strong>100% de Predios (166,375)</strong> sin omisiones</span>
+          </div>
+          <div id="step-3" class="d-flex align-items-center text-muted py-1">
+            <i class="bi bi-circle me-2" id="icon-step-3"></i>
+            <span>Transferencia de <strong>19,548 Construcciones</strong> y características</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light border-top-0">
+        <button id="btnCerrarModalSync" type="button" class="btn btn-sm btn-neiva-action px-4 d-none" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>

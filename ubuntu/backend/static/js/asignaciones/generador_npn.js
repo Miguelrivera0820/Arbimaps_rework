@@ -32,8 +32,10 @@
     btnCerrarModalGenBottom = document.getElementById("btnCerrarModalGenBottom");
 
     btnTabGen = document.getElementById("btnTabGenerar");
+    btnTabAsignar = document.getElementById("btnTabAsignarExistentes");
     btnTabRes = document.getElementById("btnTabReservas");
     paneGen = document.getElementById("paneGenerarNpn");
+    paneAsignar = document.getElementById("paneAsignarExistentes");
     paneRes = document.getElementById("paneReservasActivas");
     badgeTotalRes = document.getElementById("badgeTotalReservasCount");
 
@@ -213,6 +215,100 @@
     });
   }
 
+  function renderTablaReservas(items) {
+    if (!tbodyReservas) return;
+    if (!items || items.length === 0) {
+      tbodyReservas.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-info-circle me-1"></i> No se encontraron reservas con los filtros aplicados.</td></tr>`;
+      return;
+    }
+
+    let html = "";
+    items.forEach(r => {
+      const fechaFormateada = r.fecha_asignacion ? new Date(r.fecha_asignacion).toLocaleString() : "S/F";
+      html += `
+        <tr>
+          <td class="text-center">
+            <input type="checkbox" class="form-check-input chk-reserva-item" value="${r.codigo_homologado}">
+          </td>
+          <td>
+            <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace px-2 py-1">${r.codigo_homologado}</span>
+          </td>
+          <td>
+            <span class="font-monospace fw-semibold text-navy">${r.numero_predial || '<span class="text-muted">Sin NPN</span>'}</span>
+          </td>
+          <td>
+            <small class="d-block fw-semibold text-dark">${r.usuario}</small>
+            <small class="text-muted d-block" style="font-size: 0.72rem;">${r.observaciones || 'Sin notas'}</small>
+          </td>
+          <td>
+            <small class="text-muted">${fechaFormateada}</small>
+          </td>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-xs btn-outline-success py-0 px-2 btn-fijar-individual" data-ch="${r.codigo_homologado}" title="Fijar / Consolidar definitivamente en base">
+                <i class="bi bi-check2-circle"></i> Fijar
+              </button>
+              <button class="btn btn-xs btn-outline-danger py-0 px-2 btn-liberar-individual" data-ch="${r.codigo_homologado}" title="Liberar código hacia disponibles">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbodyReservas.innerHTML = html;
+
+    tbodyReservas.querySelectorAll(".btn-liberar-individual").forEach(b => {
+      b.addEventListener("click", () => {
+        const ch = b.getAttribute("data-ch");
+        confirmarYLiberarCodigos([ch]);
+      });
+    });
+
+    tbodyReservas.querySelectorAll(".btn-fijar-individual").forEach(b => {
+      b.addEventListener("click", () => {
+        const ch = b.getAttribute("data-ch");
+        confirmarYConsolidarCodigos([ch]);
+      });
+    });
+  }
+
+  function aplicarFiltrosReservas() {
+    const inpQuery = document.getElementById("inpFiltroReservas");
+    const selAntiguedad = document.getElementById("selAntiguedadReservas");
+
+    const query = (inpQuery ? inpQuery.value : "").toLowerCase().trim();
+    const antiguedad = selAntiguedad ? selAntiguedad.value : "TODOS";
+    const ahora = new Date();
+
+    const filtrados = listaReservasActivas.filter(r => {
+      const matchTexto = !query ||
+        (r.codigo_homologado || "").toLowerCase().includes(query) ||
+        (r.numero_predial || "").toLowerCase().includes(query) ||
+        (r.usuario || "").toLowerCase().includes(query) ||
+        (r.observaciones || "").toLowerCase().includes(query);
+
+      if (!matchTexto) return false;
+
+      if (antiguedad === "TODOS") return true;
+      if (!r.fecha_asignacion) return false;
+
+      const fechaRes = new Date(r.fecha_asignacion);
+      const difDias = (ahora - fechaRes) / (1000 * 60 * 60 * 24);
+
+      if (antiguedad === "HOY") {
+        return fechaRes.toDateString() === ahora.toDateString();
+      } else if (antiguedad === "15") {
+        return difDias >= 15;
+      } else if (antiguedad === "30") {
+        return difDias >= 30;
+      }
+      return true;
+    });
+
+    renderTablaReservas(filtrados);
+  }
+
   async function cargarReservasActivas() {
     if (!tbodyReservas) return;
     tbodyReservas.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-1"></span> Cargando reservas activas...</td></tr>`;
@@ -224,63 +320,48 @@
       listaReservasActivas = data.items || [];
       if (badgeTotalRes) badgeTotalRes.textContent = listaReservasActivas.length;
 
-      if (listaReservasActivas.length === 0) {
-        tbodyReservas.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-info-circle me-1"></i> No hay reservas activas en este momento.</td></tr>`;
-        return;
-      }
-
-      let html = "";
-      listaReservasActivas.forEach(r => {
-        const fechaFormateada = r.fecha_asignacion ? new Date(r.fecha_asignacion).toLocaleString() : "S/F";
-        html += `
-          <tr>
-            <td class="text-center">
-              <input type="checkbox" class="form-check-input chk-reserva-item" value="${r.codigo_homologado}">
-            </td>
-            <td>
-              <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace px-2 py-1">${r.codigo_homologado}</span>
-            </td>
-            <td>
-              <span class="font-monospace fw-semibold text-navy">${r.numero_predial || '<span class="text-muted">Sin NPN</span>'}</span>
-            </td>
-            <td>
-              <small class="d-block fw-semibold text-dark">${r.usuario}</small>
-              <small class="text-muted d-block" style="font-size: 0.72rem;">${r.observaciones || 'Sin notas'}</small>
-            </td>
-            <td>
-              <small class="text-muted">${fechaFormateada}</small>
-            </td>
-            <td class="text-center">
-              <div class="btn-group btn-group-sm">
-                <button class="btn btn-xs btn-outline-success py-0 px-2 btn-fijar-individual" data-ch="${r.codigo_homologado}" title="Fijar / Consolidar definitivamente en base">
-                  <i class="bi bi-check2-circle"></i> Fijar
-                </button>
-                <button class="btn btn-xs btn-outline-danger py-0 px-2 btn-liberar-individual" data-ch="${r.codigo_homologado}" title="Liberar código hacia disponibles">
-                  <i class="bi bi-trash3"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-      tbodyReservas.innerHTML = html;
-
-      tbodyReservas.querySelectorAll(".btn-liberar-individual").forEach(b => {
-        b.addEventListener("click", () => {
-          const ch = b.getAttribute("data-ch");
-          confirmarYLiberarCodigos([ch]);
-        });
-      });
-
-      tbodyReservas.querySelectorAll(".btn-fijar-individual").forEach(b => {
-        b.addEventListener("click", () => {
-          const ch = b.getAttribute("data-ch");
-          confirmarYConsolidarCodigos([ch]);
-        });
-      });
+      aplicarFiltrosReservas();
     } catch (err) {
       console.error(err);
       tbodyReservas.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-3">Error al cargar reservas activas.</td></tr>`;
+    }
+  }
+
+  async function ejecutarLiberacionInactivas(dias = 30) {
+    const result = await Swal.fire({
+      title: `¿Liberar reservas inactivas (> ${dias} días)?`,
+      text: `Todas las reservas en estado RESERVADO con más de ${dias} días de antigüedad volverán al stock DISPONIBLE de la bolsa.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Sí, liberar inactivas",
+      cancelButtonText: "Cancelar"
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const resp = await fetch(`${rp}/api/v1/predios-generador/liberar-reservas-inactivas`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dias_antiguedad: dias })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Error al liberar reservas inactivas.");
+
+        Swal.fire({
+          icon: "success",
+          title: "Liberación Completada",
+          text: `Se liberaron ${data.codigos_liberados} reservas inactivas (> ${dias} días) hacia la bolsa disponible.`,
+          timer: 3000,
+          showConfirmButton: false
+        });
+
+        cargarReservasActivas();
+        consultarStockDisponibles();
+      } catch (err) {
+        Swal.fire({ icon: "error", title: "Error", text: err.message });
+      }
     }
   }
 
@@ -363,6 +444,7 @@
   }
 
   function initListeners() {
+    if (moduloInicializado) return;
     bindElements();
     if (!modalGen) return;
 
@@ -370,12 +452,25 @@
       document.body.appendChild(modalGen);
     }
 
-    modalGen.addEventListener("click", (e) => {
-      if (e.target === modalGen) {
+    let mouseDownOnOverlay = false;
+    modalGen.addEventListener("mousedown", (e) => {
+      mouseDownOnOverlay = (e.target === modalGen);
+    });
+
+    modalGen.addEventListener("mouseup", (e) => {
+      if (e.target === modalGen && mouseDownOnOverlay) {
         modalGen.classList.add("d-none");
         modalGen.style.display = "none";
       }
+      mouseDownOnOverlay = false;
     });
+
+    const dialogContainer = modalGen.querySelector(".npn-modal-dialog");
+    if (dialogContainer) {
+      dialogContainer.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+    }
 
     if (btnCloseGen) {
       btnCloseGen.addEventListener("click", () => {
@@ -391,14 +486,33 @@
     }
 
     if (btnTabGen && btnTabRes) {
+      const resetTabClasses = () => {
+        [btnTabGen, btnTabAsignar, btnTabRes].forEach(b => {
+          if (b) b.classList.remove("npn-main-tab-active");
+        });
+        [paneGen, paneAsignar, paneRes].forEach(p => {
+          if (p) p.classList.add("d-none");
+        });
+      };
+
       btnTabGen.addEventListener("click", () => {
-        paneGen.classList.remove("d-none");
-        paneRes.classList.add("d-none");
+        resetTabClasses();
+        if (btnTabGen) btnTabGen.classList.add("npn-main-tab-active");
+        if (paneGen) paneGen.classList.remove("d-none");
       });
 
+      if (btnTabAsignar) {
+        btnTabAsignar.addEventListener("click", () => {
+          resetTabClasses();
+          btnTabAsignar.classList.add("npn-main-tab-active");
+          if (paneAsignar) paneAsignar.classList.remove("d-none");
+        });
+      }
+
       btnTabRes.addEventListener("click", () => {
-        paneRes.classList.remove("d-none");
-        paneGen.classList.add("d-none");
+        resetTabClasses();
+        if (btnTabRes) btnTabRes.classList.add("npn-main-tab-active");
+        if (paneRes) paneRes.classList.remove("d-none");
         cargarReservasActivas();
       });
     }
@@ -409,6 +523,18 @@
         inputMatriz.value = val;
         countDigitos.textContent = val.length;
         countDigitos.className = val.length === 30 ? "fw-bold text-success" : (val.length > 0 ? "fw-bold text-warning" : "fw-bold");
+
+        if (val.length === 30) {
+          const condDig = val.substring(21, 22);
+          if (["9", "8", "7", "5"].includes(condDig)) {
+            if (selectCondicion) selectCondicion.value = condDig;
+            const edifDig = val.substring(22, 24);
+            const pisoDig = val.substring(24, 26);
+            if (inputEdificio && edifDig !== "00") inputEdificio.value = edifDig;
+            if (inputPiso && pisoDig !== "00") inputPiso.value = pisoDig;
+            actualizarVisibilidadParametrosPh();
+          }
+        }
       });
     }
 
@@ -535,8 +661,11 @@
       });
     }
 
+    let generandoActual = false;
     if (btnEjecutarGen) {
       btnEjecutarGen.addEventListener("click", async () => {
+        if (generandoActual) return;
+        generandoActual = true;
         const matriz = inputMatriz ? inputMatriz.value.trim() : "";
         const cantidad = inputCantidad ? parseInt(inputCantidad.value, 10) : 1;
         const tipoMut = selectTipoMut ? selectTipoMut.value : "DESENGLOBE";
@@ -565,8 +694,8 @@
               cantidad: cantidad,
               tipo_mutacion: tipoMut,
               condicion_propiedad: selectCondicion ? selectCondicion.value : "0",
-              edificio: inputEdificio ? inputEdificio.value.trim() : "00",
-              piso: inputPiso ? inputPiso.value.trim() : "00",
+              edificio: inputEdificio ? inputEdificio.value.trim().padStart(2, "0") : "00",
+              piso: inputPiso ? inputPiso.value.trim().padStart(2, "0") : "00",
               consecutivo_tramite: tramite,
               observaciones: obs,
             }),
@@ -591,6 +720,7 @@
         } finally {
           btnEjecutarGen.disabled = false;
           btnEjecutarGen.innerHTML = `<i class="bi bi-lightning-charge-fill"></i> Generar`;
+          generandoActual = false;
         }
       });
     }
@@ -658,8 +788,429 @@
       btnRefrescarRes.addEventListener("click", () => cargarReservasActivas());
     }
 
+    const btnCopiarTodoRes = document.getElementById("btnCopiarTodoReservas");
+    if (btnCopiarTodoRes) {
+      btnCopiarTodoRes.addEventListener("click", () => {
+        if (!listaReservasActivas || listaReservasActivas.length === 0) {
+          Swal.fire({ icon: "info", title: "Sin reservas", text: "No hay reservas activas en la lista para copiar." });
+          return;
+        }
+
+        const seleccionados = [];
+        if (tbodyReservas) {
+          tbodyReservas.querySelectorAll(".chk-reserva-item:checked").forEach(chk => seleccionados.push(chk.value));
+        }
+
+        let itemsACopiar = listaReservasActivas;
+        if (seleccionados.length > 0) {
+          itemsACopiar = listaReservasActivas.filter(r => seleccionados.includes(r.codigo_homologado));
+        }
+
+        const lineas = ["NUMERO_PREDIAL\tCODIGO_HOMOLOGADO\tUSUARIO_TRAMITE\tFECHA_RESERVA"];
+        itemsACopiar.forEach(r => {
+          const npn = r.numero_predial || "";
+          const ch = r.codigo_homologado || "";
+          const userTramite = r.observaciones || r.usuario || "";
+          const fecha = r.fecha_asignacion ? new Date(r.fecha_asignacion).toLocaleString() : "";
+          lineas.push(`${npn}\t${ch}\t${userTramite}\t${fecha}`);
+        });
+
+        navigator.clipboard.writeText(lineas.join("\n")).then(() => {
+          Swal.fire({
+            icon: "success",
+            title: "Copiado al Portapapeles",
+            text: `Se copiaron ${itemsACopiar.length} registros en formato listo para Alfa.`,
+            timer: 2000,
+            showConfirmButton: false
+          });
+        });
+      });
+    }
+
+    const btnDescargarCsvRes = document.getElementById("btnDescargarCsvReservas");
+    if (btnDescargarCsvRes) {
+      btnDescargarCsvRes.addEventListener("click", () => {
+        if (!listaReservasActivas || listaReservasActivas.length === 0) {
+          Swal.fire({ icon: "info", title: "Sin reservas", text: "No hay reservas activas en la lista para exportar." });
+          return;
+        }
+
+        const seleccionados = [];
+        if (tbodyReservas) {
+          tbodyReservas.querySelectorAll(".chk-reserva-item:checked").forEach(chk => seleccionados.push(chk.value));
+        }
+
+        let itemsAExportar = listaReservasActivas;
+        if (seleccionados.length > 0) {
+          itemsAExportar = listaReservasActivas.filter(r => seleccionados.includes(r.codigo_homologado));
+        }
+
+        let csvContent = "data:text/csv;charset=utf-8,NUMERO_PREDIAL,CODIGO_HOMOLOGADO,ESTADO,USUARIO,OBSERVACIONES,FECHA_RESERVA\n";
+        itemsAExportar.forEach(r => {
+          const npn = (r.numero_predial || "").replace(/,/g, " ");
+          const ch = (r.codigo_homologado || "").replace(/,/g, " ");
+          const estado = (r.estado || "RESERVADO").replace(/,/g, " ");
+          const usuario = (r.usuario || "").replace(/,/g, " ");
+          const obs = (r.observaciones || "").replace(/,/g, " ");
+          const fecha = r.fecha_asignacion ? new Date(r.fecha_asignacion).toLocaleString().replace(/,/g, " ") : "";
+          csvContent += `${npn},${ch},${estado},${usuario},${obs},${fecha}\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `homologados_en_reserva_${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+
+
+    // ----------------------------------------------------
+    // NUEVAS FUNCIONALIDADES: ALFA, FILTROS Y LIMPIEZA
+    // ----------------------------------------------------
+    const btnAlfaGen = document.getElementById("btnPlantillaAlfaGenerador");
+    if (btnAlfaGen) {
+      btnAlfaGen.addEventListener("click", () => {
+        descargarPlantillaOficialAlfa(ultimosPrediosGenerados, `plantilla_alfa_nuevos_${Date.now()}.txt`);
+      });
+    }
+
+    const btnAlfaRes = document.getElementById("btnPlantillaAlfaReservas");
+    if (btnAlfaRes) {
+      btnAlfaRes.addEventListener("click", () => {
+        descargarPlantillaOficialAlfa(listaReservasActivas, `plantilla_alfa_reservas_${Date.now()}.txt`);
+      });
+    }
+
+    const inpFiltroRes = document.getElementById("inpFiltroReservas");
+    if (inpFiltroRes) {
+      inpFiltroRes.addEventListener("input", () => aplicarFiltrosReservas());
+    }
+
+    const selAntiguedadRes = document.getElementById("selAntiguedadReservas");
+    if (selAntiguedadRes) {
+      selAntiguedadRes.addEventListener("change", () => aplicarFiltrosReservas());
+    }
+
+    const btnLibInactivas = document.getElementById("btnLiberarInactivas");
+    if (btnLibInactivas) {
+      btnLibInactivas.addEventListener("click", () => {
+        const val = selAntiguedadRes && selAntiguedadRes.value === "15" ? 15 : 30;
+        ejecutarLiberacionInactivas(val);
+      });
+    }
+
+    initTabAsignarExistentes();
     moduloInicializado = true;
+
   }
+
+  // =========================================================
+  // LOGICA PESTAÑA 3: ASIGNAR HOMOLOGADOS A NPNS EXISTENTES
+  // =========================================================
+  let ultimosExistentesAsignados = [];
+
+  function extraerNpnsValidos(texto) {
+    if (!texto) return [];
+    const lineas = texto.split(/[\s,;\n]+/);
+    const validos = [];
+    lineas.forEach(l => {
+      const clean = l.replace(/\D/g, "");
+      if (clean.length === 30 && !validos.includes(clean)) {
+        validos.push(clean);
+      }
+    });
+    return validos;
+  }
+
+  function initTabAsignarExistentes() {
+    const areaNpns = document.getElementById("genAreaNpnsExistentes");
+    const lblCount = document.getElementById("lblCountNpnsExistentes");
+    const btnLimpiar = document.getElementById("btnLimpiarAreaNpns");
+    const inpTramite = document.getElementById("genTramiteExistentesInput");
+    const inpObs = document.getElementById("genObsExistentesInput");
+    const btnConsultar = document.getElementById("btnConsultarNpnsExistentes");
+    const btnEjecutar = document.getElementById("btnEjecutarAsignarExistentes");
+    const wrapResultados = document.getElementById("wrapResultadosAsignacionExistentes");
+    const lblCant = document.getElementById("lblCantExistentesGenerada");
+    const tbody = document.getElementById("tbodyResultadosExistentes");
+    const btnCopiar = document.getElementById("btnCopiarTodoExistentes");
+    const btnCsv = document.getElementById("btnDescargarCsvExistentes");
+
+    if (areaNpns && lblCount) {
+      areaNpns.addEventListener("input", () => {
+        const val = extraerNpnsValidos(areaNpns.value);
+        lblCount.textContent = val.length;
+        lblCount.className = val.length > 0 ? "fw-bold text-success" : "fw-bold text-muted";
+      });
+    }
+
+    if (btnLimpiar && areaNpns) {
+      btnLimpiar.addEventListener("click", () => {
+        areaNpns.value = "";
+        if (lblCount) {
+          lblCount.textContent = "0";
+          lblCount.className = "fw-bold text-muted";
+        }
+      });
+    }
+
+    let buscandoEnProgreso = false;
+    if (btnConsultar && areaNpns) {
+      btnConsultar.addEventListener("click", async () => {
+        if (buscandoEnProgreso) return;
+        const validos = extraerNpnsValidos(areaNpns.value);
+        if (validos.length === 0) {
+          Swal.fire({ icon: "warning", title: "Sin NPNs Válidos", text: "Ingresa al menos un NPN de 30 dígitos numéricos para buscar." });
+          return;
+        }
+
+        buscandoEnProgreso = true;
+        btnConsultar.disabled = true;
+        btnConsultar.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Buscando...`;
+
+        try {
+          const resp = await fetch(`${rp}/api/v1/predios-generador/consultar-npns-existentes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ numeros_prediales: validos })
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || "Error al realizar la consulta diagnóstica.");
+
+          const itemsDiagnostico = data.items || [];
+          if (wrapResultados) wrapResultados.classList.remove("d-none");
+          if (lblCant) lblCant.textContent = itemsDiagnostico.length;
+
+          renderResultadosDiagnostico(itemsDiagnostico, tbody);
+
+          Swal.fire({
+            icon: "info",
+            title: "Diagnóstico Completado",
+            text: `Se verificaron ${data.total_consultados} NPNs: ${data.total_sin_homologado} listos para homologar y ${data.total_con_homologado} que ya poseen código.`,
+            timer: 3000,
+            showConfirmButton: false
+          });
+        } catch (err) {
+          Swal.fire({ icon: "error", title: "No se pudo consultar", text: err.message });
+        } finally {
+          btnConsultar.disabled = false;
+          btnConsultar.innerHTML = `<i class="bi bi-search me-1"></i> 1. Buscar`;
+          buscandoEnProgreso = false;
+        }
+      });
+    }
+
+    let asignandoEnProgreso = false;
+    if (btnEjecutar && areaNpns) {
+      btnEjecutar.addEventListener("click", async () => {
+        if (asignandoEnProgreso) return;
+        const validos = extraerNpnsValidos(areaNpns.value);
+        if (validos.length === 0) {
+          Swal.fire({ icon: "warning", title: "Sin NPNs Válidos", text: "Ingresa al menos un NPN de 30 dígitos numéricos para procesar." });
+          return;
+        }
+
+        if (validos.length > 100) {
+          Swal.fire({ icon: "warning", title: "Límite Excedido", text: "Solo se permite procesar hasta 100 NPNs por solicitud." });
+          return;
+        }
+
+        asignandoEnProgreso = true;
+        btnEjecutar.disabled = true;
+        btnEjecutar.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Procesando...`;
+
+        try {
+          const resp = await fetch(`${rp}/api/v1/predios-generador/asignar-homologado-existentes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              numeros_prediales: validos,
+              consecutivo_tramite: inpTramite ? inpTramite.value.trim() : "",
+              observaciones: inpObs ? inpObs.value.trim() : ""
+            })
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || "Error al asignar homologados a NPNs existentes.");
+
+          ultimosExistentesAsignados = data.items || [];
+          if (wrapResultados) wrapResultados.classList.remove("d-none");
+          if (lblCant) lblCant.textContent = ultimosExistentesAsignados.length;
+
+          renderResultadosExistentes(ultimosExistentesAsignados, tbody);
+          consultarStockDisponibles();
+
+          const totalmenteNuevos = ultimosExistentesAsignados.filter(i => i.es_nueva_reserva).length;
+          const previamenteHomologados = ultimosExistentesAsignados.length - totalmenteNuevos;
+
+          Swal.fire({
+            icon: "success",
+            title: "¡Homologación Completada!",
+            text: `Se asignaron y reservaron códigos nuevos para ${totalmenteNuevos} predio(s). ${previamenteHomologados > 0 ? previamenteHomologados + ' predio(s) previamente homologados fueron omitidos por protección.' : ''}`,
+            timer: 3500,
+            showConfirmButton: false
+          });
+        } catch (err) {
+          Swal.fire({ icon: "error", title: "No se pudo asignar", text: err.message });
+        } finally {
+          btnEjecutar.disabled = false;
+          btnEjecutar.innerHTML = `<i class="bi bi-lightning-charge-fill me-1"></i> Asignar Homologados`;
+          asignandoEnProgreso = false;
+        }
+      });
+    }
+
+    if (btnCopiar) {
+      btnCopiar.addEventListener("click", () => {
+        if (!ultimosExistentesAsignados || ultimosExistentesAsignados.length === 0) return;
+        const lineas = ["NUMERO_PREDIAL\tCODIGO_HOMOLOGADO\tORIGEN_BASE"];
+        ultimosExistentesAsignados.forEach(i => lineas.push(`${i.numero_predial}\t${i.codigo_homologado}\t${i.origen_base}`));
+        navigator.clipboard.writeText(lineas.join("\n")).then(() => {
+          Swal.fire({ icon: "success", title: "Copiado al Portapapeles", text: `Se copiaron ${ultimosExistentesAsignados.length} registros listos para Alfa.`, timer: 2000, showConfirmButton: false });
+        });
+      });
+    }
+
+    if (btnCsv) {
+          const btnAlfaExistentes = document.getElementById("btnPlantillaAlfaExistentes");
+    if (btnAlfaExistentes) {
+      btnAlfaExistentes.addEventListener("click", () => {
+        descargarPlantillaOficialAlfa(ultimosExistentesAsignados, `plantilla_alfa_existentes_${Date.now()}.txt`);
+      });
+    }
+
+    btnCsv.addEventListener("click", () => {
+        if (!ultimosExistentesAsignados || ultimosExistentesAsignados.length === 0) return;
+        let csvContent = "data:text/csv;charset=utf-8,NUMERO_PREDIAL,CODIGO_HOMOLOGADO,ORIGEN_BASE,ESTADO,FECHA_RESERVA\n";
+        ultimosExistentesAsignados.forEach(i => {
+          csvContent += `${i.numero_predial},${i.codigo_homologado},${i.origen_base},${i.estado},${i.fecha_reserva || ''}\n`;
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `homologados_predios_existentes_${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+  }
+
+  function renderResultadosDiagnostico(items, tbody) {
+    if (!tbody) return;
+    if (!items || items.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No hay predios consultados.</td></tr>`;
+      return;
+    }
+
+    let html = "";
+    items.forEach((item, index) => {
+      const badgeHomo = item.tiene_homologado
+        ? `<span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1"><i class="bi bi-shield-check me-1"></i>Ya Homologado (${item.codigo_homologado_actual})</span>`
+        : `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-lightning me-1"></i>Listo para Asignar</span>`;
+
+      html += `
+        <tr>
+          <td class="text-center fw-bold text-muted">${index + 1}</td>
+          <td>
+            <span class="font-monospace fw-bold text-navy">${item.numero_predial}</span>
+          </td>
+          <td>
+            <span class="small fw-semibold text-secondary">${item.origen_base}</span>
+          </td>
+          <td>
+            ${badgeHomo}
+          </td>
+          <td class="text-center">
+            <span class="badge bg-secondary">${item.estado_homologado_actual || 'PENDIENTE'}</span>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-xs btn-outline-primary py-0 px-2 btn-copiar-npn-e" data-npn="${item.numero_predial}" title="Copiar NPN">
+              <i class="bi bi-clipboard"></i> NPN
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    tbody.querySelectorAll(".btn-copiar-npn-e").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.getAttribute("data-npn");
+        navigator.clipboard.writeText(val).then(() => {
+          Swal.fire({ icon: "success", title: "NPN Copiado", text: val, timer: 1500, showConfirmButton: false });
+        });
+      });
+    });
+  }
+
+  function renderResultadosExistentes(items, tbody) {
+    if (!tbody) return;
+    if (!items || items.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No hay predios asignados.</td></tr>`;
+      return;
+    }
+
+    let html = "";
+    items.forEach((item, index) => {
+      const badgeRes = item.es_nueva_reserva 
+        ? `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-plus-circle me-1"></i>Nuevo Homologado</span>` 
+        : `<span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1"><i class="bi bi-clock-history me-1"></i>Previamente Asignado</span>`;
+
+      html += `
+        <tr>
+          <td class="text-center fw-bold text-muted">${index + 1}</td>
+          <td>
+            <span class="font-monospace fw-bold text-navy">${item.numero_predial}</span>
+          </td>
+          <td>
+            <span class="small fw-semibold text-secondary">${item.origen_base}</span>
+          </td>
+          <td>
+            <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace px-2 py-1">${item.codigo_homologado}</span>
+            ${badgeRes}
+          </td>
+          <td class="text-center">
+            <span class="badge bg-warning text-dark">${item.estado}</span>
+          </td>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-xs btn-outline-primary py-0 px-2 btn-copiar-npn-e" data-npn="${item.numero_predial}" title="Copiar NPN">
+                <i class="bi bi-clipboard"></i> NPN
+              </button>
+              <button class="btn btn-xs btn-outline-success py-0 px-2 btn-copiar-ch-e" data-ch="${item.codigo_homologado}" title="Copiar Homologado">
+                <i class="bi bi-clipboard-check"></i> Homol.
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    tbody.querySelectorAll(".btn-copiar-npn-e").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.getAttribute("data-npn");
+        navigator.clipboard.writeText(val).then(() => {
+          Swal.fire({ icon: "success", title: "NPN Copiado", text: val, timer: 1500, showConfirmButton: false });
+        });
+      });
+    });
+
+    tbody.querySelectorAll(".btn-copiar-ch-e").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const val = btn.getAttribute("data-ch");
+        navigator.clipboard.writeText(val).then(() => {
+          Swal.fire({ icon: "success", title: "Código Homologado Copiado", text: val, timer: 1500, showConfirmButton: false });
+        });
+      });
+    });
+  }
+
 
   // API Pública Global
   window.abrirGeneradorNpn = function (opts = {}) {
@@ -735,3 +1286,45 @@
     initListeners();
   }
 })();
+
+
+  function descargarPlantillaOficialAlfa(items, nombreArchivo = "plantilla_cargue_alfa.txt") {
+    if (!items || items.length === 0) {
+      Swal.fire({ icon: "info", title: "Sin datos", text: "No hay registros para exportar en la plantilla de Alfa." });
+      return;
+    }
+
+    const headers = ["NUMERO_PREDIAL", "CODIGO_HOMOLOGADO", "CONSECUTIVO_TRAMITE", "CONDICION_PROPIEDAD", "USUARIO", "FECHA_ASIGNACION", "ESTADO"];
+    let tsvContent = "\uFEFF" + headers.join("\t") + "\n";
+
+    items.forEach(item => {
+      const npn = item.numero_predial || item.numero_predial_matriz || "";
+      const ch = item.codigo_homologado || "";
+      const tramite = item.consecutivo_tramite || item.tramite || "";
+      const cond = item.condicion || item.condicion_propiedad || "";
+      const user = item.usuario || "";
+      const fecha = item.fecha_reserva || item.fecha_asignacion || "";
+      const estado = item.estado || "RESERVADO";
+
+      tsvContent += `${npn}\t${ch}\t${tramite}\t${cond}\t${user}\t${fecha}\t${estado}\n`;
+    });
+
+    const blob = new Blob([tsvContent], { type: "text/tab-separated-values;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: "Plantilla Alfa descargada",
+      showConfirmButton: false,
+      timer: 2000
+    });
+  }

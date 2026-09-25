@@ -1,3 +1,4 @@
+import re
 import logging
 import os
 import shutil
@@ -30,6 +31,11 @@ from tenants import TenantContext, get_connection_manager, get_tenant_db_connect
 
 router = APIRouter(prefix="/asignaciones", tags=["asignaciones-export"])
 logger = logging.getLogger(__name__)
+
+def _clean_filename_token(value: Optional[str]) -> str:
+    raw = (value or "").strip()
+    clean = re.sub(r"[^\w\-]+", "_", raw).strip("_")
+    return clean
 
 JOB_FORMAT = Literal["xtf", "gdb", "gpkg"]
 
@@ -391,6 +397,8 @@ def _process_export_job(
                 raise
 
         output_dir = _job_output_dir(tenant)
+        titulo_token = _clean_filename_token(asignacion.get("titulo"))
+        prefix = f"{titulo_token}_" if titulo_token else ""
 
         if formato == "xtf":
             file_path = os.path.join(output_dir, f"asignacion_{artifact_suffix}.xtf")
@@ -407,7 +415,7 @@ def _process_export_job(
                     timeout_sec=ILI2PG_TIMEOUT_SEC,
                 )
             file_name = (
-                f"asignacion_{tenant.municipality_code}_{asignacion_id}_"
+                f"{prefix}asignacion_{tenant.municipality_code}_{asignacion_id}_"
                 f"{(asignacion.get('usuario_asignado') or '').strip()}_{uuid4().hex[:8]}.xtf"
             )
             done_msg = f"XTF generado. Modo: {export_mode}."
@@ -424,7 +432,7 @@ def _process_export_job(
             )
             zip_base = os.path.join(output_dir, f"asignacion_{artifact_suffix}")
             file_path = shutil.make_archive(zip_base, "zip", tmp_dir, gdb_name)
-            file_name = f"asignacion_{tenant.municipality_code}_{asignacion_id}_{uuid4().hex[:8]}_gdb.zip"
+            file_name = f"{prefix}asignacion_{tenant.municipality_code}_{asignacion_id}_{uuid4().hex[:8]}_gdb.zip"
             done_msg = "GDB generado."
         else:
             file_path = os.path.join(output_dir, f"asignacion_{artifact_suffix}.gpkg")
@@ -435,7 +443,7 @@ def _process_export_job(
                 gpkg_path=file_path,
                 asignacion_id=asignacion_id,
             )
-            file_name = f"asignacion_{tenant.municipality_code}_{asignacion_id}_{uuid4().hex[:8]}.gpkg"
+            file_name = f"{prefix}asignacion_{tenant.municipality_code}_{asignacion_id}_{uuid4().hex[:8]}.gpkg"
             done_msg = "GPKG generado."
 
         if not os.path.exists(file_path):
@@ -682,7 +690,9 @@ def descargar_paquete_asignacion(
     except Exception:
         conn.rollback()
 
+    titulo_token = _clean_filename_token(asignacion.get("titulo"))
     filename_parts = [
+        titulo_token,
         "asignacion",
         str(asignacion_id),
         asignacion.get("usuario_asignado") or "",
@@ -764,7 +774,9 @@ def descargar_paquete_asignacion_gdb(
     except Exception:
         conn.rollback()
 
+    titulo_token = _clean_filename_token(asignacion.get("titulo"))
     filename_parts = [
+        titulo_token,
         "asignacion",
         str(asignacion_id),
         asignacion.get("usuario_asignado") or "",

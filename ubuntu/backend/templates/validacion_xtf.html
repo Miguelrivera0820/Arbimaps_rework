@@ -31,7 +31,7 @@
 {% if rule_errors %}
 {% for item in rule_errors %}
 {% set rule_id = (item.rule or item.rule_id or 'No disponible')|string %}
-{% if rule_id not in failed_rule_ids %}
+{% if rule_id not in failed_rule_ids and rule_id not in uncounted_rule_error_ids %}
 {% set _ = uncounted_rule_error_ids.append(rule_id) %}
 {% endif %}
 {% endfor %}
@@ -106,8 +106,19 @@ defined else 0 %}
     {'slug': 'obligatorias', 'label': 'Obligatorias'},
     ] %}
     {% set component_issue_counts = {} %}
-    {% set counted_rule_ids = [] %}
-    {% if quality and quality.rules %}
+    {# La vista y el Excel deben salir de la misma fuente de hallazgos. #}
+    {% if rule_errors %}
+    {% for item in rule_errors %}
+    {% set rule_id = (item.rule or item.rule_id or 'No disponible')|string %}
+    {% set catalog_item = rule_catalog.get(rule_id, {}) %}
+    {% set raw_component_slug = item.component or item.component_slug or catalog_item.get('component_slug') or
+    catalog_item.get('sheet_slug') or item.component_label or catalog_item.get('component_label') or
+    catalog_item.get('component') or 'sin_componente' %}
+    {% set component_slug = raw_component_slug|string|lower|replace('á', 'a')|replace('é', 'e')|replace('í',
+    'i')|replace('ó', 'o')|replace('ú', 'u')|replace('ñ', 'n')|replace(' ', '_') %}
+    {% set _ = component_issue_counts.update({component_slug: component_issue_counts.get(component_slug, 0) + 1}) %}
+    {% endfor %}
+    {% elif quality and quality.rules %}
     {% for item in quality.rules %}
     {% set catalog_item = rule_catalog.get(item.rule|string, {}) %}
     {% set raw_component_slug = item.component or item.component_slug or catalog_item.get('component_slug') or
@@ -116,25 +127,7 @@ defined else 0 %}
     {% set component_slug = raw_component_slug|string|lower|replace('á', 'a')|replace('é', 'e')|replace('í',
     'i')|replace('ó', 'o')|replace('ú', 'u')|replace('ñ', 'n')|replace(' ', '_') %}
     {% set issue_count = item.issue_count|int %}
-    {% set _ = component_issue_counts.update({component_slug: component_issue_counts.get(component_slug, 0) +
-    issue_count}) %}
-    {% if issue_count > 0 and (item.rule|string) not in counted_rule_ids %}
-    {% set _ = counted_rule_ids.append(item.rule|string) %}
-    {% endif %}
-    {% endfor %}
-    {% endif %}
-    {% if rule_errors %}
-    {% for item in rule_errors %}
-    {% set rule_id = (item.rule or item.rule_id or 'No disponible')|string %}
-    {% if rule_id not in counted_rule_ids %}
-    {% set catalog_item = rule_catalog.get(rule_id, {}) %}
-    {% set raw_component_slug = item.component or item.component_slug or catalog_item.get('component_slug') or
-    catalog_item.get('sheet_slug') or item.component_label or catalog_item.get('component_label') or
-    catalog_item.get('component') or 'sin_componente' %}
-    {% set component_slug = raw_component_slug|string|lower|replace('á', 'a')|replace('é', 'e')|replace('í',
-    'i')|replace('ó', 'o')|replace('ú', 'u')|replace('ñ', 'n')|replace(' ', '_') %}
-    {% set _ = component_issue_counts.update({component_slug: component_issue_counts.get(component_slug, 0) + 1}) %}
-    {% endif %}
+    {% set _ = component_issue_counts.update({component_slug: component_issue_counts.get(component_slug, 0) + issue_count}) %}
     {% endfor %}
     {% endif %}
     {% if total_schema_errors %}

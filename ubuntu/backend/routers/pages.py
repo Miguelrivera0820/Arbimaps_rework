@@ -95,9 +95,12 @@ def _default_visor_geoserver_layers(tenant: TenantContext | None) -> str:
 
         workspace = str(tenant.geoserver_workspace or "").strip()
         if workspace:
-            return f"{workspace}:Base_Principal"
+            return f"{workspace}:Base_Principal,{workspace}_CARTOGRAFIA"
 
-    return os.getenv("VISOR_GEOSERVER_LAYERS", "A_Base_Principal:Base_Principal")
+    return os.getenv(
+        "VISOR_GEOSERVER_LAYERS",
+        "A_Base_Principal:Base_Principal,NEIVA_CONSERVACION_CARTOGRAFIA",
+    )
 
 
 def _session_json_safe(value: Any) -> Any:
@@ -814,6 +817,26 @@ def debug_me(request: Request):
 # -------------------------------------------------
 # PANEL DE CONTROL DE SEGUIMIENTO
 # -------------------------------------------------
+
+@router.get("/panel/reportes_sinic")
+def panel_reportes_sinic(request: Request):
+
+    user = get_user(request)
+
+    if not user:
+        return RedirectResponse(
+            url=with_root_path(request, "/login"),
+            status_code=302
+        )
+
+    if _effective_role(user) not in {"admin", "soporte"}:
+        return RedirectResponse(
+            url=with_root_path(request, "/panel"),
+            status_code=302
+        )
+
+    return _render_panel(request, user, view="reportes_sinic")
+
 
 @router.get("/panel/panel_control")
 def panel_panel_control(request: Request):
