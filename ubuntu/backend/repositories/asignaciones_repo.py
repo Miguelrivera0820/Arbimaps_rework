@@ -2326,7 +2326,7 @@ def update_asignacion_predio_rol(
             app_schema = tenant
 
     rol_clean = str(rol_predio or "principal").strip().lower()
-    if rol_clean not in {"principal", "colindante", "cancelado"}:
+    if rol_clean not in {"principal", "colindante", "cancelado", "matriz"}:
         rol_clean = "principal"
 
     is_int = isinstance(predio_id_or_npn, int) or (isinstance(predio_id_or_npn, str) and str(predio_id_or_npn).isdigit())

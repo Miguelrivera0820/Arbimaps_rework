@@ -3377,7 +3377,8 @@ def sync_workspace_predios_to_main(
                 FROM {asig_predio_tbl} ap
                 WHERE ap.asignacion_id = %s
                   AND ap.activo IS DISTINCT FROM FALSE
-                  AND LOWER(COALESCE(ap.rol_predio, 'principal')) IN ('principal', 'cancelado');
+                  AND LOWER(COALESCE(ap.rol_predio, 'principal')) IN ('principal', 'cancelado', 'nuevo')
+                  AND LOWER(COALESCE(ap.rol_predio, 'principal')) NOT IN ('colindante', 'matriz');
                 """,
                 (asignacion_id,),
             )

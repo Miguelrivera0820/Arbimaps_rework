@@ -82,8 +82,8 @@ $(document).ready(function () {
     pageLength: 5,
     lengthChange: true,
     lengthMenu: [
-      [5, 7],
-      [5, 7],
+      [5, 10, 25, 50],
+      [5, 10, 25, 50],
     ],
     ordering: true,
     order: [[0, "asc"]],
@@ -94,6 +94,7 @@ $(document).ready(function () {
     responsive: false,
     autoWidth: false,
     scrollX: true,
+    scrollY: "300px", scrollCollapse: true, columnDefs: [{ className: "text-center align-middle", targets: "_all" }],
     language: {
       lengthMenu: "Mostrar _MENU_ registros",
       search: "",
@@ -300,19 +301,19 @@ function renderValidadoresXtf(data) {
 
   const qualityHtml = qualityRules.length
     ? qualityRules
-        .map((item) => {
-          const rules = Array.isArray(item?.rules) ? item.rules : [];
-          const rulesHtml = rules.length
-            ? `<ul class="mb-2">${rules.map((r) => `<li><strong>${esc(r.rule_id || "-")}:</strong> ${esc(r.description || "-")}</li>`).join("")}</ul>`
-            : `<p class="mb-2 text-muted">Sin reglas declaradas.</p>`;
-          return `
+      .map((item) => {
+        const rules = Array.isArray(item?.rules) ? item.rules : [];
+        const rulesHtml = rules.length
+          ? `<ul class="mb-2">${rules.map((r) => `<li><strong>${esc(r.rule_id || "-")}:</strong> ${esc(r.description || "-")}</li>`).join("")}</ul>`
+          : `<p class="mb-2 text-muted">Sin reglas declaradas.</p>`;
+        return `
           <div class="mb-3">
             <div><strong>${esc(item.component || "-")}</strong> (${Number(item.total_rules || 0)} reglas)</div>
             ${rulesHtml}
           </div>
         `;
-        })
-        .join("")
+      })
+      .join("")
     : `<p class="mb-0 text-muted">No hay reglas internas configuradas.</p>`;
 
   validadoresXtfBody.innerHTML = `
@@ -356,7 +357,7 @@ async function cargarValidadoresXtf(force = false) {
   if (!resp.ok) {
     throw new Error(
       formatBackendDetail(data?.detail) ||
-        "No se pudieron cargar los validadores XTF.",
+      "No se pudieron cargar los validadores XTF.",
     );
   }
 
@@ -449,6 +450,11 @@ async function cargarDetalle() {
     setText("d_colindantes", dataDet.total_colindantes ?? 0);
     setText("d_elim", dataDet.total_eliminados ?? 0);
     setText("d_new", dataDet.total_nuevos ?? 0);
+    setText("d_matriz", dataDet.total_matriz ?? 0);
+    const cardMatrizWrap = document.getElementById("card_matriz_wrap");
+    if (cardMatrizWrap) {
+      cardMatrizWrap.style.display = (Number(dataDet.total_matriz || 0) > 0) ? "block" : "none";
+    }
 
     // 1. Mostrar/Ocultar botón de Enviar a Control de Calidad
     const btnSubmitQA = document.getElementById("btnHeaderSubmitQA");
@@ -737,7 +743,7 @@ async function cargarDetalle() {
           selectRolHtml = `
             <div class="d-flex align-items-center justify-content-center">
               <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1 shadow-sm" style="font-size:0.78rem;font-weight:600;" title="Cancelación auto-detectada por marca/novedad (no editable)">
-                <i class="fa-solid fa-ban me-1"></i> Cancelado (Auto)
+                <i class="fa-solid fa-ban me-1"></i> Cancelado
               </span>
             </div>
           `;
@@ -745,7 +751,15 @@ async function cargarDetalle() {
           selectRolHtml = `
             <div class="d-flex align-items-center justify-content-center">
               <span class="badge bg-success-subtle text-success border border-success px-2 py-1 shadow-sm" style="font-size:0.78rem;font-weight:600;" title="Predio nuevo incorporado como principal del trámite">
-                <i class="fa-solid fa-plus-circle me-1"></i> Predio Nuevo (Principal)
+                <i class="fa-solid fa-plus-circle me-1"></i> Predio Nuevo
+              </span>
+            </div>
+          `;
+        } else if (rolClean === "matriz") {
+          selectRolHtml = `
+            <div class="d-flex align-items-center justify-content-center">
+              <span class="badge border px-2 py-1 shadow-sm" style="background-color:#f3e8ff;color:#7e22ce;border-color:#d8b4fe!important;font-size:0.78rem;font-weight:600;" title="Predio Matriz (Propiedad Horizontal) - Sincroniza únicamente a Base Principal">
+                <i class="fa-solid fa-sitemap me-1"></i> Predio Matriz
               </span>
             </div>
           `;
@@ -1724,7 +1738,7 @@ document
         let data = {};
         try {
           data = JSON.parse(rawText);
-        } catch (e) {}
+        } catch (e) { }
         throw new Error(
           data?.detail || rawText || "Error al realizar la devolucin.",
         );
@@ -2064,7 +2078,7 @@ document
         let data = {};
         try {
           data = JSON.parse(rawText);
-        } catch (e) {}
+        } catch (e) { }
         throw new Error(
           data?.detail || rawText || "Error al asignar digitalizador.",
         );
@@ -2281,7 +2295,7 @@ document
         let data = {};
         try {
           data = JSON.parse(rawText);
-        } catch (e) {}
+        } catch (e) { }
         throw new Error(
           data?.detail || rawText || "Error al asignar digitalizador.",
         );
@@ -2350,7 +2364,7 @@ document
           let data = {};
           try {
             data = JSON.parse(rawText);
-          } catch (e) {}
+          } catch (e) { }
           throw new Error(
             data?.detail || rawText || "Error al continuar con reconocedor.",
           );
@@ -2463,7 +2477,7 @@ document
         let data = {};
         try {
           data = JSON.parse(rawText);
-        } catch (e) {}
+        } catch (e) { }
         throw new Error(
           data?.detail || rawText || "Error al enviar a control de calidad 2.",
         );
@@ -2557,7 +2571,7 @@ document.getElementById("btnQC2Approve")?.addEventListener("click", () => {
         let data = {};
         try {
           data = JSON.parse(rawText);
-        } catch (e) {}
+        } catch (e) { }
         throw new Error(
           data?.detail || rawText || "Error al aprobar digitalizacin.",
         );
@@ -2676,7 +2690,7 @@ document.getElementById("btnLiderApprove")?.addEventListener("click", () => {
         let data = {};
         try {
           data = JSON.parse(rawText);
-        } catch (e) {}
+        } catch (e) { }
         throw new Error(
           data?.detail || rawText || "Error al aprobar digitalizacin.",
         );
@@ -2843,13 +2857,18 @@ async function inspectModalSyncFile(file) {
     const totalPredios = data.total_predios ?? 0;
     const totalAsignacion = data.total_asignacion ?? 0;
     const totalColindantes = data.total_colindantes ?? 0;
+    const totalMatriz = data.total_matriz ?? 0;
 
     const elTotal = document.getElementById("modalSyncTotalPredios");
     const elAsig = document.getElementById("modalSyncTotalAsignacion");
     const elCol = document.getElementById("modalSyncTotalColindantes");
+    const elMat = document.getElementById("modalSyncTotalMatriz");
+    const pillMat = document.getElementById("pillSyncMatriz");
     if (elTotal) elTotal.textContent = totalPredios;
     if (elAsig) elAsig.textContent = totalAsignacion;
     if (elCol) elCol.textContent = totalColindantes;
+    if (elMat) elMat.textContent = totalMatriz;
+    if (pillMat) pillMat.style.display = totalMatriz > 0 ? "inline-block" : "none";
 
     const tbody = document.getElementById("modalSyncPrediosTbody");
     if (tbody) {
@@ -2870,6 +2889,8 @@ async function inspectModalSyncFile(file) {
             badgeHtml = `<span class="sync-badge-colindante"><i class="fa-solid fa-ruler-combined"></i> ${esc(p.rol_display || "Colindante (Soporte)")}</span>`;
           } else if (p.rol === "cancelado") {
             badgeHtml = `<span class="sync-badge-cancelado"><i class="fa-solid fa-ban"></i> ${esc(p.rol_display || "Cancelado")}</span>`;
+          } else if (p.rol === "matriz" || p.es_matriz) {
+            badgeHtml = `<span class="sync-badge-matriz"><i class="fa-solid fa-sitemap"></i> ${esc(p.rol_display || "Predio Matriz")}</span>`;
           } else {
             badgeHtml = `<span class="sync-badge-principal"><i class="fa-solid fa-building"></i> ${esc(p.rol_display || "Asignación (Principal)")}</span>`;
           }
@@ -3194,7 +3215,7 @@ async function loadProjectExtentDetail() {
         duration: 300,
       });
     }
-  } catch (_err) {}
+  } catch (_err) { }
 }
 
 function initMapDetail() {
@@ -3624,7 +3645,7 @@ async function loadAssignmentScopeDetalle(asignacionId) {
         maxZoom: 19,
       });
     }
-  } catch (_err) {}
+  } catch (_err) { }
 }
 
 function clearSelectedUnitGeometryDetalle() {
@@ -3781,14 +3802,14 @@ function updateMapWithPredioDetalle(detalle = {}, numeroPredial = "") {
         dataProjection: "EPSG:9377",
         featureProjection: "EPSG:9377",
       });
-    } catch (_e) {}
+    } catch (_e) { }
     if (!geometry) {
       try {
         geometry = format.readGeometry(geometryObj, {
           dataProjection: "EPSG:4326",
           featureProjection: "EPSG:9377",
         });
-      } catch (_e) {}
+      } catch (_e) { }
     }
   }
   if (!geometry) {
@@ -3990,7 +4011,7 @@ async function adjuntosPredioOpenFile(fileId) {
     if (!resp.ok)
       throw new Error(
         formatBackendDetail(data?.detail) ||
-          "No se pudo abrir el archivo en Box.",
+        "No se pudo abrir el archivo en Box.",
       );
 
     preview.innerHTML = `
@@ -4037,7 +4058,7 @@ async function cargarAdjuntosPredioBox() {
     if (!resp.ok)
       throw new Error(
         formatBackendDetail(data?.detail) ||
-          "No se encontro la carpeta Box del predio.",
+        "No se encontro la carpeta Box del predio.",
       );
 
     const items = Array.isArray(data.items) ? data.items : [];
@@ -4540,16 +4561,16 @@ function renderUnidadConstruccionCardEdit(unidades = []) {
       );
       const estadoUnidad = normalizarTextoEdit(
         item?.estado_unidad_construccion_nombre ??
-          item?.estado_construccion ??
-          "Vigente",
+        item?.estado_construccion ??
+        "Vigente",
       );
       const observaciones = normalizarTextoEdit(item?.observaciones);
       const tipoCalificacionModal = item?.tipo_calificacion_modal ?? null;
       const unidadId = item?.t_id ?? item?.unidad_id ?? item?.id ?? null;
       const tipoUcNombre = normalizarTextoEdit(
         item?.tipo_unidad_construccion_nombre ||
-          item?.tipo_uc_nombre ||
-          item?.tipo_uc,
+        item?.tipo_uc_nombre ||
+        item?.tipo_uc,
       );
 
       return `
@@ -4799,14 +4820,14 @@ function renderUnidadConstruccionCardEdit(unidades = []) {
           );
           showError(
             "No se pudo cargar la información de la unidad de construcción " +
-              identificador,
+            identificador,
           );
         }
       } catch (err) {
         console.error("[btn-caracteristicas-uc] Error in click handler:", err);
         showError(
           "Ocurrió un error al intentar abrir el panel de características: " +
-            err.message,
+          err.message,
         );
       } finally {
         btn.style.cursor = "";
@@ -4973,7 +4994,7 @@ function poblarOffcanvasConvencionalEdit(detalle = {}) {
   setTextByIdEdit(
     "convencionalUsosTradicionales",
     car?.usos_tradicionales_culturales_nombre ??
-      car?.usos_tradicionales_culturales,
+    car?.usos_tradicionales_culturales,
   );
   setTextByIdEdit("convencionalObservaciones", car?.observaciones);
 
@@ -5015,7 +5036,7 @@ function poblarOffcanvasConvencionalEdit(detalle = {}) {
   setTextByIdEdit(
     "convencionalCerchas",
     cal?.cerchas_complemento_industria_nombre ??
-      car?.cc_cerchas_complemento_industria,
+    car?.cc_cerchas_complemento_industria,
   );
   setTextByIdEdit("convencionalObsCalificacion", car?.observaciones);
   setTextByIdEdit("convencionalTotalCalificacion", cal?.total_calificacion);
@@ -5059,7 +5080,7 @@ function poblarOffcanvasNoConvencionalEdit(detalle = {}) {
   setTextByIdEdit(
     "noconvencionalUsosTradicionales",
     car?.usos_tradicionales_culturales_nombre ??
-      car?.usos_tradicionales_culturales,
+    car?.usos_tradicionales_culturales,
   );
   setTextByIdEdit("noconvencionalObservaciones", car?.observaciones);
   setTextByIdEdit("noconvencionalTipoAnexo", cal?.tipo_anexo_nombre);
@@ -5089,7 +5110,7 @@ function poblarOffcanvasTipologiaEdit(detalle = {}) {
   setTextByIdEdit(
     "tipologiaUsosTradicionales",
     car?.usos_tradicionales_culturales_nombre ??
-      car?.usos_tradicionales_culturales,
+    car?.usos_tradicionales_culturales,
   );
   setTextByIdEdit("tipologiaObservaciones", car?.observaciones);
   setTextByIdEdit("tipologiaTipoTipologia", cal?.tipo_tipologia_nombre);
@@ -5868,8 +5889,8 @@ function formatearResumenDireccionEdit(direccion) {
   if (tipoDireccion === "248") {
     const partes = [
       direccion?.clase_via_principal_nombre ??
-        direccion?.clase_via_principal_dispname ??
-        direccion?.clase_via_principal,
+      direccion?.clase_via_principal_dispname ??
+      direccion?.clase_via_principal,
       direccion?.valor_via_principal,
       direccion?.letra_via_principal,
       direccion?.valor_via_generadora,
@@ -5964,11 +5985,11 @@ function agruparConstruccionesDesdeDetalleEdit(
       const nestedUnits = Array.isArray(c?.unidades) ? c.unidades : [];
       const fallbackUnits = Array.isArray(unidades)
         ? unidades.filter(
-            (unidad) =>
-              String(
-                unidad?.construccion_id ?? unidad?.construccion_t_id ?? "",
-              ) === String(consId ?? ""),
-          )
+          (unidad) =>
+            String(
+              unidad?.construccion_id ?? unidad?.construccion_t_id ?? "",
+            ) === String(consId ?? ""),
+        )
         : [];
       const unidadesMap = new Map();
 
@@ -5976,9 +5997,9 @@ function agruparConstruccionesDesdeDetalleEdit(
         const normalizada = normalizarUnidad(unidad, consId);
         const key = String(
           normalizada?.t_id ??
-            normalizada?.unidad_id ??
-            normalizada?.id ??
-            `${consId}-${unidadesMap.size}`,
+          normalizada?.unidad_id ??
+          normalizada?.id ??
+          `${consId}-${unidadesMap.size}`,
         );
         if (!unidadesMap.has(key)) {
           unidadesMap.set(key, normalizada);
@@ -6224,8 +6245,8 @@ function verInformacionCompletaInteresadoEdit(index) {
   setPanelTextEdit(
     "panel_tipo_fuente_admin_edit",
     item.tipo_fuente_administrativa_nombre ||
-      item.tipo_fuente_administrativa ||
-      "---",
+    item.tipo_fuente_administrativa ||
+    "---",
   );
   setPanelTextEdit("panel_numero_fuente_edit", item.numero_fuente || "---");
   setPanelTextEdit("panel_ente_emisor_edit", item.ente_emisor || "---");
@@ -6371,34 +6392,34 @@ function renderInteresadosModalEdit(interesadosRaw) {
     .map((item, index) => {
       const autorizaNotif =
         item.autoriza_notificacion_correo === true ||
-        item.autoriza_notificacion_correo === "true" ||
-        item.autoriza_notificacion_correo === "t"
+          item.autoriza_notificacion_correo === "true" ||
+          item.autoriza_notificacion_correo === "t"
           ? "S"
           : item.autoriza_notificacion_correo === false ||
-              item.autoriza_notificacion_correo === "false" ||
-              item.autoriza_notificacion_correo === "f"
+            item.autoriza_notificacion_correo === "false" ||
+            item.autoriza_notificacion_correo === "f"
             ? "No"
             : "---";
 
       const campesinoTexto =
         item.autorreconocimiento_campesino === true ||
-        item.autorreconocimiento_campesino === "true" ||
-        item.autorreconocimiento_campesino === "t"
+          item.autorreconocimiento_campesino === "true" ||
+          item.autorreconocimiento_campesino === "t"
           ? "S"
           : item.autorreconocimiento_campesino === false ||
-              item.autorreconocimiento_campesino === "false" ||
-              item.autorreconocimiento_campesino === "f"
+            item.autorreconocimiento_campesino === "false" ||
+            item.autorreconocimiento_campesino === "f"
             ? "No"
             : "---";
 
       const etnicoTexto =
         item.autorreconocimiento_etnico === true ||
-        item.autorreconocimiento_etnico === "true" ||
-        item.autorreconocimiento_etnico === "t"
+          item.autorreconocimiento_etnico === "true" ||
+          item.autorreconocimiento_etnico === "t"
           ? "S"
           : item.autorreconocimiento_etnico === false ||
-              item.autorreconocimiento_etnico === "false" ||
-              item.autorreconocimiento_etnico === "f"
+            item.autorreconocimiento_etnico === "false" ||
+            item.autorreconocimiento_etnico === "f"
             ? "No"
             : "---";
 
@@ -6733,6 +6754,7 @@ function updateTopCardsCounters() {
     let cntColindantes = 0;
     let cntCancelados = 0;
     let cntNuevos = 0;
+    let cntMatriz = 0;
 
     prediosAsignacionDataEdit.forEach((p) => {
       const rolClean = String(p.rol_predio || "principal").toLowerCase();
@@ -6742,6 +6764,9 @@ function updateTopCardsCounters() {
         cntCancelados++;
       } else if (rolClean === "nuevo") {
         cntNuevos++;
+      } else if (rolClean === "matriz") {
+        cntMatriz++;
+        cntPrincipales++;
       } else {
         cntPrincipales++;
       }
@@ -6751,26 +6776,36 @@ function updateTopCardsCounters() {
     setText("d_colindantes", cntColindantes);
     setText("d_elim", cntCancelados);
     setText("d_new", cntNuevos);
+    setText("d_matriz", cntMatriz);
+    const cardMat = document.getElementById("card_matriz_wrap");
+    if (cardMat) {
+      cardMat.style.display = cntMatriz > 0 ? "block" : "none";
+    }
     return;
   }
 
-  if ($.fn.DataTable && $.fn.DataTable.isDataTable("#tablaPredios")) {
-    const api = $("#tablaPredios").DataTable();
+  if (typeof jQuery !== "undefined" && jQuery.fn.DataTable && jQuery.fn.DataTable.isDataTable("#tablaPredios")) {
+    const api = jQuery("#tablaPredios").DataTable();
     let cntPrincipales = 0;
     let cntColindantes = 0;
     let cntCancelados = 0;
     let cntNuevos = 0;
+    let cntMatriz = 0;
 
     api.rows().nodes().to$().each(function () {
-      const $select = $(this).find(".select-rol-predio");
+      const $select = jQuery(this).find(".select-rol-predio");
       if ($select.length) {
         const val = $select.val();
         if (val === "colindante") cntColindantes++;
         else if (val === "principal") cntPrincipales++;
       } else {
-        const text = $(this).text().toLowerCase();
+        const text = jQuery(this).text().toLowerCase();
         if (text.includes("cancelado")) cntCancelados++;
         else if (text.includes("nuevo")) cntNuevos++;
+        else if (text.includes("matriz")) {
+          cntMatriz++;
+          cntPrincipales++;
+        }
         else cntPrincipales++;
       }
     });
@@ -6779,10 +6814,15 @@ function updateTopCardsCounters() {
     setText("d_colindantes", cntColindantes);
     setText("d_elim", cntCancelados);
     setText("d_new", cntNuevos);
+    setText("d_matriz", cntMatriz);
+    const cardMat = document.getElementById("card_matriz_wrap");
+    if (cardMat) {
+      cardMat.style.display = cntMatriz > 0 ? "block" : "none";
+    }
   }
 }
 
-$(document).on("change", ".select-rol-predio", async function(e) {
+$(document).on("change", ".select-rol-predio", async function (e) {
   e.stopPropagation();
   const $select = $(this);
   const predioId = $select.attr("data-predio-id");

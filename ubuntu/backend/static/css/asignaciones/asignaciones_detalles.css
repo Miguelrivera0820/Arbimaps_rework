@@ -949,23 +949,64 @@ table.dataTable tbody td {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    height: 100%;
+    width: 100%;
+    position: relative;
 }
 
-.asigDetailTableWrap .dataTables_wrapper>.row:first-child,
+.asigDetailTableWrap .dataTables_wrapper>.row:first-child {
+    flex: 0 0 auto;
+    margin-bottom: 0.75rem;
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    z-index: 10;
+    padding-bottom: 0.25rem;
+}
+
 .asigDetailTableWrap .dataTables_wrapper>.row:last-child {
     flex: 0 0 auto;
+    margin-top: 0.75rem;
 }
 
-.asigDetailTableWrap .table-responsive {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
-    max-height: 360px;
+.asigDetailTableWrap .dataTables_scroll,
+.asigDetailTableWrap .dataTables_scrollBody {
+    max-height: 320px !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    border-radius: 8px;
 }
 
-.asig-table-light .table-responsive {
-    max-height: 420px;
+.asigDetailTableWrap .dataTables_scrollBody::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.asigDetailTableWrap .dataTables_scrollBody::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 4px;
+}
+
+.asigDetailTableWrap .dataTables_scrollBody::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.asigDetailTableWrap .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.asigDetailTableWrap .dataTables_scrollHead,
+.asigDetailTableWrap .dataTables_scrollHead table {
+    background-color: #ffffff !important;
+}
+
+.asigDetailTableWrap .dataTables_scrollHead th,
+#tablaPredios thead th {
+    position: sticky !important;
+    top: 0 !important;
+    background: #ffffff !important;
+    z-index: 3 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
 }
 
 .asig-table-history .table-responsive {
@@ -1970,11 +2011,72 @@ table.dataTable tbody td {
     box-shadow: none !important;
 }
 
+#tablaPredios th,
+#tablaPredios td {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
 #tablaPredios th {
     color: #032F57 !important;
     font-size: 0.85rem !important;
     font-weight: 700 !important;
     text-transform: none !important;
+    text-align: center !important;
+}
+
+#tablaPredios td {
+    font-size: 0.85rem !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    color: #1e293b;
+    padding: 0.75rem 0.5rem !important;
+}
+
+/* Columna 1: T_ID centrado */
+#tablaPredios tbody tr td:nth-child(1) {
+    font-weight: 600;
+    text-align: center !important;
+}
+
+/* Columna 2: Número predial centrado */
+#tablaPredios tbody tr td:nth-child(2) {
+    /* font-family: Poppins; */
+    font-size: 0.82rem !important;
+    letter-spacing: 0.02em;
+    text-align: center !important;
+}
+
+/* Columna 3: Rol Predio centrado */
+#tablaPredios tbody tr td:nth-child(3) {
+    text-align: center !important;
+}
+
+#tablaPredios .select-rol-predio {
+    margin: 0 auto !important;
+    text-align: center !important;
+    text-align-last: center !important;
+    display: inline-block !important;
+    max-width: 220px;
+}
+
+#tablaPredios .badge {
+    margin: 0 auto !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Columna 4: Estado centrado */
+#tablaPredios tbody tr td:nth-child(4) {
+    text-align: center !important;
+}
+
+#tablaPredios .chip {
+    margin: 0 auto !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
 }
 
 #tablaPredios tbody tr {
@@ -2121,7 +2223,7 @@ table.dataTable tbody td {
 .tarjeta-visor-predio-edit {
     background-color: #F0F6FB !important;
     border: 1px solid #c5ccd3 !important;
-    border-radius: 18px;
+    border-radius: 24px !important;
     box-shadow:
         0 2px 4px rgba(0, 0, 0, 0.06),
         0 6px 14px rgba(0, 0, 0, 0.08);
@@ -2165,10 +2267,10 @@ table.dataTable tbody td {
 /* Statistics Cards Styling */
 .stat-card {
     background-color: #ffffff !important;
-    border-radius: 20px !important;
+    border-radius: 16px !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
-    padding: 10px 16px !important;
-    min-height: 76px !important;
+    padding: 8px 12px !important;
+    min-height: 68px !important;
     display: flex !important;
     align-items: center !important;
     overflow: hidden !important;
@@ -2178,11 +2280,12 @@ table.dataTable tbody td {
 
 .stat-card-left {
     justify-content: flex-start !important;
-    gap: 12px !important;
+    gap: 10px !important;
 }
 
 .stat-card-right {
     justify-content: space-between !important;
+    gap: 6px !important;
 }
 
 /* Specific borders for right edge */
@@ -2194,10 +2297,14 @@ table.dataTable tbody td {
     border-right: 4px solid #03A025 !important;
 }
 
+.stat-card-border-purple {
+    border-right: 4px solid #9333ea !important;
+}
+
 /* Icon Wrappers */
 .stat-card-icon-wrap {
-    width: 40px !important;
-    height: 40px !important;
+    width: 36px !important;
+    height: 36px !important;
     border-radius: 50% !important;
     display: flex !important;
     align-items: center !important;
@@ -2206,12 +2313,12 @@ table.dataTable tbody td {
 }
 
 .stat-card-icon-wrap i {
-    font-size: 16px !important;
+    font-size: 15px !important;
 }
 
 .stat-card-icon-wrap svg {
-    width: 18px !important;
-    height: 18px !important;
+    width: 17px !important;
+    height: 17px !important;
 }
 
 .stat-card-icon-blue {
@@ -2229,18 +2336,23 @@ table.dataTable tbody td {
     color: #03A025 !important;
 }
 
+.stat-card-icon-purple {
+    background-color: #F3E8FF !important;
+    color: #9333ea !important;
+}
+
 /* Text elements */
 .stat-card-title {
     font-family: "Small Desktop regular", var(--font-primary, "Poppins"), sans-serif !important;
-    font-size: 0.78rem !important;
-    font-weight: 400 !important;
+    font-size: 0.74rem !important;
+    font-weight: 500 !important;
     color: #032F57 !important;
     margin: 0 !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
 }
 
 .stat-card-value {
-    font-size: 1.2rem !important;
+    font-size: 1.15rem !important;
     font-weight: 800 !important;
     color: #032F57 !important;
     line-height: 1 !important;
