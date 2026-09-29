@@ -2880,7 +2880,7 @@ def _arb_insert_table_rows_if_absent(
         cur.execute(
             f"""
             INSERT INTO {_qualify(target_schema, table_name)} ({insert_cols})
-            SELECT {select_cols}
+            SELECT DISTINCT ON (m.t_id) {select_cols}
             FROM {from_sql}
             WHERE NOT EXISTS (
                 SELECT 1
@@ -2888,6 +2888,7 @@ def _arb_insert_table_rows_if_absent(
                 WHERE h.t_id = m.t_id
             )
             ORDER BY m.t_id
+            ON CONFLICT (t_id) DO NOTHING
             """
         )
         return cur.rowcount or 0
