@@ -1,0 +1,1042 @@
+{
+  "slug": "general",
+  "catalog": "SINIC",
+  "comparison_source": "Comparacion_SINIC_vs_ARBIMAPS_AUDITADA_XTF(1).xlsx",
+  "rule_count": 27,
+  "implemented_count": 25,
+  "omitted_by_definition_count": 2,
+  "pending_logic_count": 0,
+  "rules": [
+    {
+      "id": "3",
+      "level": "Básico",
+      "abbreviation": "0_CLBD_CG_3",
+      "rule_type": "Consistencia lógica Base de datos (Totalidad de Tablas)",
+      "component": "Componente General",
+      "description": "Se validará que todas las tablas obligatorias se encuentren diligenciadas, es decir con datos e información en ellas.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "La hoja OBLIGATORIAS valida campos individuales, pero no verifica que todas las tablas obligatorias existan y tengan registros."
+      },
+      "implementation_status": "OMITIDA_POR_DEFINICION",
+      "implementation": {
+        "status": "OMITIDA_POR_DEFINICION",
+        "executable": false,
+        "strategy": "OMITIDA_POR_PROYECTO",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "Omitida por decisión del proyecto (reglas SINIC 1-4).",
+        "target_function": "",
+        "target_file": ""
+      }
+    },
+    {
+      "id": "4",
+      "level": "Básico",
+      "abbreviation": "0_CLBD_CG_4",
+      "rule_type": "Consistencia lógica Base de datos (Totalidad de Predios)",
+      "component": "Componente General",
+      "description": "Se valida la totalidad de predios en las entregas anuales conforme a la línea base.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "8.23"
+        ],
+        "arbimaps_rule_ids_raw": "8.23",
+        "arbimaps_modules": "NOVEDADES",
+        "arbimaps_rule_descriptions": "• 8.23: Todos los predios del registro 1 (R1) de insumo inicial o periódico deben estar en la tabla ILC_EstructuraNovedadNumeroPredial o ILC_Predio",
+        "source_status_functioning": "—",
+        "cross_observation": "La 8.23 controla la totalidad de predios del R1 frente a ILC_Predio/ILC_EstructuraNovedadNumeroPredial; se aproxima al control contra línea base, pero no es idéntico al criterio anual SINIC."
+      },
+      "implementation_status": "OMITIDA_POR_DEFINICION",
+      "implementation": {
+        "status": "OMITIDA_POR_DEFINICION",
+        "executable": false,
+        "strategy": "OMITIDA_POR_PROYECTO",
+        "source_rule_ids": [
+          "8.23"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "Omitida por decisión del proyecto (reglas SINIC 1-4).",
+        "target_function": "",
+        "target_file": ""
+      }
+    },
+    {
+      "id": "6",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_6",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Para todos los predios con estado Activo, el NPN debe tener longitud exacta de 30 caracteres numéricos y no ser solo ceros.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.2"
+        ],
+        "arbimaps_rule_ids_raw": "1.2",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.2: El campo numero_predial debe contener 30 digitos tanto en ILC_Predio como en ILC_EstructuraNovedadNumeroPredial.\nPara el caso de numeros provisionales en ILC_Predio, las manzanas/veredas y terrenos deben iniciar en A001 y ser continuos",
+        "source_status_functioning": "1.2: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.2 exige 30 dígitos en numero_predial. La regla SINIC agrega estado Activo, carácter numérico y la condición de no ser todo ceros."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.2"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_6",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "7",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_7",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Posiciones 1-2 del NPN deben corresponder a un código de departamento válido según DIVIPOLA.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Equivalente por combinación",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.9",
+          "11.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.9; 11.1",
+        "arbimaps_modules": "ADMINISTRATIVOS; OBLIGATORIAS",
+        "arbimaps_rule_descriptions": "• 1.9: Los campos 1 y 2 de número predial debe corresponder al valor diligenciado en Departamento\n• 11.1: Código de departamento y municipio debe responder al divipola",
+        "source_status_functioning": "1.9: Estado=OK, Funcionamiento=OK; 11.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.9 valida posiciones 1-2 contra Departamento y la obligatoria 11.1 valida departamento/municipio contra DIVIPOLA."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.9",
+          "11.1"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_7",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "8",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_8",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Posiciones 3-5 del NPN deben corresponder a un código de municipio válido según DIVIPOLA.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Equivalente por combinación",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.10",
+          "11.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.10; 11.1",
+        "arbimaps_modules": "ADMINISTRATIVOS; OBLIGATORIAS",
+        "arbimaps_rule_descriptions": "• 1.10: Los campos 3 a 5 de número predial debe corresponder al valor diligenciado en Municipio.\n• 11.1: Código de departamento y municipio debe responder al divipola",
+        "source_status_functioning": "1.10: Estado=OK, Funcionamiento=OK; 11.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.10 valida posiciones 3-5 contra Municipio y la 11.1 valida departamento/municipio contra DIVIPOLA."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.10",
+          "11.1"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_8",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "9",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_9",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Si posiciones 6-7 del NPN corresponden a '00', las posiciones 10-13 deben ser '0000'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se encontró una regla definida que condicione las posiciones 10-13 a partir de las posiciones 6-7 del NPN."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_9",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "10",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_10",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Posiciones 14-17 del NPN no deben corresponder a '0000'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.3"
+        ],
+        "arbimaps_rule_ids_raw": "1.3",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.3: Los campos 14 al 17 ni del 18 al 21 del número predial nacional pueden ser \"0000\"",
+        "source_status_functioning": "1.3: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.3 incluye exactamente esta condición, pero agrupa en una sola regla los bloques 14-17 y 18-21."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.3"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_10",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "11",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_11",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Posiciones 18-21 del NPN no deben corresponder a '0000'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.3"
+        ],
+        "arbimaps_rule_ids_raw": "1.3",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.3: Los campos 14 al 17 ni del 18 al 21 del número predial nacional pueden ser \"0000\"",
+        "source_status_functioning": "1.3: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.3 incluye exactamente esta condición, pero agrupa en una sola regla los bloques 14-17 y 18-21."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.3"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_11",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "12",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_12",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Posición 22 del NPN no debe corresponder al valor '1'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.8"
+        ],
+        "arbimaps_rule_ids_raw": "1.8",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.8: Los campos 22 del número predial debe ser diferente a \"1\", \"5\" y \"6\".",
+        "source_status_functioning": "1.8: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.8 prohíbe el valor 1 en la posición 22 y además prohíbe 5 y 6; por eso es más amplia que la regla SINIC."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.8"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_12",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "13",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_13",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Si posición 22 del NPN es '0', las posiciones 23-30 deben corresponder a '00000000'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Corresponde a la subregla NPH: posiciones 22-30 = 000000000."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+        "source_rule_ids": [
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_13",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "14",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_14",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Si posición 22 del NPN es '3', las posiciones 23-30 deben corresponder a '00000000'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Corresponde a la subregla Bien_Uso_Publico: posiciones 22-30 = 300000000."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+        "source_rule_ids": [
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_14",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "15",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_15",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Si posición 22 del NPN es '4', las posiciones 23-30 deben corresponder a '00000000'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Corresponde a la subregla Vía: posiciones 22-30 = 400000000."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+        "source_rule_ids": [
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_15",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "16",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_16",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Si posición 22 del NPN es '7' u '8' y posiciones 27-30 != '0000', posiciones 23-26 deben ser '0000'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "1.7",
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.7; 1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.7: El campos 22 al 26 del número predial para predios con condición de propiedad  Condominio.Unidad_predial se estandariza como \"80000\" y los campos del 27 al 30 deben ser diferente a \"0000\".\n• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.7: Estado=OK, Funcionamiento=OK; 1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.7 cubre el patrón 80000 + unidad para Condominio. Para el patrón de Parque Cementerio (7) el primer Excel solo define el patrón 700000000, no la variante de unidad pedida por SINIC."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.7",
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_16",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "17",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_17",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Si posición 22 del NPN es '9' y posiciones 27-30 != '0000', posiciones 23-26 deben ser != '0000'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.5"
+        ],
+        "arbimaps_rule_ids_raw": "1.5",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.5: El campo 22 del número predial para predios con condición de propiedad PH Unidad predial se estandariza como \"9\", los campo 23 a 24 no puede ser \"00\", los campo 25 a 26 no puede ser \"00\" y los campos 27 a 30 no pueden ser \"0000\".",
+        "source_status_functioning": "1.5: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.5 exige posición 22=9, posiciones 23-24 y 25-26 distintas de 00 y 27-30 distintas de 0000 para PH Unidad Predial."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+        "source_rule_ids": [
+          "1.5"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_17",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "18",
+      "level": "General",
+      "abbreviation": "1_CNPN_CG_18",
+      "rule_type": "Consistencia Número Predial Nacional",
+      "component": "Componente General",
+      "description": "Si posición 22 del NPN es '2', posiciones 23-24 deben corresponder al valor '00'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.1 fija el patrón completo 200000000 para Informal; SINIC solo exige 23-24=00 cuando posición 22=2, por lo que la regla existente es más restrictiva."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_18",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "19",
+      "level": "Caracterización",
+      "abbreviation": "2_TT_CG_19",
+      "rule_type": "Cubrimiento Geográfico (Totalidad)",
+      "component": "Componente General",
+      "description": "La unión geográfica de los terrenos activos debe garantizar cubrimiento dentro del rango de tolerancia (5%) frente al límite municipal.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se halló una regla que compare el cubrimiento total de terrenos activos contra el límite municipal con tolerancia del 5%."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_19",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "32",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_32",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Terrenos urbanos deben cubrirse mutua y geográficamente con las manzanas.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.51"
+        ],
+        "arbimaps_rule_ids_raw": "5.51",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.51: Deben cubrirse entre si | Todos los polígonos de la primera clase de entidad y todos los polígonos de la segunda clase de entidad deben cubrirse mutuamente. | Clase 1: CR_Terreno (Urbano) | Clase 2: CC_Manzana | Condición: Aplica para todos los predios asociados que en su código predial nacional en las posiciones 6 & 7 sea diferente de \"00\". | Excepción: No aplica",
+        "source_status_functioning": "—",
+        "cross_observation": "Es el mismo control de cubrimiento mutuo Terreno urbano–Manzana ya definido en 5.51."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.51"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_32",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "33",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_33",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Terrenos rurales deben cubrirse mutua y geográficamente con las veredas.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.52"
+        ],
+        "arbimaps_rule_ids_raw": "5.52",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.52: Deben cubrirse entre si | Todos los polígonos de la primera clase de entidad y todos los polígonos de la segunda clase de entidad deben cubrirse mutuamente. | Clase 1: CR_Terreno (Rural) | Clase 2: CC_Vereda | Condición: Aplica para todos los predios asociados que en su código predial nacional en las posiciones 6 & 7 sea \"00\"",
+        "source_status_functioning": "—",
+        "cross_observation": "Es el mismo control de cubrimiento mutuo Terreno rural–Vereda ya definido en 5.52."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.52"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_33",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "34",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_34",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Si posiciones 22-30 del NPN son '000000000', la condición del predio debe ser 'NPH'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Mismo patrón NPH, pero la regla existente valida Condición→NPN mientras SINIC está redactada NPN→Condición."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_34",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "35",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_35",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Si posiciones 22-30 del NPN son '300000000', la condición del predio debe ser 'Bien_Uso_Publico'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Mismo patrón Bien_Uso_Publico, pero la regla existente valida Condición→NPN y SINIC NPN→Condición."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_35",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "36",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_36",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Si posiciones 22-26 del NPN son '70000' y 27-30 != '0000', condición debe ser 'Parque_Cementerio.Unidad_Predial'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Relacionada, no equivalente",
+        "confidence": "Baja",
+        "arbimaps_rule_ids": [
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.1 contempla Parque Cementerio con 700000000, pero no la condición Parque_Cementerio.Unidad_Predial con sufijo 27-30 distinto de 0000."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_36",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "37",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_37",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Si posiciones 22-30 del NPN son '800000000', la condición del predio debe ser 'Condominio.Matriz'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.6"
+        ],
+        "arbimaps_rule_ids_raw": "1.6",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.6: Los campos 22 a 30 del número predial para predios con condición de propiedad Condominio matriz se estandarizan como \"800000000\".",
+        "source_status_functioning": "1.6: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Mismo patrón Condominio.Matriz 800000000, con sentido de validación inverso."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.6"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_37",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "38",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_38",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Si posiciones 22-26 del NPN son '80000' y 27-30 != '0000', condición debe ser 'Condominio.Unidad_Predial'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.7"
+        ],
+        "arbimaps_rule_ids_raw": "1.7",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.7: El campos 22 al 26 del número predial para predios con condición de propiedad  Condominio.Unidad_predial se estandariza como \"80000\" y los campos del 27 al 30 deben ser diferente a \"0000\".",
+        "source_status_functioning": "1.7: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Mismo patrón Condominio.Unidad_Predial 80000 + 27-30 distinto de 0000, con sentido de validación inverso."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.7"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_38",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "39",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_39",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Si posiciones 22-30 del NPN son '900000000', la condición del predio debe ser 'PH.Matriz'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.4"
+        ],
+        "arbimaps_rule_ids_raw": "1.4",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.4: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad PH matriz se estandarizan como \"900000000\".",
+        "source_status_functioning": "1.4: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Mismo patrón PH.Matriz 900000000, con sentido de validación inverso."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.4"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_39",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "40",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_40",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Si posición 22 del NPN es '9' y 23-30 != '00000000', la condición debe ser 'PH.Unidad_Predial'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.5"
+        ],
+        "arbimaps_rule_ids_raw": "1.5",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.5: El campo 22 del número predial para predios con condición de propiedad PH Unidad predial se estandariza como \"9\", los campo 23 a 24 no puede ser \"00\", los campo 25 a 26 no puede ser \"00\" y los campos 27 a 30 no pueden ser \"0000\".",
+        "source_status_functioning": "1.5: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Mismo patrón PH.Unidad_Predial, con sentido de validación inverso y mayor detalle en los segmentos 23-26 en la regla existente."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.5"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_40",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "41",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CG_41",
+      "rule_type": "Consistencia lógica Predios",
+      "component": "Componente General",
+      "description": "Si posición 22 del NPN es '2', la condición del predio debe ser 'Informal'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "1.1"
+        ],
+        "arbimaps_rule_ids_raw": "1.1",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"",
+        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "El primer Excel estandariza el NPN de Informal como 200000000; SINIC usa posición 22=2 para inferir la condición Informal."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.1"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_41",
+        "target_file": "reglas_generales.py"
+      }
+    },
+    {
+      "id": "65",
+      "level": "Caracterización",
+      "abbreviation": "2_CLTC_CG_65",
+      "rule_type": "Consistencia Lógica Trámite Catastral",
+      "component": "Componente General",
+      "description": "Todo trámite catastral debe estar asociado a mínimo un (1) predio en la base catastral.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "general",
+      "equivalence": {
+        "type": "Relacionada, no equivalente",
+        "confidence": "Baja",
+        "arbimaps_rule_ids": [
+          "1.52"
+        ],
+        "arbimaps_rule_ids_raw": "1.52",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.52: Si se registra algún tipo de tramite de derecho territorial, el tramite y la entidad deben ser correspondientes.",
+        "source_status_functioning": "—",
+        "cross_observation": "La 1.52 valida correspondencia trámite–entidad en derecho territorial, pero no exige que todo trámite catastral tenga al menos un predio asociado."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_SINIC_AJUSTADA",
+        "source_rule_ids": [
+          "1.52"
+        ],
+        "source_module_keys": [
+          "administrativo"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_65",
+        "target_file": "reglas_generales.py"
+      }
+    }
+  ]
+}

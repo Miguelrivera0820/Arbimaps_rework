@@ -192,12 +192,13 @@ def build_npn_lookup(
                     continue
                 child_reference = _clean_value(value)
                 if child_reference:
-                    existing_npn = lookup.get(child_reference)
-                    if not existing_npn:
+                    # Un objeto debe mostrar el NPN de su pertenencia autoritativa,
+                    # no una concatenacion creada por caminos inversos compartidos.
+                    # Si ya existe una resolucion, se conserva. Las referencias
+                    # directas y el Numero_Predial del propio ARB_Predio tienen
+                    # prioridad sobre cualquier propagacion posterior.
+                    if child_reference not in lookup:
                         lookup[child_reference] = resolved_npn
-                        changed = True
-                    elif resolved_npn not in existing_npn.split(" | "):
-                        lookup[child_reference] = f"{existing_npn} | {resolved_npn}"
                         changed = True
 
         if not changed:

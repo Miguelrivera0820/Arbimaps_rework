@@ -19,6 +19,7 @@ effective_role in ['digitalizador', 'reconocedor'] %}
 'restriccion_predios': 'Bloqueo de predios',
 'box_explorer': 'Documentos',
 'validacion_xtf': 'Validación XTF',
+'historial_validacion': 'Historial de validación',
 'sincronizacion_mergin': 'Sincronización Mergin',
 'panel_control': 'Panel de control',
 'reportes_sinic': 'Reportes SINIC',
@@ -88,9 +89,11 @@ effective_role in ['digitalizador', 'reconocedor'] %}
   <link rel="stylesheet" href="{{ rp }}/static/css/edicion_asignacion/editar.css" />
   {% endif %} {% endif %}
 
-  <link rel="stylesheet" href="{{ rp }}/static/css/panel/panel.css?v=14" />
+  <link rel="stylesheet" href="{{ rp }}/static/css/panel/panel.css?v=15" />
   {% if view == 'validacion_xtf' %}
   <link rel="stylesheet" href="{{ rp }}/static/css/validacion_xtf.css?v=1" />
+  {% elif view == 'historial_validacion' %}
+  <link rel="stylesheet" href="{{ rp }}/static/css/historial_validacion.css?v=3" />
   {% elif view == 'sincronizacion_mergin' %}
   <link rel="stylesheet" href="{{ rp }}/static/css/sincronizacion_mergin_neiva.css?v=1" />
   {% elif view == 'notificaciones' %}
@@ -220,11 +223,41 @@ effective_role in ['digitalizador', 'reconocedor'] %}
               </a>
               {% endif %} #}
             -->
-              <a class="menuBtn sidebar-link {{ 'active' if view == 'validacion_xtf' else '' }}"
-                href="{{ rp }}/panel/validacion-xtf">
-                <i class="bi bi-check-circle"></i>
-                <span>Validación XTF</span>
-              </a>
+              <div class="accordion" style="border-radius: 12px;" id="calidadAccordionDesktop">
+                <div class="accordion-item bg-transparent border-0 p-0">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed menuBtn sidebar-toggle-custom {{ 'active' if view in ['validacion_xtf', 'historial_validacion'] else '' }}"
+                      type="button" data-bs-toggle="collapse" data-bs-target="#collapseCalidadDesktop"
+                      aria-expanded="{{ 'true' if view in ['validacion_xtf', 'historial_validacion'] else 'false' }}"
+                      aria-controls="collapseCalidadDesktop">
+                      <span class="sidebar-group-main">
+                        <span class="sidebar-group-left">
+                          <i class="bi bi-shield-check"></i>
+                          <span>Calidad</span>
+                        </span>
+                      </span>
+                    </button>
+                  </h2>
+                  <div id="collapseCalidadDesktop"
+                    class="accordion-collapse collapse {% if view in ['validacion_xtf', 'historial_validacion'] %}show{% endif %}"
+                    data-bs-parent="#calidadAccordionDesktop">
+                    <div class="accordion-body p-2">
+                      <div class="submenu-heading">Control de calidad</div>
+                      <a class="popupItem {% if view == 'validacion_xtf' %}active{% endif %}"
+                        href="{{ rp }}/panel/validacion-xtf">
+                        <i class="bi bi-file-earmark-check"></i>
+                        <span>Validación XTF</span>
+                      </a>
+                      <a class="popupItem {% if view == 'historial_validacion' %}active{% endif %}"
+                        href="{{ rp }}/panel/calidad/historial-validacion">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Historial de validación</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
               {% if effective_role in ['lider_tecnico', 'soporte'] %}
               <!--
               <a class="menuBtn sidebar-link {{ 'active' if view == 'sincronizacion_mergin' else '' }}"
@@ -401,6 +434,8 @@ effective_role in ['digitalizador', 'reconocedor'] %}
                   include "usuarios.html" %} {% elif view == 'validacion_xtf'
                   %} {% set validacion_embed = True %} {% include
                   "validacion_xtf.html" %} {% set validacion_embed = False %}
+                  {% elif view == 'historial_validacion' %} {% include
+                  "historial_validacion.html" %}
                   {% elif view == 'sincronizacion_mergin' %} {% include
                   "sincronizacion_mergin.html" %}
                   {% elif view == 'box_explorer' %} {% include

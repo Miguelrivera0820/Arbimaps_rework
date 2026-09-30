@@ -1,0 +1,275 @@
+{% set history = validation_history if validation_history is defined else [] %}
+{% set dash = validation_dashboard if validation_dashboard is defined else {} %}
+{% set assignments = validation_assignment_options if validation_assignment_options is defined else [] %}
+{% set selected_assignment_id = validation_selected_assignment_id if validation_selected_assignment_id is defined else none %}
+<div class="validation-history-page">
+  <section class="vh-control-hero">
+    <div class="vh-control-copy">
+      <div class="vh-control-kicker"><i class="bi bi-shield-check"></i> CONTROL DE CALIDAD XTF</div>
+      <h2>Historial y estado de calidad</h2>
+      <p>Seguimiento consolidado de las validaciones realizadas y del cumplimiento de los cuatro componentes de calidad.</p>
+    </div>
+    <div class="vh-control-actions">
+      <span class="vh-year-chip"><i class="bi bi-calendar3"></i> Historial consolidado</span>
+      <a class="vh-primary-btn" href="{{ rp }}/panel/validacion-xtf"><i class="bi bi-plus-circle"></i><span>Nueva validación</span></a>
+    </div>
+  </section>
+
+  <section class="vh-general-grid">
+    <div class="vh-general-card">
+      <div class="vh-general-ring" style="--quality: {{ dash.get('overall_quality', 0) }};">
+        <div class="vh-general-ring-inner">
+          <strong>{{ dash.get('overall_quality', 0) }}%</strong>
+          <span>calidad general</span>
+        </div>
+      </div>
+      <div class="vh-general-copy">
+        <span class="vh-mini-label">ESTADO GENERAL</span>
+        <h3>Calidad consolidada de los XTF</h3>
+        <p>Promedio de cumplimiento de las reglas evaluadas en General, Jurídico, Económico y Físico.</p>
+        <div class="vh-general-meta">
+          <span><b>{{ dash.get('total_assignments', 0) }}</b> asignaciones</span>
+          <span class="is-sync"><b>{{ dash.get('synchronized_assignments', 0) }}</b> sincronizadas</span>
+          <span class="is-validation"><b>{{ dash.get('in_validation_assignments', 0) }}</b> en validación</span>
+          <span><b>{{ dash.get('total_predios', 0) }}</b> predios evaluados</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="vh-module-summary">
+      {% for component in dash.get('components', []) %}
+      <article class="vh-module-card" data-module="{{ component.get('slug','') }}">
+        <div class="vh-module-top">
+          <span class="vh-module-icon"><i class="bi {{ component.get('icon','bi-grid') }}"></i></span>
+          <div>
+            <small>COMPONENTE</small>
+            <h4>{{ component.get('label','Componente') }}</h4>
+          </div>
+          <strong>{{ component.get('quality_percent',0) }}%</strong>
+        </div>
+        <div class="vh-module-track"><span style="width:{{ component.get('quality_percent',0) }}%"></span></div>
+        <div class="vh-module-foot">
+          <span>{{ component.get('passed',0) }} aprobadas</span>
+          <span>{{ component.get('failed',0) }} con hallazgo</span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="vh-analysis-panel">
+    <div class="vh-analysis-head">
+      <div>
+        <h5>Análisis por asignación</h5>
+        <p>Selecciona una asignación para revisar cómo va su última validación. Si aún no tiene validaciones, el panel queda vacío hasta que se ejecute una.</p>
+      </div>
+      <div class="vh-analysis-selector-wrap">
+        <label for="vhValidationSelector">Asignación / encargado</label>
+        <select id="vhValidationSelector" class="vh-analysis-selector">
+          {% for assignment in assignments %}
+          <option value="{{ assignment.get('id') }}" {% if selected_assignment_id == assignment.get('id') %}selected{% endif %}>
+            {{ assignment.get('label','Asignación') }}{% if assignment.get('assigned_user') %} · {{ assignment.get('assigned_user') }}{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="vh-analysis-body">
+      <div class="vh-chart-card" id="vhChartCard">
+        <div class="vh-chart-title">
+          <div>
+            <span class="vh-mini-label">CALIDAD POR COMPONENTE</span>
+            <h6 id="vhDetailTitle">Selecciona una asignación</h6>
+          </div>
+          <span class="vh-scope-pill" id="vhDetailScope"></span>
+        </div>
+        <div class="vh-bars-chart" id="vhBarsChart">
+          {% for slug, label, icon in [('general','General','bi-ui-checks-grid'),('juridico','Jurídico','bi-bank'),('economico','Económico','bi-graph-up-arrow'),('fisico','Físico','bi-bounding-box')] %}
+          <div class="vh-bar-row" data-detail-module="{{ slug }}">
+            <div class="vh-bar-label"><i class="bi {{ icon }}"></i><span>{{ label }}</span></div>
+            <div class="vh-bar-track"><span id="vhDetailBar-{{ slug }}" style="width:0%"></span></div>
+            <strong id="vhDetailPct-{{ slug }}">—</strong>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="vh-assignment-empty" id="vhAssignmentEmpty" hidden>
+          <i class="bi bi-clipboard2-x"></i>
+          <strong>Esta asignación aún no tiene validaciones XTF</strong>
+          <span>Cuando se valide un XTF asociado a esta asignación, aquí aparecerán sus estadísticas.</span>
+        </div>
+      </div>
+
+      <div class="vh-detail-quality-card" id="vhDetailQualityCard">
+        <span class="vh-mini-label">CALIDAD DE LA ÚLTIMA VALIDACIÓN</span>
+        <div class="vh-detail-ring" id="vhDetailRing" style="--quality:0">
+          <div><strong id="vhDetailQuality">—</strong><span>calidad</span></div>
+        </div>
+        <h6 id="vhDetailFile">Sin validaciones</h6>
+        <p id="vhDetailMeta"></p>
+        <div class="vh-detail-kpis">
+          <span><b id="vhDetailPassed">—</b> aprobadas</span>
+          <span><b id="vhDetailFailed">—</b> con hallazgo</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="vh-panel vh-history-panel">
+    <div class="vh-history-head">
+      <div>
+        <h5>Historial XTF de la asignación</h5>
+        <p>Se muestran todas las validaciones realizadas para la asignación seleccionada, incluidas sus distintas versiones de XTF y alcances.</p>
+      </div>
+      <div class="vh-history-count"><span id="vhVisibleCount">0</span> validaciones</div>
+    </div>
+
+    <div class="vh-filters">
+      <div class="vh-search-wrap"><i class="bi bi-search"></i><input id="vhSearch" type="search" placeholder="Buscar archivo, usuario, ID..." autocomplete="off"></div>
+      <select id="vhStatusFilter" class="vh-select">
+        <option value="">Todos los resultados</option>
+        <option value="issues">Con hallazgos</option>
+        <option value="clean">Sin hallazgos</option>
+      </select>
+      <select id="vhSyncFilter" class="vh-select">
+        <option value="">Todos los estados</option>
+        <option value="synced">Sincronizado</option>
+        <option value="validation">En validación</option>
+      </select>
+      <button type="button" class="vh-clear-btn" id="vhClearFilters"><i class="bi bi-arrow-counterclockwise"></i> Limpiar</button>
+    </div>
+
+    <div class="vh-table-wrap">
+      <table class="vh-table" id="vhHistoryTable">
+        <thead><tr><th>Fecha</th><th>XTF validado</th><th>Usuario</th><th>Alcance</th><th>Estado</th><th class="text-center">Predios</th><th class="text-center">Hallazgos</th><th>Resultado</th><th class="text-end">Reportes</th></tr></thead>
+        <tbody>
+          {% for item in history %}
+          {% if item.get('assignment_id') is not none %}
+          <tr class="vh-row" data-job-id="{{ item.get('job_id','') }}" data-assignment-id="{{ item.get('assignment_id','') }}" data-search="{{ (item.get('original_filename','') ~ ' ' ~ item.get('username','') ~ ' ' ~ item.get('job_id','') ~ ' ' ~ item.get('scope_label','') ~ ' ' ~ item.get('scope_detail',''))|lower }}" data-result="{{ 'issues' if item.get('total_issues',0) else 'clean' }}" data-sync="{{ 'synced' if item.get('is_synchronized') else 'validation' }}">
+            <td><div class="vh-date" data-date="{{ item.get('generated_at','') }}">{{ item.get('generated_at','')|replace('T',' ') }}</div></td>
+            <td>
+              <div class="vh-file-cell">
+                <span class="vh-file-icon"><i class="bi bi-file-earmark-code"></i></span>
+                <div><strong title="{{ item.get('original_filename','') }}">{{ item.get('original_filename','Archivo XTF') }}</strong><small>{{ item.get('job_id','') }}</small></div>
+              </div>
+            </td>
+            <td><span class="vh-user"><i class="bi bi-person"></i>{{ item.get('username','Usuario') }}</span></td>
+            <td>
+              {% if item.get('scope_type') == 'selected' %}<span class="vh-scope-badge is-partial"><i class="bi bi-list-check"></i> Predios seleccionados</span>
+              {% else %}<span class="vh-scope-badge is-all"><i class="bi bi-check2-all"></i> Todo el XTF</span>{% endif %}
+              <small class="vh-scope-detail">{{ item.get('scope_detail','') }}</small>
+            </td>
+            <td>{% if item.get('is_synchronized') %}<span class="vh-sync-badge is-synced"><i class="bi bi-cloud-check"></i> Sincronizado</span>{% else %}<span class="vh-sync-badge is-validation"><i class="bi bi-hourglass-split"></i> En validación</span>{% endif %}</td>
+            <td class="text-center"><span class="vh-number-chip">{{ item.get('evaluated_predios',0) }}</span></td>
+            <td class="text-center"><span class="vh-issue-count {{ 'has-issues' if item.get('total_issues',0) else 'is-clean' }}">{{ item.get('total_issues',0) }}</span></td>
+            <td>{% if item.get('total_issues',0) %}<span class="vh-result-badge has-issues"><i class="bi bi-exclamation-circle"></i> Con hallazgos</span>{% else %}<span class="vh-result-badge is-clean"><i class="bi bi-check-circle"></i> Sin hallazgos</span>{% endif %}</td>
+            <td class="text-end"><div class="vh-actions"><a href="{{ rp }}/validacion/xtf/{{ item.get('job_id') }}/reporte.pdf" class="vh-action-btn" title="Descargar PDF"><i class="bi bi-file-earmark-pdf"></i></a><a href="{{ rp }}/validacion/xtf/{{ item.get('job_id') }}/errores.xlsx" class="vh-action-btn" title="Descargar Excel"><i class="bi bi-file-earmark-excel"></i></a></div></td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="vh-empty-filter" id="vhEmptyFilter" hidden><i class="bi bi-clipboard2-x"></i><strong>Esta asignación aún no tiene validaciones</strong><span>Las validaciones XTF aparecerán aquí cuando se ejecuten.</span></div>
+    </div>
+  </section>
+</div>
+
+<script type="application/json" id="vhValidationData">{{ history | tojson }}</script>
+<script type="application/json" id="vhAssignmentData">{{ assignments | tojson }}</script>
+<script>
+(() => {
+  const parseJson = id => { try { return JSON.parse(document.getElementById(id)?.textContent || '[]'); } catch (_) { return []; } };
+  const historyData = parseJson('vhValidationData');
+  const assignmentData = parseJson('vhAssignmentData');
+  const selector = document.getElementById('vhValidationSelector');
+  const moduleDefs = [['general','General'],['juridico','Jurídico'],['economico','Económico'],['fisico','Físico']];
+  const pct = value => { const n=Number(value||0); return Number.isFinite(n)?Math.max(0,Math.min(100,n)):0; };
+  const assignmentMap = new Map(assignmentData.map(item => [String(item.id||''), item]));
+  const grouped = new Map();
+  historyData.forEach(item => {
+    const key=String(item.assignment_id ?? '');
+    if(!key) return;
+    if(!grouped.has(key)) grouped.set(key,[]);
+    grouped.get(key).push(item);
+  });
+  grouped.forEach(items => items.sort((a,b)=>String(b.generated_at||'').localeCompare(String(a.generated_at||''))));
+
+  let dt = null;
+  let selectedAssignmentId = selector?.value || '';
+
+  const renderEmpty = assignmentId => {
+    const assignment=assignmentMap.get(String(assignmentId||''))||{};
+    const title=document.getElementById('vhDetailTitle');
+    if(title) title.textContent=assignment.label||assignment.title||'Asignación';
+    const scope=document.getElementById('vhDetailScope'); if(scope) scope.textContent='Sin validaciones';
+    const file=document.getElementById('vhDetailFile'); if(file) file.textContent='Sin validaciones registradas';
+    const meta=document.getElementById('vhDetailMeta'); if(meta) meta.textContent=assignment.sync_status||'';
+    const ring=document.getElementById('vhDetailRing'); if(ring) ring.style.setProperty('--quality',0);
+    const quality=document.getElementById('vhDetailQuality'); if(quality) quality.textContent='—';
+    const passed=document.getElementById('vhDetailPassed'); if(passed) passed.textContent='—';
+    const failed=document.getElementById('vhDetailFailed'); if(failed) failed.textContent='—';
+    moduleDefs.forEach(([slug])=>{const bar=document.getElementById(`vhDetailBar-${slug}`);const val=document.getElementById(`vhDetailPct-${slug}`);if(bar)bar.style.width='0%';if(val)val.textContent='—';});
+    document.getElementById('vhAssignmentEmpty')?.removeAttribute('hidden');
+    document.getElementById('vhBarsChart')?.classList.add('is-empty');
+  };
+
+  const renderValidation = item => {
+    if(!item) return renderEmpty(selectedAssignmentId);
+    document.getElementById('vhAssignmentEmpty')?.setAttribute('hidden','');
+    document.getElementById('vhBarsChart')?.classList.remove('is-empty');
+    const components=item.component_quality||{};
+    const quality=pct(item.quality_percent);
+    const assignment=assignmentMap.get(String(item.assignment_id||''))||{};
+    const title=document.getElementById('vhDetailTitle'); if(title) title.textContent=assignment.label||item.assignment_label||'Asignación';
+    const scope=document.getElementById('vhDetailScope'); if(scope) scope.textContent=item.scope_label||'';
+    const file=document.getElementById('vhDetailFile'); if(file) file.textContent=item.original_filename||'Archivo XTF';
+    const meta=document.getElementById('vhDetailMeta'); if(meta) meta.textContent=`${item.sync_status||'En validación'} · ${item.scope_detail||''} · ${item.total_issues||0} hallazgos`;
+    const ring=document.getElementById('vhDetailRing'); if(ring) ring.style.setProperty('--quality',quality);
+    const qualityEl=document.getElementById('vhDetailQuality'); if(qualityEl) qualityEl.textContent=`${quality.toFixed(1)}%`;
+    const passed=document.getElementById('vhDetailPassed'); if(passed) passed.textContent=item.quality_passed||0;
+    const failed=document.getElementById('vhDetailFailed'); if(failed) failed.textContent=Math.max((item.quality_checks||0)-(item.quality_passed||0),0);
+    moduleDefs.forEach(([slug])=>{const data=components[slug]||{};const q=pct(data.quality_percent);const bar=document.getElementById(`vhDetailBar-${slug}`);const val=document.getElementById(`vhDetailPct-${slug}`);if(bar)bar.style.width=`${q}%`;if(val)val.textContent=`${q.toFixed(1)}%`;});
+  };
+
+  const renderAssignment = assignmentId => {
+    selectedAssignmentId=String(assignmentId||'');
+    const items=grouped.get(selectedAssignmentId)||[];
+    if(items.length) renderValidation(items[0]); else renderEmpty(selectedAssignmentId);
+    if(dt){ dt.draw(); document.getElementById('vhVisibleCount').textContent=dt.rows({search:'applied'}).count(); }
+    document.getElementById('vhEmptyFilter').hidden = items.length > 0;
+  };
+
+  document.querySelectorAll('.vh-date[data-date]').forEach(el=>{const raw=el.dataset.date||'';if(!raw)return;const date=new Date(raw);if(!Number.isNaN(date.getTime()))el.textContent=date.toLocaleString('es-CO',{dateStyle:'short',timeStyle:'short'});});
+
+  const search=document.getElementById('vhSearch');
+  const status=document.getElementById('vhStatusFilter');
+  const syncFilter=document.getElementById('vhSyncFilter');
+  const clear=document.getElementById('vhClearFilters');
+  const count=document.getElementById('vhVisibleCount');
+
+  selector?.addEventListener('change',()=>renderAssignment(selector.value));
+
+  const initDataTable=()=>{
+    if(!(window.jQuery&&window.jQuery.fn&&window.jQuery.fn.DataTable)) return;
+    const $=window.jQuery, tableNode=document.getElementById('vhHistoryTable');
+    if(!tableNode) return;
+    if($.fn.DataTable.isDataTable(tableNode)) $(tableNode).DataTable().destroy();
+    dt=$(tableNode).DataTable({pageLength:10,lengthChange:false,searching:true,ordering:false,info:true,paging:true,autoWidth:false,dom:'rt<"vh-dt-footer"ip>',language:{info:'Mostrando _START_ a _END_ de _TOTAL_ validaciones',infoEmpty:'Sin validaciones para esta asignación',zeroRecords:'No encontramos validaciones con esos filtros',paginate:{previous:'Anterior',next:'Siguiente'}}});
+    $.fn.dataTable.ext.search.push((settings,data,dataIndex)=>{
+      if(settings.nTable!==tableNode) return true;
+      const row=dt.row(dataIndex).node(); if(!row) return true;
+      const q=(search?.value||'').trim().toLowerCase(), resultFilter=status?.value||'', syncValue=syncFilter?.value||'';
+      return row.dataset.assignmentId===selectedAssignmentId && (!q||(row.dataset.search||'').includes(q)) && (!resultFilter||row.dataset.result===resultFilter) && (!syncValue||row.dataset.sync===syncValue);
+    });
+    const apply=()=>{dt.draw();if(count)count.textContent=dt.rows({search:'applied'}).count();};
+    search?.addEventListener('input',apply);status?.addEventListener('change',apply);syncFilter?.addEventListener('change',apply);
+    clear?.addEventListener('click',()=>{if(search)search.value='';if(status)status.value='';if(syncFilter)syncFilter.value='';apply();search?.focus();});
+    $('#vhHistoryTable tbody').off('click.vh').on('click.vh','tr.vh-row',function(event){if(event.target.closest('a,button'))return;const item=historyData.find(x=>String(x.job_id||'')===String(this.dataset.jobId||''));if(item)renderValidation(item);$('#vhHistoryTable tbody tr').removeClass('is-selected');this.classList.add('is-selected');});
+    renderAssignment(selectedAssignmentId);
+  };
+
+  const loadScript=src=>new Promise((resolve,reject)=>{const existing=Array.from(document.scripts).find(s=>s.src===src);if(existing){if(existing.dataset.loaded==='1')resolve();else existing.addEventListener('load',resolve,{once:true});return;}const script=document.createElement('script');script.src=src;script.onload=()=>{script.dataset.loaded='1';resolve();};script.onerror=reject;document.head.appendChild(script);});
+  (async()=>{try{if(!window.jQuery)await loadScript('https://code.jquery.com/jquery-3.7.1.min.js');if(!(window.jQuery.fn&&window.jQuery.fn.DataTable)){await loadScript('https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js');await loadScript('https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js');}initDataTable();}catch(error){console.warn('No fue posible iniciar DataTables en el historial:',error);renderAssignment(selectedAssignmentId);}})();
+})();
+</script>
+

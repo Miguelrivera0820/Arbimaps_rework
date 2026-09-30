@@ -6,14 +6,17 @@ import unicodedata
 import xml.etree.ElementTree as ET
 from typing import Any, Iterable
 
-from .base import DatasetReader, RuleIssue
+from ...base import DatasetReader, RuleIssue
 
 try:
-    from shapely import wkb, wkt
+    from shapely import wkb, wkt, make_valid
     from shapely.geometry import MultiPolygon, Point, Polygon, shape
+    from shapely.ops import unary_union
 except Exception:
     wkb = None
     wkt = None
+    make_valid = None
+    unary_union = None
     shape = None
     MultiPolygon = None
     Point = None
@@ -611,8 +614,12 @@ def _load_xtf_geometry(xml_text: str):
 
         try:
             polygon = Polygon(rings[0], rings[1:])
-            if not polygon.is_valid:
-                polygon = polygon.buffer(0)
+            # IMPORTANTE: buffer(0) puede eliminar anillos que están fuera del shell.
+            # En XTF/INTERLIS esos casos aparecen en geometrías que ili2pg/QGIS
+            # conserva y repara con GEOS MakeValid. Usamos la misma operación para
+            # no perder superficies reales ni crear diferencias Web vs QGIS.
+            if not polygon.is_valid and make_valid is not None:
+                polygon = make_valid(polygon)
             if not polygon.is_empty:
                 polygons.append(polygon)
         except Exception:
@@ -628,9 +635,12 @@ def _load_xtf_geometry(xml_text: str):
 
     if len(polygons) > 1 and MultiPolygon is not None:
         try:
-            geom = MultiPolygon(polygons)
-            if not geom.is_valid:
-                geom = geom.buffer(0)
+            # Las superficies reparadas pueden ser Polygon, MultiPolygon o
+            # GeometryCollection. unary_union conserva todos los componentes
+            # poligonales y evita que MultiPolygon(...) descarte geometría válida.
+            geom = unary_union(polygons) if unary_union is not None else MultiPolygon(polygons)
+            if not geom.is_valid and make_valid is not None:
+                geom = make_valid(geom)
             return geom
         except Exception:
             return None

@@ -1,195 +1,2370 @@
 {
   "slug": "fisico",
-  "rule_count": 21,
+  "catalog": "SINIC",
+  "comparison_source": "Comparacion_SINIC_vs_ARBIMAPS_AUDITADA_XTF(1).xlsx",
+  "rule_count": 61,
+  "implemented_count": 61,
+  "omitted_by_definition_count": 0,
+  "pending_logic_count": 0,
   "rules": [
     {
-      "id": "3.1",
-      "description": "Los predios asociados a condiciones de propiedad PH Unidad Predial deben tener asociada CR_UnidadConstruccion, exceptuando los parqueaderos o garajes descubiertos o unidades de PH no construidas.",
-      "classes": "ILC_Predio\nCR_UnidadConstruccion",
-      "variables": "CondicionPredio",
-      "technical_rule": "Para todo ILC_predio.ILC_CondicionPredio \"PH.Unidad_Predial\" debe tener minimo un LC_UnidadConstruccion excepto parqueaderos o garajes descubiertos o unidades de PH no construidas.",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "5",
+      "level": "Básico",
+      "abbreviation": "0_CT_CF_5",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Las Unidades de Construcción no deben superponerse en función de la planta en la cual se ubican.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.31"
+        ],
+        "arbimaps_rule_ids_raw": "5.31",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.31: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_UnidadConstruccion | Condición: No deben traslaparse las unidades ubicadas en la misma CR_UnidadConstruccion,Planta_Ubicacion y Tipo_Planta",
+        "source_status_functioning": "—",
+        "cross_observation": "La regla topológica 5.31 impide traslapes de CR_UnidadConstruccion en la misma planta/tipo de planta."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.31"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_5",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.10",
-      "description": "Las unidades asociadas a tipos de unidades de construcción “Institucional” deben asociar solamente usos de construcción asociadas al dominio de “Institucional”",
-      "classes": "CR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Tipo_Unidad_Construccion\n\nUso",
-      "technical_rule": "ILC_CaracteristicasUnidadConstruccion.Tipo_Unidad_Construccion = “Institucional” entonces, ILC_CaracteristicasUnidadConstruccion.Uso debe corresponder al dominio de Institucional en CR_UsoUConsTipo <<Enumeration>>",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "20",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_20",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Los terrenos asociados a predios en condición diferente a informalidad o sin asociación no deben superponerse entre sí.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.17"
+        ],
+        "arbimaps_rule_ids_raw": "5.17",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.17: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Predios formales) | Condición: Aplica para todos los predios asociados que en su código predial nacional en la posición 22 sea diferente de \"2\". | Excepción: No aplica",
+        "source_status_functioning": "—",
+        "cross_observation": "El bloque 5.17 controla que CR_Terreno de predios formales no se superponga con elementos de la misma clase."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.17"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_20",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.11",
-      "description": "Las unidades asociadas a tipos de unidades de construcción “Residencial” deben asociar solamente usos de construcción asociadas al dominio de “Residencial”",
-      "classes": "CR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Tipo_Unidad_Construccion\n\nUso",
-      "technical_rule": "ILC_CaracteristicasUnidadConstruccionTipo_Unidad_Construccion = “Residencial” entonces, ILC_CaracteristicasUnidadConstruccion.Uso debe corresponder al dominio de Residencial en CR_UsoUConsTipo <<Enumeration>>",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "21",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_21",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Para todos los Terrenos, verificar que no existan polígonos de áreas mínimas (menos de 1 m2).",
+      "level_score_percent": 35,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.5"
+        ],
+        "arbimaps_rule_ids_raw": "3.5",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.5: No deben haber poligonos de terreno menores a 2 m² (Aplican Excepciones que se deben verificar puntualmente).",
+        "source_status_functioning": "3.5: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Mismo control de área mínima de terreno, pero el umbral existente es 2 m² y SINIC exige 1 m²."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.5"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_21",
+        "target_file": "reglas_fisicas.py"
+      }
     },
     {
-      "id": "3.12",
-      "description": "La planta de ubicación de la unidad de construcción no puede ser cero (0) ni negativa.",
-      "classes": "CR_UnidadConstruccion",
-      "variables": "Planta_Ubicacion",
-      "technical_rule": "CR_UnidadConstruccion.Planta_Ubicacion > 0",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "22",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_22",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Para Unidades de Construcción con geometría, verificar que no existan polígonos de áreas mínimas (menos de 0,5 m2).",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "La regla 3.5 aplica a terrenos, no a unidades de construcción; no se encontró umbral de 0,5 m² para UC."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_22",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.13",
-      "description": "Los predios con destinación económica  habitacional deben tener minimo una unidad de tipo residencial y esta(s) deben ser predominantes en área construidas respecto a las demás (Aplican Excepciones en predios formales que no tienen asociada unidad de construcción pero existen unidades de construccion de predios informales).",
-      "classes": "ILC_predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion\ncol_ueBaunit",
-      "variables": "Destinacion_economica\nt_id\nuso\ngeometria\nue(CR_UnidadConstruccion)\nbaunit",
-      "technical_rule": "Para todo predio asociado a ILC_Predio.destinacion_economica = Habitacional debe asociar al menos 1 CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Uso)  que contenga \"Residencial\" y CR_UnidadConstruccion.geometria de las unidades que cumplan con esta condición debe ser predominante dentro del predio asociado",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "23",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_23",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Para Unidades de Construcción con geometría, verificar que no existan huecos entre polígonos adyacentes.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "El bloque “No debe haber huecos” del primer Excel no incluye explícitamente CR_UnidadConstruccion para este control."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_23",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.14",
-      "description": "Los predios con destinación económica comercial  deben tener minimo una unidad de tipo comercial y esta(s) deben ser predominantes en área construidas respecto a las demás (Aplican Excepciones en predios formales que no tienen asociada unidad de construcción pero existen unidades de construccion de predios informales).",
-      "classes": "lc_predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion\ncol_ueBaunit",
-      "variables": "Destinacion_economica\nt_id\nuso\ngeometria\nue(CR_UnidadConstruccion)\nbaunit",
-      "technical_rule": "Para todo predio asociado a ILC_Predio.destinacion_economica = Comercial debe asociar al menos 1 CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Uso)  que contenga \"Comercial\" y CR_UnidadConstruccion.geometria de las unidades que cumplan con esta condición debe ser predominante dentro del predio asociado",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "24",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_24",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Para todas las Unidades de Construcción con representación geométrica, verificar que sea válida.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se identificó una validación general de validez geométrica de todas las Unidades de Construcción."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_24",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.15",
-      "description": "Los predios con destinación económica industrial deben tener minimo una unidad de tipo industrial y esta(s) deben ser predominantes en área construidas respecto a las demás (Aplican Excepciones en predios formales que no tienen asociada unidad de construcción pero existen unidades de construccion de predios informales).",
-      "classes": "lc_predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion\ncol_ueBaunit",
-      "variables": "Destinacion_economica\nt_id\nuso\ngeometria\nue(CR_UnidadConstruccion)\nbaunit",
-      "technical_rule": "Para todo predio asociado a ILC_Predio.destinacion_economica = Industrial debe asociar al menos 1 CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Uso)  que contenga \"Industrial\" y CR_UnidadConstruccion.geometria de las unidades que cumplan con esta condición debe ser predominante dentro del predio asociado",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "25",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_25",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Todas las Unidades de Construcción (exceptuando parqueaderos descubiertos) deben tener geometría asociada.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "11.18",
+          "3.1"
+        ],
+        "arbimaps_rule_ids_raw": "11.18; 3.1",
+        "arbimaps_modules": "OBLIGATORIAS; FISICO",
+        "arbimaps_rule_descriptions": "• 11.18: La unidad de construcción no tiene geometría\n• 3.1: Los predios asociados a condiciones de propiedad PH Unidad Predial deben tener asociada CR_UnidadConstruccion, exceptuando los parqueaderos o garajes descubiertos o unidades de PH no construidas.",
+        "source_status_functioning": "11.18: Estado=OK, Funcionamiento=OK; 3.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 11.18 exige geometría de UC y la 3.1 contempla la excepción para PH/parqueaderos descubiertos. El alcance no queda idéntico para todos los tipos SINIC."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "11.18",
+          "3.1"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_25",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.16",
-      "description": "Los predios con destinación económica Institucional ó cultural ó educativo ó religioso deben tener minimo una unidad de tipo Institucional y esta(s) deben ser predominantes en área construidas respecto a las demás (Aplican Excepciones en predios formales que no tienen asociada unidad de construcción pero existen unidades de construccion de predios informales).",
-      "classes": "lc_predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion\ncol_ueBaunit",
-      "variables": "Destinacion_economica\nt_id\nuso\ngeometria\nue(CR_UnidadConstruccion)\nbaunit",
-      "technical_rule": "Para todo predio asociado a ILC_Predio.destinacion_economica = \"Institucional\" ó \"Cultural\" ó \"Eductaivo\" ó \"Religioso\" debe asociar al menos 1 CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Uso)  que contenga \"Institucional\" y CR_UnidadConstruccion.geometria de las unidades que cumplan con esta condición debe ser predominante dentro del predio asociado",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "26",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_26",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Terrenos urbanos deben cubrirse mutua y geográficamente con la capa de manzanas.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.51"
+        ],
+        "arbimaps_rule_ids_raw": "5.51",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.51: Deben cubrirse entre si | Todos los polígonos de la primera clase de entidad y todos los polígonos de la segunda clase de entidad deben cubrirse mutuamente. | Clase 1: CR_Terreno (Urbano) | Clase 2: CC_Manzana | Condición: Aplica para todos los predios asociados que en su código predial nacional en las posiciones 6 & 7 sea diferente de \"00\". | Excepción: No aplica",
+        "source_status_functioning": "—",
+        "cross_observation": "La 5.51 exige cubrimiento mutuo entre CR_Terreno urbano y CC_Manzana."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.51"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_26",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.17",
-      "description": "total plantas de la unidad debe estar diligenciada para todas las unidades identificadas y debe ser mayor a cero (0)",
-      "classes": "ILC_CaracteristicasUnidadConstruccion",
-      "variables": "Total_Plantas",
-      "technical_rule": "ILC_CaracteristicasUnidadConstruccion.Total_Plantas > 0",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "27",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_27",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Terrenos rurales deben cubrirse mutua y geográficamente con la capa de veredas.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.52"
+        ],
+        "arbimaps_rule_ids_raw": "5.52",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.52: Deben cubrirse entre si | Todos los polígonos de la primera clase de entidad y todos los polígonos de la segunda clase de entidad deben cubrirse mutuamente. | Clase 1: CR_Terreno (Rural) | Clase 2: CC_Vereda | Condición: Aplica para todos los predios asociados que en su código predial nacional en las posiciones 6 & 7 sea \"00\"",
+        "source_status_functioning": "—",
+        "cross_observation": "La 5.52 exige cubrimiento mutuo entre CR_Terreno rural y CC_Vereda."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.52"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_27",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.18",
-      "description": "Para PH unidad predial y Condominio unidad predial el área construida debe ser (0) y el área privada construida debe ser mayor a cero (0)",
-      "classes": "ILC_Predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Condicion_Predio\nArea_Construida\nArea_Privada_Construida",
-      "technical_rule": "Si ILC_Predio.Condicion_Predio es PH.Unidad_Predial o Condominio.Unidad_Predial, entonces CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Area_Construida) = 0 y CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Area_privada_construida) > 0",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "28",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_28",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Predios activos con derecho de Posesión deben superponerse total o parcialmente con predios de tipo Privado.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "5.19",
+          "2.3"
+        ],
+        "arbimaps_rule_ids_raw": "5.19; 2.3",
+        "arbimaps_modules": "TOPOLOGICO; JURIDICO",
+        "arbimaps_rule_descriptions": "• 5.19: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Predios informales-Posesión) | Clase 2: CR_Terreno (Predios formales-ocupación) | Condición: Los terrenos informales en posesion, no deben superponerse con terrenos de tipo Publico.Baldio.Baldio, Publico.Fiscal_Patrimonial, Bien_Uso_Publico\n• 2.3: Los predios asociados a tipos de derecho de “posesión” deben ser tipo de predios “Privados”",
+        "source_status_functioning": "2.3: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 2.3 exige Posesión en predios Privados y la 5.19 impide superposición de posesiones con terrenos públicos. La combinación se aproxima al requisito espacial SINIC."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.19",
+          "2.3"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_28",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.19",
-      "description": "Para predio en condición diferente a PH unidad predial o condominio unidad predial, el área construida debe ser mayor a 0 y el área privada construida debe ser Null",
-      "classes": "ILC_Predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Condicion_Predio\nArea_Construida\nArea_Privada_Construida",
-      "technical_rule": "Si ILC_Predio.Condicion_Predio es <> PH.Unidad_Predial o Condominio.Unidad_Predial, entonces CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Area_Construida)> 0 y CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Area_privada_construida)= NULL",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "29",
+      "level": "Caracterización",
+      "abbreviation": "2_CT_CF_29",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Predios activos con derecho de Ocupación deben superponerse total o parcialmente con predios de tipo Público.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "5.20",
+          "2.4"
+        ],
+        "arbimaps_rule_ids_raw": "5.20; 2.4",
+        "arbimaps_modules": "TOPOLOGICO; JURIDICO",
+        "arbimaps_rule_descriptions": "• 5.20: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Informal ocupacion) | Clase 2: CR_Terreno (Predio tipo \"privado\") | Condición: CR_Terreno informal (CPN posicion 22 igual \"2\") asociado a un derecho de \"Ocupación\" no debe superponerse con un CR_Terreno asociado a un LC_Predio.Tipo \"Privado\"\n• 2.4: Los predios con tipo de predio: Privado no deben estar asociados a derechos de “ocupación”",
+        "source_status_functioning": "2.4: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 5.20 impide que una ocupación informal se superponga con un predio Privado y la 2.4 prohíbe Ocupación en privados; no expresa literalmente la obligación de superponerse a un Público."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.20",
+          "2.4"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_29",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.2",
-      "description": "Para las unidades asociadas a predios en PH y condominio, las unidades convencionales calificadas deben relacionar usos establecidos específicamente para PH ó Depositos_Lockers",
-      "classes": "ILC_Predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Condicion_Predio  Tipo_Unidad_Construccion",
-      "technical_rule": "ILC_Predio.Condicion_Predio= “PH” ó “Condominio”, entonces, CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Tipo_Unidad_Construccion) “Residencial”, “Comercial”, “Institucional”ó “Industrial” debe corresponder a usos que contienen “_PH” ó \"Depositos_Lockers\"",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "42",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CF_42",
+      "rule_type": "Consistencia Lógica Predios",
+      "component": "Componente Físico",
+      "description": "Todo predio activo debe tener asociada mínimo una dirección (estructurada o no estructurada).",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "11.2"
+        ],
+        "arbimaps_rule_ids_raw": "11.2",
+        "arbimaps_modules": "OBLIGATORIAS",
+        "arbimaps_rule_descriptions": "• 11.2: El predio no tiene dirección",
+        "source_status_functioning": "11.2: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La obligatoria 11.2 detecta predios sin dirección."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "11.2"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_42",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.20",
-      "description": "Para las unidades de construcción, el dato area_construida diligenciada y el área calculada del polígono debe ser igual.",
-      "classes": "CR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Area_construccion\nGeometria_area",
-      "technical_rule": "(ILC_CaracteristicasUnidadConstruccion.area_construida) - CR_UnidadConstruccion.geometria)/(ILC_CaracteristicasUnidadConstruccion.area_construida) <= 1",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "43",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CF_43",
+      "rule_type": "Consistencia Lógica Predios",
+      "component": "Componente Físico",
+      "description": "Todo predio activo debe contar con un Código Homologado único en la base catastral.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se encontró una regla definida sobre unicidad de Código Homologado."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_43",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.21",
-      "description": "Para cada unidad de construcción asociada a un número predial agrupada por su identificador, la suma de las áreas de los polígonos de cada registro debe ser igual al valor diligenciado en area_construida de Características Unidad de construcción; en caso del que el predio tenga condición PH o condominio se debe validar el valor de area_privada_construida.",
-      "classes": "ILC_Predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Area_construida\nGeometria_area",
-      "technical_rule": "CR_UnidadConstruccion agrupada por ILC_CaracteristicasUnidadConstruccion.Identificador y ILC_Predio.numero_predial, los valores sumados CR_UnidadConstruccion.Geometria = ILC_CaracteristicasUnidadConstruccion.Area_Construida (con tolerancia 1%)\n\n Para ILC_Predio.Condicion_Predio = \"Ph_\" o \"Condominio_\", CRUnidadConstruccion.Geometria = ILC.CaracteristicasUnidadConstruccion.Area_Privada_Construidad (con tolerancia 1%)",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "44",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CF_44",
+      "rule_type": "Consistencia Lógica Predios",
+      "component": "Componente Físico",
+      "description": "Si un predio activo tiene NUPRE, debe coincidir exactamente con su Código Homologado.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se encontró una regla que compare NUPRE con Código Homologado."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_44",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.3",
-      "description": "Para las unidades asociadas a predios con condición de propiedad diferente a PH o condominio, las unidades calificadas deben relacionar usos diferentes a PH.",
-      "classes": "ILC_Predio\nCR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Condicion_Predio  Tipo_Unidad_Construccion",
-      "technical_rule": "ILC_Predio.Condicion_Predio <> “PH” ó “Condominio”, entonces, CR_UnidadConstruccion(ILC_CaracteristicasUnidadConstruccion.Tipo_Unidad_Construccion)“Residencial”, “Comercial”, “Institucional”ó “Industrial” debe corresponder a usos que no contienen “_PH”.",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "57",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CF_57",
+      "rule_type": "Consistencia Lógica Predios",
+      "component": "Componente Físico",
+      "description": "Predios de tipo Público Uso Público deben tener condición 'Bien_Uso_Publico' o 'Vía'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "2.10"
+        ],
+        "arbimaps_rule_ids_raw": "2.10",
+        "arbimaps_modules": "JURIDICO",
+        "arbimaps_rule_descriptions": "• 2.10: Para los predios que son vía o de uso público el tipo de predio es “Uso Público” y el tipo de derecho relacionado es dominio.",
+        "source_status_functioning": "2.10: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 2.10 relaciona Vía/Uso Público con tipo Uso Público y derecho Dominio; no formula exactamente el dominio de condición Bien_Uso_Publico o Vía."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "2.10"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_57",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.4",
-      "description": "Cada unidad espacial debe estar relacionada con solo un predio",
-      "classes": "CR_Terreno CR_UnidadConstruccion col_ueBaunit\nILC_Predio",
-      "variables": "t_id\nue_lc_terreno\nue_lc_unidadconstruccion\nbaunit",
-      "technical_rule": "Las unidades espaciales (CR_Terreno, CR_UnidadConstruccion) mediante col_ueBaunit deben relacionar unicamente un registro en la tabla ILC_Predio",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "58",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CF_58",
+      "rule_type": "Consistencia Lógica Predios",
+      "component": "Componente Físico",
+      "description": "Predios con destinación 'Lote Urbanizado No Construido' o 'Urbanizable No Urbanizado' deben ubicarse en suelo urbano según NPN.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.16"
+        ],
+        "arbimaps_rule_ids_raw": "1.16",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.16: Los predios con destinación económica \"Acuicola, Agricola, Agroindustrial, Agropecuario, Agroforestal, Forestal, Infraestructura asociada producción agropecuaria, Infraestructura de saneamiento básico, Minería Hidrocarburos, Pecuario y Lote rural\" deben estar relacionados a numeros prediales rurales; Por otra parte, los predios con destinación económica \"Lote urbanizable no urbanizado y Lote urbanizado no construido\" deben estar relacionados a numeros prediales urbanos. Así mismo los predios con destinación económica \"Lote_Rural\", no deben ubicar espacialmente unidades de construcción, no deben relacionar condición de PH o condominio. Debe tener un comportamiento urbano y normalmente se presenta en predios con un área menor a 500 m²,(para predios con mayor extensión, se verificará puntualmente).",
+        "source_status_functioning": "1.16: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.16 establece que Lote urbanizable no urbanizado y Lote urbanizado no construido deben asociarse a números prediales urbanos."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.16"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_58",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.5",
-      "description": "No deben haber poligonos de terreno menores a 2 m² (Aplican Excepciones que se deben verificar puntualmente).",
-      "classes": "CR_Terreno",
-      "variables": "Geometria",
-      "technical_rule": "El campo CR_Terreno.Geometria > '2'",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "59",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CF_59",
+      "rule_type": "Consistencia Lógica Predios",
+      "component": "Componente Físico",
+      "description": "Predios con destinación 'Lote Rural' no deben estar en suelo urbano según NPN.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.16"
+        ],
+        "arbimaps_rule_ids_raw": "1.16",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.16: Los predios con destinación económica \"Acuicola, Agricola, Agroindustrial, Agropecuario, Agroforestal, Forestal, Infraestructura asociada producción agropecuaria, Infraestructura de saneamiento básico, Minería Hidrocarburos, Pecuario y Lote rural\" deben estar relacionados a numeros prediales rurales; Por otra parte, los predios con destinación económica \"Lote urbanizable no urbanizado y Lote urbanizado no construido\" deben estar relacionados a numeros prediales urbanos. Así mismo los predios con destinación económica \"Lote_Rural\", no deben ubicar espacialmente unidades de construcción, no deben relacionar condición de PH o condominio. Debe tener un comportamiento urbano y normalmente se presenta en predios con un área menor a 500 m²,(para predios con mayor extensión, se verificará puntualmente).",
+        "source_status_functioning": "1.16: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.16 establece que Lote_Rural debe asociarse a números prediales rurales."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.16"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_59",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.6",
-      "description": "El identificador es la variable que unifica unidades de construcción con: usos de construcción, tipo de unidad de construcción, tipo de planta, total plantas de la unidad y calificación ó tipología de iguales características. Además de ser única para cada predio, debe existir una continuidad en la asignación alfabética del identificador, siempre empezando por la letra A a la Z y en caso de existir más unidades se reinicia en AA, AB y así sucesivamente.",
-      "classes": "CR_UnidadConstruccion\nILC_Predio\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Identificador\n Tipo_Unidad_Construccion Tipo_Planta\nUso\nAnio_Construccion",
-      "technical_rule": "Para todas las CR_UnidadConstruccion asociadas a un mismo ILC_Predio.Numero_Predial_Nacional, entonces ILC_CaracteristicasUnidadConstruccion.Identificador = \"Valor alfabetico consecutivo\" y único para cada predio (Debe empezar desde la A)",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "60",
+      "level": "Caracterización",
+      "abbreviation": "2_CLP_CF_60",
+      "rule_type": "Consistencia Lógica Predios",
+      "component": "Componente Físico",
+      "description": "Predios PH UP o Condominio UP deben tener área privada construida > 0 en relación de Copropiedad.",
+      "level_score_percent": 35,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.18"
+        ],
+        "arbimaps_rule_ids_raw": "3.18",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.18: Para PH unidad predial y Condominio unidad predial el área construida debe ser (0) y el área privada construida debe ser mayor a cero (0)",
+        "source_status_functioning": "3.18: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.18 exige para PH/Condominio Unidad Predial área construida=0 y área privada construida >0."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.18"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_60",
+        "target_file": "reglas_fisicas.py"
+      }
     },
     {
-      "id": "3.7",
-      "description": "Las unidades asociadas a tipos de unidades de construcción “Anexos” deben asociar solamente usos de construcción asociadas al dominio de “Anexo”",
-      "classes": "CR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Tipo_Unidad_Construccion\n\nUso",
-      "technical_rule": "ILC_CaracteristicasUnidadConstruccion.Tipo_Unidad_Construccion = “Anexo” entonces, ILC_CaracteristicasUnidadConstruccion.Uso debe corresponder al dominio de Anexos en CR_UsoUConsTipo <<Enumeration>>",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "61",
+      "level": "Caracterización",
+      "abbreviation": "2_CLINF_CF_61",
+      "rule_type": "Consistencia Lógica de Informalidad",
+      "component": "Componente Físico",
+      "description": "Predios informales en construcciones (NPN pos 22='2' y 23-30!='0') no deben tener terreno asociado.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se identificó una regla que prohíba terreno para informal “en construcción” según el patrón 2 + sufijo distinto de cero."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_61",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.8",
-      "description": "Las unidades asociadas a tipos de unidades de construcción “Comercial” deben asociar solamente usos de construcción asociadas al dominio de “Comercial”",
-      "classes": "CR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Tipo_Unidad_Construccion\n\nUso",
-      "technical_rule": "ILC_CaracteristicasUnidadConstruccion.Tipo_Unidad_Construccion = “Comercial” entonces, ILC_CaracteristicasUnidadConstruccion.Uso debe corresponder al dominio de Comercuial en CR_UsoUConsTipo <<Enumeration>>",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "62",
+      "level": "Caracterización",
+      "abbreviation": "2_CLINF_CF_62",
+      "rule_type": "Consistencia Lógica de Informalidad",
+      "component": "Componente Físico",
+      "description": "Predios informales sin terreno deben tener asociada una Unidad de Construcción con geometría.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se encontró una regla que obligue a un informal sin terreno a tener UC con geometría."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_62",
+        "target_file": "reglas_extensiones.py"
+      }
     },
     {
-      "id": "3.9",
-      "description": "Las unidades asociadas a tipos de unidades de construcción “Industrial” deben asociar solamente usos de construcción asociadas al dominio de “Industrial”",
-      "classes": "CR_UnidadConstruccion\nILC_CaracteristicasUnidadConstruccion",
-      "variables": "Tipo_Unidad_Construccion\n\nUso",
-      "technical_rule": "ILC_CaracteristicasUnidadConstruccion.Tipo_Unidad_Construccion = “Industrial” entonces, ILC_CaracteristicasUnidadConstruccion.Uso debe corresponder al dominio de Industrial en CR_UsoUConsTipo <<Enumeration>>",
-      "component": "Fisico",
-      "sheet_slug": "fisico"
+      "id": "63",
+      "level": "Caracterización",
+      "abbreviation": "2_CLINF_CF_63",
+      "rule_type": "Consistencia Lógica de Informalidad",
+      "component": "Componente Físico",
+      "description": "Predios informales sobre terreno (NPN pos 22='2' y 23-30='0') deben tener terreno asociado.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se encontró una regla que obligue terreno para informal con posiciones 23-30 en cero."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_63",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "64",
+      "level": "Caracterización",
+      "abbreviation": "2_CLINF_CF_64",
+      "rule_type": "Consistencia Lógica de Informalidad",
+      "component": "Componente Físico",
+      "description": "Posiciones 18-21 del NPN en predios informales con terreno no deben repetirse en la misma manzana/vereda.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Relacionada, no equivalente",
+        "confidence": "Baja",
+        "arbimaps_rule_ids": [
+          "1.11"
+        ],
+        "arbimaps_rule_ids_raw": "1.11",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.11: En los registros de número predial no deben tener duplicados.",
+        "source_status_functioning": "1.11: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.11 evita NPN completos duplicados; SINIC exige unicidad específica de posiciones 18-21 dentro de manzana/vereda."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.11"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_64",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "80",
+      "level": "Caracterización",
+      "abbreviation": "2_CLUC_CF_80",
+      "rule_type": "Consistencia Lógica Unidad Construcción",
+      "component": "Componente Físico",
+      "description": "Ubicación de la planta en Unidades de Construcción debe ser mayor a 0.",
+      "level_score_percent": 35,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.12"
+        ],
+        "arbimaps_rule_ids_raw": "3.12",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.12: La planta de ubicación de la unidad de construcción no puede ser cero (0) ni negativa.",
+        "source_status_functioning": "3.12: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.12 exige ubicación de planta mayor que cero (no cero ni negativa)."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.12"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_80",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "81",
+      "level": "Caracterización",
+      "abbreviation": "2_CLUC_CF_81",
+      "rule_type": "Consistencia Lógica Unidad Construcción",
+      "component": "Componente Físico",
+      "description": "Unidades de construcción con geometría deben tener altura mayor a 0.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "11.17"
+        ],
+        "arbimaps_rule_ids_raw": "11.17",
+        "arbimaps_modules": "OBLIGATORIAS",
+        "arbimaps_rule_descriptions": "• 11.17: La altura de la unidad de construcción no está diligenciada",
+        "source_status_functioning": "11.17: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 11.17 exige que la altura esté diligenciada, pero no valida que sea mayor que cero ni condiciona a existencia de geometría."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "11.17"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_81",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "82",
+      "level": "Caracterización",
+      "abbreviation": "2_CLUC_CF_82",
+      "rule_type": "Consistencia Lógica Unidad Construcción",
+      "component": "Componente Físico",
+      "description": "Características de Unidades de Construcción exigen área construida mayor a 0.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Relacionada, no equivalente",
+        "confidence": "Baja",
+        "arbimaps_rule_ids": [
+          "11.31",
+          "3.18",
+          "3.19"
+        ],
+        "arbimaps_rule_ids_raw": "11.31; 3.18; 3.19",
+        "arbimaps_modules": "OBLIGATORIAS; FISICO",
+        "arbimaps_rule_descriptions": "• 11.31: El área construida de la unidad de construcción no está diligenciada\n• 3.18: Para PH unidad predial y Condominio unidad predial el área construida debe ser (0) y el área privada construida debe ser mayor a cero (0)\n• 3.19: Para predio en condición diferente a PH unidad predial o condominio unidad predial, el área construida debe ser mayor a 0 y el área privada construida debe ser Null",
+        "source_status_functioning": "11.31: Estado=OK, Funcionamiento=OK; 3.18: Estado=OK, Funcionamiento=OK; 3.19: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 11.31 exige área construida diligenciada; 3.19 exige >0 para no PH, pero 3.18 define área construida=0 y área privada>0 en PH/Condominio UP. El criterio SINIC debe revisarse frente a esta diferencia."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "11.31",
+          "3.18",
+          "3.19"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_82",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "83",
+      "level": "Caracterización",
+      "abbreviation": "2_CLUC_CF_83",
+      "rule_type": "Consistencia Lógica Unidad Construcción",
+      "component": "Componente Físico",
+      "description": "Estado de conservación debe estar definido y ser diferente a 'Ninguno'/'No tiene'.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Baja",
+        "arbimaps_rule_ids": [
+          "4.15",
+          "4.18"
+        ],
+        "arbimaps_rule_ids_raw": "4.15; 4.18",
+        "arbimaps_modules": "ECONOMICO -TIPOLOGICO",
+        "arbimaps_rule_descriptions": "• 4.15: Si el tipo de calificacion es por tipologias, el campo conservacion de tipologia no pude se\nNULL o vacio.\n• 4.18: Si el tipo de calificacion es No convencional, el campo conservacion de anexo no pude se\nNULL o vacio.",
+        "source_status_functioning": "4.15: Funcionamiento=OK; 4.18: Funcionamiento=OK",
+        "cross_observation": "El primer Excel exige conservación de tipología/anexo no nula, pero no se identificó una regla general para “Estado de conservación” diferente de Ninguno/No tiene."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "4.15",
+          "4.18"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_83",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "84",
+      "level": "Caracterización",
+      "abbreviation": "2_CLUC_CF_84",
+      "rule_type": "Consistencia Lógica Unidad Construcción",
+      "component": "Componente Físico",
+      "description": "Construcciones en vigencia >= 2026 deben tener avalúo de caracterización.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se identificó regla sobre avalúo de caracterización para construcciones con vigencia >= 2026."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_84",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "85",
+      "level": "Caracterización",
+      "abbreviation": "2_CLUC_CF_85",
+      "rule_type": "Consistencia Lógica Unidad Construcción",
+      "component": "Componente Físico",
+      "description": "Año de construcción definido y menor o igual al año del reporte.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "11.30"
+        ],
+        "arbimaps_rule_ids_raw": "11.30",
+        "arbimaps_modules": "OBLIGATORIAS",
+        "arbimaps_rule_descriptions": "• 11.30: El año de la unidad de construcción no está diligenciado",
+        "source_status_functioning": "11.30: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 11.30 exige año de la unidad de construcción diligenciado; SINIC además exige que sea <= año del reporte."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "11.30"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_85",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "86",
+      "level": "Caracterización",
+      "abbreviation": "2_CLC_CF_86",
+      "rule_type": "Consistencia Lógica Conceptual",
+      "component": "Componente Físico",
+      "description": "Predios activos (excepto Cementerio UP, PH UP o Informal en altura) deben tener terreno.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.19"
+        ],
+        "arbimaps_rule_ids_raw": "1.19",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.19: Los predios asociados a condiciones de propiedad NPH ó PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico o Parque_Cementerio, deben estar representados con un único elemento en la capa CR_Terreno excepto los que tienen asociado en novedades del levantamiento Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe. De igual forma todos los CR_Terreno deben estar asociados a un ILC_Predio con condiciones de propiedad NPH o PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico sin novedad de Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe.",
+        "source_status_functioning": "1.19: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.19 exige terreno para varias condiciones (NPH, PH Matriz, Condominio Matriz/UP, Vía, BUP, Parque Cementerio) con excepciones de cancelación; las excepciones SINIC no coinciden exactamente."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.19"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_86",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "87",
+      "level": "Caracterización",
+      "abbreviation": "2_CLC_CF_87",
+      "rule_type": "Consistencia Lógica Conceptual",
+      "component": "Componente Físico",
+      "description": "Área catastral de terreno debe ser mayor a 0 (excepto Informal en altura).",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "11.3"
+        ],
+        "arbimaps_rule_ids_raw": "11.3",
+        "arbimaps_modules": "OBLIGATORIAS",
+        "arbimaps_rule_descriptions": "• 11.3: El predio no tiene área catastral del terreno",
+        "source_status_functioning": "11.3: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 11.3 exige área catastral de terreno diligenciada; SINIC exige además que sea >0 y define excepción para informal en altura."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "11.3"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_87",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "106",
+      "level": "Caracterización",
+      "abbreviation": "2_CLC_CF_106",
+      "rule_type": "Consistencia Lógica Conceptual",
+      "component": "Componente Físico",
+      "description": "Predios PH Matriz, Condominio Matriz o Cementerio Matriz exigen terreno asociado.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.19"
+        ],
+        "arbimaps_rule_ids_raw": "1.19",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.19: Los predios asociados a condiciones de propiedad NPH ó PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico o Parque_Cementerio, deben estar representados con un único elemento en la capa CR_Terreno excepto los que tienen asociado en novedades del levantamiento Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe. De igual forma todos los CR_Terreno deben estar asociados a un ILC_Predio con condiciones de propiedad NPH o PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico sin novedad de Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe.",
+        "source_status_functioning": "1.19: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.19 exige terreno para PH Matriz, Condominio Matriz y Parque Cementerio; el alcance exacto de “Cementerio Matriz” debe validarse contra la codificación actual."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.19"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_106",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "107",
+      "level": "Caracterización",
+      "abbreviation": "2_CLC_CF_107",
+      "rule_type": "Consistencia Lógica Conceptual",
+      "component": "Componente Físico",
+      "description": "Predios PH Unidad Predial exigen al menos una unidad de construcción asociada.",
+      "level_score_percent": 35,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.1"
+        ],
+        "arbimaps_rule_ids_raw": "3.1",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.1: Los predios asociados a condiciones de propiedad PH Unidad Predial deben tener asociada CR_UnidadConstruccion, exceptuando los parqueaderos o garajes descubiertos o unidades de PH no construidas.",
+        "source_status_functioning": "3.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.1 exige CR_UnidadConstruccion para PH Unidad Predial, con excepciones de parqueadero/garaje descubierto o PH no construida."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.1"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_107",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "108",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_108",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Diferencia entre área geométrica y área catastral de terreno no debe superar el 10%.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se encontró tolerancia del 10% entre área geométrica y área catastral de terreno."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_108",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "112",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_112",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Dirección Estructurada exige Clase Vía Principal, Valor Vía Principal, Vía Generadora y Nº Predio (sin nombre predio).",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.40"
+        ],
+        "arbimaps_rule_ids_raw": "1.40",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.40: Si el tipo de dirección asociada a un predio es Estructurada, los campos Clase_Via_Principal, Valor_Via_Principal, Valor_Via_Generadora y Numero_Predio deben ir diligenciados. El campo Nombre_Predio no debe ir diligenciado",
+        "source_status_functioning": "1.40: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.40 exige Clase_Via_Principal, Valor_Via_Principal, Valor_Via_Generadora y Numero_Predio y prohíbe Nombre_Predio en dirección estructurada."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.40"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_112",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "114",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_114",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Predios PH Matriz o Condominio Matriz exigen datos especiales de matriz diligenciados.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.22"
+        ],
+        "arbimaps_rule_ids_raw": "1.22",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.22: Solo los predios con condición PH.Matriz o Condominio.Matriz (posición 22 a la 30 \"800000000\" y \"900000000\") deben tener un registro en la tabla de CR_DatosPHCondominio. En caso contrario no debe tener relacionado registro.",
+        "source_status_functioning": "1.22: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.22 exige registro en CR_DatosPHCondominio únicamente para PH.Matriz o Condominio.Matriz."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.22"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_114",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "115",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_115",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Predios PH UP, Condominio UP o Cementerio UP exigen datos de Predio Copropiedad diligenciados.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.20"
+        ],
+        "arbimaps_rule_ids_raw": "1.20",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.20: Todos los predios con condición PH.Unidad_Predial o Condominio.Unidad_Predial deben tener un registro en la tabla de CR_Predio_Copropiedad y la sumatoria de los coeficientes de las unidades que los integran debe ser 1",
+        "source_status_functioning": "—",
+        "cross_observation": "La 1.20 exige CR_Predio_Copropiedad para PH.UP y Condominio.UP; no incluye explícitamente Cementerio.UP."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.20"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_115",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "116",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_116",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Prefijo del Código Homologado debe corresponder al prefijo de la Res. 1040 Anexo 9.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se encontró validación del prefijo de Código Homologado contra la Resolución 1040, Anexo 9."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_116",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "124",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_124",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Predio PH UP o Cementerio UP exige al menos una unidad de construcción asociada.",
+      "level_score_percent": 50,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.1"
+        ],
+        "arbimaps_rule_ids_raw": "3.1",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.1: Los predios asociados a condiciones de propiedad PH Unidad Predial deben tener asociada CR_UnidadConstruccion, exceptuando los parqueaderos o garajes descubiertos o unidades de PH no construidas.",
+        "source_status_functioning": "3.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.1 cubre PH Unidad Predial con excepciones; no cubre de forma explícita Cementerio Unidad Predial."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.1"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_124",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "125",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_125",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Predio NPH o Condominio UP exige terreno asociado.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.19"
+        ],
+        "arbimaps_rule_ids_raw": "1.19",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.19: Los predios asociados a condiciones de propiedad NPH ó PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico o Parque_Cementerio, deben estar representados con un único elemento en la capa CR_Terreno excepto los que tienen asociado en novedades del levantamiento Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe. De igual forma todos los CR_Terreno deben estar asociados a un ILC_Predio con condiciones de propiedad NPH o PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico sin novedad de Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe.",
+        "source_status_functioning": "1.19: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.19 incluye NPH y Condominio.Unidad_Predial entre las condiciones que deben estar representadas por CR_Terreno."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.19"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_125",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "126",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_126",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Todos los terrenos deben estar asociados al menos a un predio activo.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.19"
+        ],
+        "arbimaps_rule_ids_raw": "1.19",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.19: Los predios asociados a condiciones de propiedad NPH ó PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico o Parque_Cementerio, deben estar representados con un único elemento en la capa CR_Terreno excepto los que tienen asociado en novedades del levantamiento Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe. De igual forma todos los CR_Terreno deben estar asociados a un ILC_Predio con condiciones de propiedad NPH o PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico sin novedad de Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe.",
+        "source_status_functioning": "1.19: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La segunda parte de 1.19 exige que los CR_Terreno estén asociados a ILC_Predio válido y no cancelado."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.19"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_126",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "127",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_127",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "En Predio Copropiedad, el coeficiente debe ser mayor a 0.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "1.20"
+        ],
+        "arbimaps_rule_ids_raw": "1.20",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.20: Todos los predios con condición PH.Unidad_Predial o Condominio.Unidad_Predial deben tener un registro en la tabla de CR_Predio_Copropiedad y la sumatoria de los coeficientes de las unidades que los integran debe ser 1",
+        "source_status_functioning": "—",
+        "cross_observation": "La 1.20 exige que la suma de coeficientes sea 1, pero no contiene una validación explícita de coeficiente individual >0."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.20"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_127",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "129",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_129",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Unidad de Construcción tipo Anexo exige uso de construcción de Anexos.",
+      "level_score_percent": 50,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.7"
+        ],
+        "arbimaps_rule_ids_raw": "3.7",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.7: Las unidades asociadas a tipos de unidades de construcción “Anexos” deben asociar solamente usos de construcción asociadas al dominio de “Anexo”",
+        "source_status_functioning": "3.7: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.7 exige que unidades tipo Anexo usen únicamente usos del dominio Anexo."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.7"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_129",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "130",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_130",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Unidad de Construcción tipo Comercial exige uso comercial.",
+      "level_score_percent": 50,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.8"
+        ],
+        "arbimaps_rule_ids_raw": "3.8",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.8: Las unidades asociadas a tipos de unidades de construcción “Comercial” deben asociar solamente usos de construcción asociadas al dominio de “Comercial”",
+        "source_status_functioning": "3.8: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.8 exige que unidades tipo Comercial usen únicamente usos del dominio Comercial."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.8"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_130",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "131",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_131",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Unidad de Construcción tipo Industrial exige uso industrial.",
+      "level_score_percent": 50,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.9"
+        ],
+        "arbimaps_rule_ids_raw": "3.9",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.9: Las unidades asociadas a tipos de unidades de construcción “Industrial” deben asociar solamente usos de construcción asociadas al dominio de “Industrial”",
+        "source_status_functioning": "3.9: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.9 exige que unidades tipo Industrial usen únicamente usos del dominio Industrial."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.9"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_131",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "132",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_132",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Unidad de Construcción tipo Institucional exige uso institucional.",
+      "level_score_percent": 50,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.10"
+        ],
+        "arbimaps_rule_ids_raw": "3.10",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.10: Las unidades asociadas a tipos de unidades de construcción “Institucional” deben asociar solamente usos de construcción asociadas al dominio de “Institucional”",
+        "source_status_functioning": "3.10: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.10 exige que unidades tipo Institucional usen únicamente usos del dominio Institucional."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.10"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_132",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "133",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_133",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Unidad de Construcción tipo Residencial exige uso residencial.",
+      "level_score_percent": 50,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "3.11"
+        ],
+        "arbimaps_rule_ids_raw": "3.11",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.11: Las unidades asociadas a tipos de unidades de construcción “Residencial” deben asociar solamente usos de construcción asociadas al dominio de “Residencial”",
+        "source_status_functioning": "3.11: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.11 exige que unidades tipo Residencial usen únicamente usos del dominio Residencial."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.11"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_133",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "134",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_134",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Todas las unidades espaciales (terreno y construcción) deben estar asociadas a un predio activo.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "3.4",
+          "1.19"
+        ],
+        "arbimaps_rule_ids_raw": "3.4; 1.19",
+        "arbimaps_modules": "FISICO; ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 3.4: Cada unidad espacial debe estar relacionada con solo un predio\n• 1.19: Los predios asociados a condiciones de propiedad NPH ó PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico o Parque_Cementerio, deben estar representados con un único elemento en la capa CR_Terreno excepto los que tienen asociado en novedades del levantamiento Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe. De igual forma todos los CR_Terreno deben estar asociados a un ILC_Predio con condiciones de propiedad NPH o PH.Matriz o Condominio.Matriz o Condominio.Unidad_Predial o Via o Bien_Uso_Publico sin novedad de Cancelación, Cancelacion_por_Desenglobe o Cancelacion_por_Englobe.",
+        "source_status_functioning": "1.19: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.4 exige una única relación de cada unidad espacial con predio y la 1.19 controla asociación de terrenos; falta una regla global que cubra todas las UC y el estado Activo."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "3.4",
+          "1.19"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_134",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "135",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_135",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Relación de superficie En Rasante exige ubicación de planta igual a 1.",
+      "level_score_percent": 50,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "3.12"
+        ],
+        "arbimaps_rule_ids_raw": "3.12",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.12: La planta de ubicación de la unidad de construcción no puede ser cero (0) ni negativa.",
+        "source_status_functioning": "3.12: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.12 solo exige planta >0; SINIC exige exactamente planta=1 cuando la relación de superficie es En Rasante."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.12"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_135",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "136",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_136",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Relación de superficie Sobre Rasante exige ubicación de planta mayor a 1.",
+      "level_score_percent": 50,
+      "rule_score_percent": 0.5,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "3.12"
+        ],
+        "arbimaps_rule_ids_raw": "3.12",
+        "arbimaps_modules": "FISICO",
+        "arbimaps_rule_descriptions": "• 3.12: La planta de ubicación de la unidad de construcción no puede ser cero (0) ni negativa.",
+        "source_status_functioning": "3.12: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 3.12 solo exige planta >0; SINIC exige planta>1 cuando la relación es Sobre Rasante."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_DIRECTA_SINIC",
+        "source_rule_ids": [
+          "3.12"
+        ],
+        "source_module_keys": [
+          "fisico"
+        ],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_136",
+        "target_file": "reglas_fisicas.py"
+      }
+    },
+    {
+      "id": "137",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_137",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "PH Matriz exige número de torres igual al valor máximo en pos 23-24 del NPN de sus UP asociadas.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Relacionada, no equivalente",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "1.29"
+        ],
+        "arbimaps_rule_ids_raw": "1.29",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.29: En la tabla datos de Ph o condominio, para los predios con condición PH.Matriz (posición 22 a la 30 \"900000000\"), el número de torres debe ser igual al número máximo indicado en la posiciones 25-26 del número predial de las unidades asociadas al PH",
+        "source_status_functioning": "1.29: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Mismo concepto de número de torres en PH Matriz, pero hay una diferencia material: el primer Excel usa posiciones 25-26 del NPN y SINIC indica posiciones 23-24. Requiere revisión funcional."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.29"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_137",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "138",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_138",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "PH Matriz exige área total construida = área privada construida + área construida común.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Equivalente por combinación",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.26",
+          "1.27",
+          "1.28"
+        ],
+        "arbimaps_rule_ids_raw": "1.26; 1.27; 1.28",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.26: En la tabla datos de Ph o condominio, para los predios con condición PH.Matriz (posición 22 a la 30 \"900000000\"), el área total construida debe ser la sumatoria de las áreas de la unidades de construcción asociadas a las unidades prediales y de las unidades de construcción asociadas al predio matríz.\n• 1.27: En la tabla datos de Ph o condominio, para los predios con condición PH.Matriz (posición 22 a la 30 \"900000000\"), el área total construida privada debe ser la sumatoria de las áreas de las unidades de construcción asociadas a las unidades prediales.\n• 1.28: En la tabla datos de Ph o condominio, para los predios con condición PH.Matriz (posición 22 a la 30 \"900000000\"), el área total construida común debe ser la sumatoria de las áreas de las unidades de construcción del Ph matriz",
+        "source_status_functioning": "1.26: Estado=OK, Funcionamiento=OK; 1.27: Estado=OK, Funcionamiento=OK; 1.28: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Las 1.26-1.28 definen el total construido, la parte privada y la parte común del PH Matriz; en conjunto reproducen la identidad total=privada+común."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.26",
+          "1.27",
+          "1.28"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_138",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "139",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_139",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "PH Matriz exige área construida común = sumatoria de áreas de construcciones comunes.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.28"
+        ],
+        "arbimaps_rule_ids_raw": "1.28",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.28: En la tabla datos de Ph o condominio, para los predios con condición PH.Matriz (posición 22 a la 30 \"900000000\"), el área total construida común debe ser la sumatoria de las áreas de las unidades de construcción del Ph matriz",
+        "source_status_functioning": "1.28: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.28 exige que el área total construida común sea la sumatoria de áreas de las UC del PH Matriz."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.28"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_139",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "140",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_140",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "PH Matriz exige total unidades privadas = conteo de predios PH UP activos asociados.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.30"
+        ],
+        "arbimaps_rule_ids_raw": "1.30",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.30: En la tabla datos de Ph o condominio, para los predios con condición PH.Matriz (posición 22 a la 30 \"900000000\"), el total de unidades privadas debe ser el conteo de predios asociados al PH",
+        "source_status_functioning": "1.30: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 1.30 exige que el total de unidades privadas sea el conteo de predios asociados al PH."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.30"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_140",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "141",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_141",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Condominio Matriz exige área total terreno = área privada terreno + área terreno común.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Equivalente por combinación",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.31",
+          "1.32",
+          "1.33"
+        ],
+        "arbimaps_rule_ids_raw": "1.31; 1.32; 1.33",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.31: En la tabla Datos de Ph o condominio, para los predios con condición Condominio.Matriz (posición 22 a la 30 \"800000000\"), el área total de terreno debe corresponder a la suma del área geográfica del terreno de Condominio.Matriz y las áreas geográficas de los terrenos de las unidades privadas asociadas\n• 1.32: En la tabla Datos de Ph o condominio, para los predios con condición Condominio_Matriz (posición 22 a la 30 \"800000000\"), el área total terreno_privada debe corresponder a la sumatoria de las áreas geográficas de las unidades privadas asociados al Condominio (Aplican Excepciones cuando el área se encuentra dentro de las tolerancias definidas en la Res. 1040 de 2023).\n• 1.33: En la tabla Datos de Ph o condominio, para los predios con condición Condominio_Matriz (posición 22 a la 30 \"800000000\"), el área total terreno común del condominio debe corresponder al área geográfica del predio matriz (Aplican Excepciones cuando el área se encuentra dentro de las tolerancias definidas en la Res. 1040 de 2023).",
+        "source_status_functioning": "—",
+        "cross_observation": "La 1.31 define total terreno como matriz+unidades; 1.32 define área privada como suma de UP y 1.33 área común como el terreno de la matriz."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.31",
+          "1.32",
+          "1.33"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_141",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "142",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_142",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Condominio Matriz exige área privada terreno = sumatoria de áreas geométricas de terrenos de UP.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Exacta",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.32"
+        ],
+        "arbimaps_rule_ids_raw": "1.32",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.32: En la tabla Datos de Ph o condominio, para los predios con condición Condominio_Matriz (posición 22 a la 30 \"800000000\"), el área total terreno_privada debe corresponder a la sumatoria de las áreas geográficas de las unidades privadas asociados al Condominio (Aplican Excepciones cuando el área se encuentra dentro de las tolerancias definidas en la Res. 1040 de 2023).",
+        "source_status_functioning": "—",
+        "cross_observation": "La 1.32 exige área total terreno privada = suma de áreas geográficas de unidades privadas del Condominio."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.32"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_142",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "143",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_143",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Trámites de cancelación exigen que los predios asociados estén en estado Cancelado.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Relacionada, no equivalente",
+        "confidence": "Baja",
+        "arbimaps_rule_ids": [
+          "8.14"
+        ],
+        "arbimaps_rule_ids_raw": "8.14",
+        "arbimaps_modules": "NOVEDADES",
+        "arbimaps_rule_descriptions": "• 8.14: Los predios cancelados no deben tener información espacial",
+        "source_status_functioning": "8.14: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "La 8.14 controla que predios cancelados no tengan información espacial, pero no valida que un trámite de cancelación deje el estado del predio en “Cancelado”."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "8.14"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_143",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "145",
+      "level": "Temático",
+      "abbreviation": "3_CT_CF_145",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Verificar que no existan vacíos geométricos al interior de polígonos simples ni entre polígonos adyacentes.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Equivalente por combinación",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.1",
+          "5.2",
+          "5.3",
+          "5.4",
+          "5.5",
+          "5.6",
+          "5.7",
+          "5.8",
+          "5.9",
+          "5.10",
+          "5.11",
+          "5.12",
+          "5.13",
+          "5.14",
+          "5.15",
+          "5.16"
+        ],
+        "arbimaps_rule_ids_raw": "5.1; 5.2; 5.3; 5.4; 5.5; 5.6; 5.7; 5.8; 5.9; 5.10; 5.11; 5.12; 5.13; 5.14; 5.15; 5.16",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.1: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CR_Terreno (Predios formales) | Condición: Aplica para todos los predios asociados que en su código predial nacional en la posición 22 sea diferente de \"2\". | Excepción: Vías, drenajes.\n• 5.2: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CR_Terreno (Predios informales) | Condición: Aplica para todos los predios asociados que en su código predial nacional en la posición 22 sea \"2\".\n• 5.3: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_Manzana\n• 5.4: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_Vereda\n• 5.5: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_SectorRural | Excepción: Huecos correspondientes a CC_CentroPoblado\n• 5.6: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_SectorUrbano | Excepción: No aplica\n• 5.7: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_Barrio\n• 5.8: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_LocalidadComuna\n• 5.9: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_Corregimiento\n• 5.10: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_CentroPoblado\n• 5.11: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_PerimetroUrbano\n• 5.12: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: CC_LimiteMunicipio | Condición: Se debe verificar con el deslinde oficial municipal del IGAC y el limite catastral de los municipios colindantes\n• 5.13: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: VM_ZonaHomogeneaFisicaRural | Excepción: Centros poblados y perimetro urbano\n• 5.14: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: VM_ZonaHomogeneaGeoeconomicaRural\n• 5.15: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: VM_ZonaHomogeneaFisicaUrbana\n• 5.16: No debe haber huecos | No deben existir vacíos dentro de un polígono simple o entre polígonos adyacentes en una misma capa. | Clase 1: VM_ZonaHomogeneaGeoeconomicaUrbana",
+        "source_status_functioning": "—",
+        "cross_observation": "El bloque topológico 5.1-5.16 corresponde a “No debe haber huecos” aplicado por clase. SINIC lo expresa como regla genérica."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.1",
+          "5.2",
+          "5.3",
+          "5.4",
+          "5.5",
+          "5.6",
+          "5.7",
+          "5.8",
+          "5.9",
+          "5.10",
+          "5.11",
+          "5.12",
+          "5.13",
+          "5.14",
+          "5.15",
+          "5.16"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_145",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "146",
+      "level": "Temático",
+      "abbreviation": "3_CT_CF_146",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Ningún elemento con geometría se debe superponer con otro elemento de la misma clase.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Equivalente por combinación",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.17",
+          "5.18",
+          "5.19",
+          "5.20",
+          "5.21",
+          "5.22",
+          "5.23",
+          "5.24",
+          "5.25",
+          "5.26",
+          "5.27",
+          "5.28",
+          "5.29",
+          "5.30",
+          "5.31",
+          "5.32",
+          "5.33",
+          "5.34",
+          "5.35",
+          "5.36"
+        ],
+        "arbimaps_rule_ids_raw": "5.17; 5.18; 5.19; 5.20; 5.21; 5.22; 5.23; 5.24; 5.25; 5.26; 5.27; 5.28; 5.29; 5.30; 5.31; 5.32; 5.33; 5.34; 5.35; 5.36",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.17: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Predios formales) | Condición: Aplica para todos los predios asociados que en su código predial nacional en la posición 22 sea diferente de \"2\". | Excepción: No aplica\n• 5.18: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Predios informales) | Condición: Aplica para todos los predios asociados que en su código predial nacional en la posición 22 sea \"2\".\n• 5.19: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Predios informales-Posesión) | Clase 2: CR_Terreno (Predios formales-ocupación) | Condición: Los terrenos informales en posesion, no deben superponerse con terrenos de tipo Publico.Baldio.Baldio, Publico.Fiscal_Patrimonial, Bien_Uso_Publico\n• 5.20: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Informal ocupacion) | Clase 2: CR_Terreno (Predio tipo \"privado\") | Condición: CR_Terreno informal (CPN posicion 22 igual \"2\") asociado a un derecho de \"Ocupación\" no debe superponerse con un CR_Terreno asociado a un LC_Predio.Tipo \"Privado\"\n• 5.21: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_Manzana\n• 5.22: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_Vereda\n• 5.23: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_SectorRural\n• 5.24: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_SectorUrbano\n• 5.25: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_Barrio\n• 5.26: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_LocalidadComuna\n• 5.27: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_Corregimiento\n• 5.28: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_CentroPoblado\n• 5.29: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_PerimetroUrbano\n• 5.30: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CC_LimiteMunicipio | Condición: Se debe verificar con el deslinde oficial municipal del IGAC y el limite catastral de los municipios colindantes\n• 5.31: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_UnidadConstruccion | Condición: No deben traslaparse las unidades ubicadas en la misma CR_UnidadConstruccion,Planta_Ubicacion y Tipo_Planta\n• 5.32: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: ExtDireccion\n• 5.33: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: VM_ZonaHomogeneaFisicaRural | Condición: Se evalua solo sí la metodologia planteada para el componente economico requiere capas de Zonas Homogeneas\n• 5.34: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: VM_ZonaHomogeneaGeoeconomicaRural\n• 5.35: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: VM_ZonaHomogeneaFisicaUrbana\n• 5.36: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: VM_ZonaHomogeneaGeoeconomicaUrbana",
+        "source_status_functioning": "—",
+        "cross_observation": "El bloque 5.17-5.36 corresponde a “No debe superponerse” por clase de entidad. SINIC lo generaliza a todo elemento con geometría de la misma clase."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.17",
+          "5.18",
+          "5.19",
+          "5.20",
+          "5.21",
+          "5.22",
+          "5.23",
+          "5.24",
+          "5.25",
+          "5.26",
+          "5.27",
+          "5.28",
+          "5.29",
+          "5.30",
+          "5.31",
+          "5.32",
+          "5.33",
+          "5.34",
+          "5.35",
+          "5.36"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_146",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "147",
+      "level": "Temático",
+      "abbreviation": "3_CT_CF_147",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Elementos de menor nivel jerárquico deben estar cubiertos por la clase de mayor nivel jerárquico.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Equivalente por combinación",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "5.37",
+          "5.38",
+          "5.39",
+          "5.40",
+          "5.41",
+          "5.42",
+          "5.43",
+          "5.44",
+          "5.45",
+          "5.46",
+          "5.47",
+          "5.48",
+          "5.49",
+          "5.50"
+        ],
+        "arbimaps_rule_ids_raw": "5.37; 5.38; 5.39; 5.40; 5.41; 5.42; 5.43; 5.44; 5.45; 5.46; 5.47; 5.48; 5.49; 5.50",
+        "arbimaps_modules": "TOPOLOGICO",
+        "arbimaps_rule_descriptions": "• 5.37: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CC_CentroPoblado | Clase 2: CC_Limite_Municipio o CC_Corregimiento | Condición: El concepto de corregimiento esta asociado a areas no Municipalizadas | Excepción: No aplica\n• 5.38: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CC_PerimetroUrbano | Clase 2: CC_Limite_Municipio o CC_Corregimiento\n• 5.39: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CC_Sector_Urbano | Clase 2: CC_CentroPoblado o CC_PerimetroUrbano\n• 5.40: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CC_Sector_Rural | Clase 2: CC_Limite_Municipio o CC_Corregimiento\n• 5.41: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CC_Vereda | Clase 2: CC_SectorRural\n• 5.42: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CC_LocalidadComuna | Clase 2: CC_SectorUrbano | Excepción: En caso de no contar con CC_localidadComuna, no se evalua\n• 5.43: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CC_Barrio | Clase 2: CC_LocalidadComuna | Excepción: En caso de no contar con CC_Barrio, no se evalua\n• 5.44: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CC_Manzana | Clase 2: CC_Barrio | Condición: En caso de no existir CC_Barrio, se valida con CC_localidadComuna, y en caso de no existir CC_localidadComuna, se valida con CC_SectorUrbano\n• 5.45: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: ExtDireccion | Clase 2: CR_Terreno\n• 5.46: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CR_Terreno (urbano) | Clase 2: VM_ZonaHomogeneaGeoeconomicaUrbana | Condición: Aplica para todos los predios asociados que en su código predial nacional en las posiciones 6 & 7 sea diferente de \"00\".\n• 5.47: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CR_Terreno (urbano) | Clase 2: VM_ZonaHomogeneaFisicaUrbana\n• 5.48: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CR_Terreno (rural) | Clase 2: VM_ZonaHomogeneaGeoeconomicaRural | Condición: Aplica para todos los predios asociados que en su código predial nacional en las posiciones 6 & 7 sea \"00\"\n• 5.49: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CR_Terreno (rural) | Clase 2: VM_ZonaHomogeneaFisicaRural\n• 5.50: Debe estar cubierto por | Los elementos de una clase de entidad de menor nivel deben estar cubiertos por otra clase de entidad de mayor nivel | Clase 1: CR_Terreno (Informal) | Clase 2: CR_Terreno (Formal)",
+        "source_status_functioning": "—",
+        "cross_observation": "El bloque 5.37-5.50 implementa “Debe estar cubierto por” entre clases de menor y mayor jerarquía."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "5.37",
+          "5.38",
+          "5.39",
+          "5.40",
+          "5.41",
+          "5.42",
+          "5.43",
+          "5.44",
+          "5.45",
+          "5.46",
+          "5.47",
+          "5.48",
+          "5.49",
+          "5.50"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_147",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "148",
+      "level": "Temático",
+      "abbreviation": "3_CT_CF_148",
+      "rule_type": "Consistencia Topológica",
+      "component": "Componente Físico",
+      "description": "Primeros 5 caracteres del identificador cartográfico deben corresponder al DIVIPOLA municipal.",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Equivalente por combinación",
+        "confidence": "Media",
+        "arbimaps_rule_ids": [
+          "6.2",
+          "6.3",
+          "6.6",
+          "11.1"
+        ],
+        "arbimaps_rule_ids_raw": "6.2; 6.3; 6.6; 11.1",
+        "arbimaps_modules": "GEOGRAFICO; OBLIGATORIAS",
+        "arbimaps_rule_descriptions": "• 6.2: Las primeras cinco posiciones de CC_PerimetroUrbano.codigo debe corresponder a CC_Limite_Municipio.Codigo_Departamento + CC_Limite_Municipio.Codigo_Municipio\n• 6.3: Las primeras cinco posiciones de CC_CentroPoblado.codigo debe corresponder a CC_Limite_Municipio.Codigo_Departamento + CC_Limite_Municipio.Codigo_Municipio\n• 6.6: Los primeros cinco digitos del campo CC_Sector_Rural.Codigo deben corresponder a CC_Limite_Municipio.Codigo_Departamento + CC_Limite_Municipio.Codigo_Municipio\n• 11.1: Código de departamento y municipio debe responder al divipola",
+        "source_status_functioning": "11.1: Estado=OK, Funcionamiento=OK",
+        "cross_observation": "Las 6.2, 6.3 y 6.6 validan prefijos cartográficos contra código departamental+municipal y la 11.1 valida DIVIPOLA. SINIC usa un identificador cartográfico genérico."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "6.2",
+          "6.3",
+          "6.6",
+          "11.1"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_148",
+        "target_file": "reglas_extensiones.py"
+      }
+    },
+    {
+      "id": "149",
+      "level": "Temático",
+      "abbreviation": "3_ET_CF_149",
+      "rule_type": "Exactitud Temática",
+      "component": "Componente Físico",
+      "description": "Suma de coeficientes de UP asociadas a Matriz (Cementerio, Condominio, PH) debe ser igual a 1 (100%).",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "fisico",
+      "equivalence": {
+        "type": "Parcial",
+        "confidence": "Alta",
+        "arbimaps_rule_ids": [
+          "1.20"
+        ],
+        "arbimaps_rule_ids_raw": "1.20",
+        "arbimaps_modules": "ADMINISTRATIVOS",
+        "arbimaps_rule_descriptions": "• 1.20: Todos los predios con condición PH.Unidad_Predial o Condominio.Unidad_Predial deben tener un registro en la tabla de CR_Predio_Copropiedad y la sumatoria de los coeficientes de las unidades que los integran debe ser 1",
+        "source_status_functioning": "—",
+        "cross_observation": "La 1.20 exige suma de coeficientes=1 para PH.UP y Condominio.UP; SINIC añade también Cementerio."
+      },
+      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+      "implementation": {
+        "status": "IMPLEMENTADA_LOGICA_SINIC",
+        "executable": true,
+        "strategy": "LOGICA_MIGRADA_Y_AJUSTADA",
+        "source_rule_ids": [
+          "1.20"
+        ],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "",
+        "target_function": "regla_149",
+        "target_file": "reglas_extensiones.py"
+      }
     }
   ]
 }

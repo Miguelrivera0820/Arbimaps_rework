@@ -1,24 +1,77 @@
 {
   "slug": "estructura",
+  "catalog": "SINIC",
+  "comparison_source": "Comparacion_SINIC_vs_ARBIMAPS_AUDITADA_XTF(1).xlsx",
   "rule_count": 2,
+  "implemented_count": 0,
+  "omitted_by_definition_count": 2,
+  "pending_logic_count": 0,
   "rules": [
     {
-      "id": "9.1",
-      "description": "Ningun campo de tipo \"String\" debe contener caracteres especiales.",
-      "classes": null,
-      "variables": null,
-      "technical_rule": null,
-      "component": "Estructura",
-      "sheet_slug": "estructura"
+      "id": "1",
+      "level": "Básico",
+      "abbreviation": "0_E_SINICLADM_1",
+      "rule_type": "Estructura General LADM",
+      "component": "Componente Estructura",
+      "description": "Se valida cumplimiento de la estructura interna del conjunto de datos y conformidad con Modelo SINIC 1.0 LADM_COL...",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "estructura",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "El primer Excel contiene validaciones puntuales de estructura/contenido, pero no una regla global de conformidad con el modelo SINIC 1.0 LADM_COL."
+      },
+      "implementation_status": "OMITIDA_POR_DEFINICION",
+      "implementation": {
+        "status": "OMITIDA_POR_DEFINICION",
+        "executable": false,
+        "strategy": "OMITIDA_POR_PROYECTO",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "Omitida por decisión del proyecto (reglas SINIC 1-4).",
+        "target_function": "",
+        "target_file": ""
+      }
     },
     {
-      "id": "9.2",
-      "description": "Ningun campo de la base de datos puede contener \"pipes\" (|).",
-      "classes": null,
-      "variables": null,
-      "technical_rule": null,
-      "component": "Estructura",
-      "sheet_slug": "estructura"
+      "id": "2",
+      "level": "Básico",
+      "abbreviation": "0_E_SRC_2",
+      "rule_type": "Conformidad Origen Único Nacional",
+      "component": "Componente Estructura",
+      "description": "Se valida consistencia del sistema de referencia de la información vectorial reportada con Magna Sirgas/ Origen Nacional (EPSG 9377).",
+      "level_score_percent": null,
+      "rule_score_percent": null,
+      "sheet_slug": "estructura",
+      "equivalence": {
+        "type": "Sin correspondencia directa",
+        "confidence": "—",
+        "arbimaps_rule_ids": [],
+        "arbimaps_rule_ids_raw": "—",
+        "arbimaps_modules": "—",
+        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+        "source_status_functioning": "—",
+        "cross_observation": "No se identificó en el primer Excel una validación explícita del SRC MAGNA-SIRGAS / Origen Nacional EPSG:9377."
+      },
+      "implementation_status": "OMITIDA_POR_DEFINICION",
+      "implementation": {
+        "status": "OMITIDA_POR_DEFINICION",
+        "executable": false,
+        "strategy": "OMITIDA_POR_PROYECTO",
+        "source_rule_ids": [],
+        "source_module_keys": [],
+        "missing_source_rule_ids": [],
+        "pending_reason": "Omitida por decisión del proyecto (reglas SINIC 1-4).",
+        "target_function": "",
+        "target_file": ""
+      }
     }
   ]
 }

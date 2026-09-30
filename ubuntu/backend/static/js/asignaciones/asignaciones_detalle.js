@@ -2739,6 +2739,11 @@ const btnTriggerFileSelect = document.getElementById("btnTriggerFileSelect");
 const btnRemoveModalXtf = document.getElementById("btnRemoveModalXtf");
 const btnSubmitSyncModal = document.getElementById("btnSubmitSyncModal");
 const btnCancelSyncModal = document.getElementById("btnCancelSyncModal");
+const syncValidationCard = document.getElementById("syncValidationCard");
+const syncValidationMessage = document.getElementById("syncValidationMessage");
+const syncValidationStatusBadge = document.getElementById("syncValidationStatusBadge");
+const syncValidationAlert = document.getElementById("syncValidationAlert");
+const syncValidationRulesTbody = document.getElementById("syncValidationRulesTbody");
 
 const step1Item = document.getElementById("step1Item");
 const step2Item = document.getElementById("step2Item");
@@ -2759,10 +2764,12 @@ const syncErrorMessage = document.getElementById("syncErrorMessage");
 
 let selectedModalFile = null;
 let inspectingXtf = false;
+let currentSyncValidationGate = null;
 
 function resetModalSyncState() {
   selectedModalFile = null;
   inspectingXtf = false;
+  currentSyncValidationGate = null;
   if (modalXtfFileInput) modalXtfFileInput.value = "";
 
   // Reset Stepper items
@@ -2789,6 +2796,15 @@ function resetModalSyncState() {
 
   const tbody = document.getElementById("modalSyncPrediosTbody");
   if (tbody) tbody.innerHTML = "";
+  if (syncValidationRulesTbody) syncValidationRulesTbody.innerHTML = "";
+  syncValidationCard?.classList.add("d-none");
+  syncValidationAlert?.classList.add("d-none");
+  if (syncValidationAlert) syncValidationAlert.textContent = "";
+  if (syncValidationMessage) syncValidationMessage.textContent = "Ejecutando reglas de calidad...";
+  if (syncValidationStatusBadge) {
+    syncValidationStatusBadge.className = "badge rounded-pill bg-secondary";
+    syncValidationStatusBadge.textContent = "Pendiente";
+  }
 
   // Reset buttons
   if (btnCancelSyncModal) {
@@ -2797,6 +2813,119 @@ function resetModalSyncState() {
     btnCancelSyncModal.classList.remove("d-none");
   }
   btnSubmitSyncModal?.classList.add("d-none");
+}
+
+function renderSyncValidationGate(gate) {
+  currentSyncValidationGate = gate && typeof gate === "object" ? gate : null;
+  syncValidationCard?.classList.remove("d-none");
+  if (!currentSyncValidationGate) {
+    if (syncValidationMessage) syncValidationMessage.textContent = "No fue posible obtener el resultado de validación.";
+    if (syncValidationStatusBadge) {
+      syncValidationStatusBadge.className = "badge rounded-pill bg-danger";
+      syncValidationStatusBadge.textContent = "Bloqueada";
+    }
+    btnSubmitSyncModal?.classList.add("d-none");
+    return;
+  }
+
+  const gateData = currentSyncValidationGate;
+  const rules = Array.isArray(gateData.rules) ? gateData.rules : [];
+  const mandatory = Array.isArray(gateData.mandatory_rules) ? gateData.mandatory_rules : [];
+  const nonMandatory = Array.isArray(gateData.non_mandatory_rules) ? gateData.non_mandatory_rules : [];
+  const schemaErrors = Number(gateData.schema_errors || 0);
+  const canSync = gateData.can_sync === true;
+
+  if (syncValidationMessage) syncValidationMessage.textContent = gateData.message || "Validación finalizada.";
+
+  if (syncValidationStatusBadge) {
+    if (!canSync) {
+      syncValidationStatusBadge.className = "badge rounded-pill bg-danger";
+      syncValidationStatusBadge.textContent = "Bloqueada";
+    } else if (nonMandatory.length) {
+      syncValidationStatusBadge.className = "badge rounded-pill bg-warning text-dark";
+      syncValidationStatusBadge.textContent = "Con observaciones";
+    } else {
+      syncValidationStatusBadge.className = "badge rounded-pill bg-success";
+      syncValidationStatusBadge.textContent = "Aprobada";
+    }
+  }
+
+  if (syncValidationAlert) {
+    syncValidationAlert.className = "alert py-2 px-3 mb-3";
+    if (!canSync) {
+      syncValidationAlert.classList.add("alert-danger");
+      syncValidationAlert.innerHTML = `<i class="fa-solid fa-circle-xmark me-2"></i><strong>Sincronización bloqueada.</strong> ${esc(gateData.message || "Existen errores obligatorios.")}`;
+    } else if (nonMandatory.length) {
+      syncValidationAlert.classList.add("alert-warning");
+      syncValidationAlert.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-2"></i><strong>Hay observaciones no obligatorias.</strong> Puedes sincronizar, pero se solicitará confirmación antes de continuar.`;
+    } else {
+      syncValidationAlert.classList.add("alert-success");
+      syncValidationAlert.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i>No se detectaron errores que impidan la sincronización.`;
+    }
+  }
+
+  if (syncValidationRulesTbody) {
+    syncValidationRulesTbody.innerHTML = "";
+    if (!rules.length && !schemaErrors) {
+      syncValidationRulesTbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Sin reglas con hallazgos.</td></tr>`;
+    } else {
+      if (schemaErrors) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><span class="badge bg-dark">XTF</span></td><td>Estructura</td><td><span class="badge bg-danger">Obligatoria</span></td><td class="text-center fw-bold">${schemaErrors}</td>`;
+        syncValidationRulesTbody.appendChild(tr);
+      }
+      rules.forEach((r) => {
+        const obligatory = String(r.estado || "") === "Obligatoria";
+        const badgeClass = obligatory ? "bg-danger" : "bg-warning text-dark";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="badge bg-light text-dark border">${esc(r.rule || "-")}</span></td>
+          <td>${esc(r.component || "-")}</td>
+          <td><span class="badge ${badgeClass}">${esc(r.estado || "Sin clasificar")}</span></td>
+          <td class="text-center fw-bold">${Number(r.count || 0)}</td>
+        `;
+        syncValidationRulesTbody.appendChild(tr);
+      });
+    }
+  }
+
+  if (canSync) btnSubmitSyncModal?.classList.remove("d-none");
+  else btnSubmitSyncModal?.classList.add("d-none");
+}
+
+async function confirmAndSubmitSyncModalFile() {
+  const gate = currentSyncValidationGate;
+  if (!gate || gate.can_sync !== true) {
+    showWarning(gate?.message || "La sincronización está bloqueada por la validación previa.");
+    return;
+  }
+
+  const nonMandatory = Array.isArray(gate.non_mandatory_rules) ? gate.non_mandatory_rules : [];
+  let confirmed = true;
+  if (window.Swal) {
+    const withWarnings = nonMandatory.length > 0;
+    const result = await Swal.fire({
+      icon: withWarnings ? "warning" : "question",
+      title: "Confirmar sincronización",
+      html: withWarnings
+        ? `Se va a sincronizar el archivo XTF.<br><br><strong>Ten en cuenta:</strong> existen errores <strong>no obligatorios</strong> en las reglas ${nonMandatory.map(esc).join(", ")}. Estos hallazgos no bloquean la sincronización.`
+        : "Se va a sincronizar el archivo XTF. La validación previa no encontró errores que bloqueen el proceso.",
+      showCancelButton: true,
+      confirmButtonText: "Sincronizar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#0A2C1B",
+      reverseButtons: true,
+    });
+    confirmed = !!result.isConfirmed;
+  } else {
+    confirmed = window.confirm(
+      nonMandatory.length
+        ? `Se va a sincronizar el archivo XTF. Hay errores no obligatorios en las reglas ${nonMandatory.join(", ")}. ¿Deseas continuar?`
+        : "Se va a sincronizar el archivo XTF. ¿Deseas continuar?",
+    );
+  }
+
+  if (confirmed) await submitSyncModalFile();
 }
 
 async function inspectModalSyncFile(file) {
@@ -2919,7 +3048,7 @@ async function inspectModalSyncFile(file) {
     }
 
     modalXtfPreviewBox?.classList.remove("d-none");
-    btnSubmitSyncModal?.classList.remove("d-none");
+    renderSyncValidationGate(data.validation_gate);
   } catch (err) {
     console.error("Error inspeccionando XTF:", err);
     syncInspectingZone?.classList.add("d-none");
@@ -3098,7 +3227,7 @@ btnRemoveModalXtf?.addEventListener("click", () => {
   resetModalSyncState();
 });
 
-btnSubmitSyncModal?.addEventListener("click", submitSyncModalFile);
+btnSubmitSyncModal?.addEventListener("click", confirmAndSubmitSyncModalFile);
 
 modalSincronizarXtf?.addEventListener("hidden.bs.modal", () => {
   resetModalSyncState();

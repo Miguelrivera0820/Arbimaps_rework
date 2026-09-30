@@ -10,20 +10,17 @@ from typing import Any
 from xml.sax.saxutils import escape, quoteattr
 from zipfile import ZIP_DEFLATED, ZipFile
 
-HEADERS = ("Componente", "ID", "NPN", "Capa", "Error", "Descripcion")
+HEADERS = ("Código", "AID", "NPN", "Capa", "Regla", "Descripción", "Estado")
 MIME_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 STANDARD_MODULES = [
-    {"slug": "administrativo", "label": "Administrativo"},
+    {"slug": "general", "label": "General"},
     {"slug": "juridico", "label": "Juridico"},
-    {"slug": "fisico", "label": "Fisico"},
     {"slug": "economico", "label": "Economico"},
-    {"slug": "topologico", "label": "Topologico"},
-    {"slug": "novedades", "label": "Novedades"},
-    {"slug": "estructura", "label": "Estructura"},
-    {"slug": "complementarias", "label": "Complementarias"},
-    {"slug": "obligatorias", "label": "Obligatorias"},
+    {"slug": "fisico", "label": "Fisico"},
 ]
+
+HIDDEN_MODULE_SLUGS = {"estructura", "estructural", "internal", "reglas_internas"}
 
 
 def _normalize_module_slug(raw: str | None) -> str:
@@ -145,16 +142,18 @@ def _error_rows(report: dict[str, Any]) -> list[dict[str, str]]:
             or "Sin detalle adicional"
         )
 
+        aid = _clean_text(
+            item.get("display_id")
+            or item.get("object_id")
+            or item.get("tid")
+            or "Sin identificar"
+        )
         rows.append(
             {
                 "component": component,
+                "code": f"ERR_{rule_id}_{aid}",
                 "npn": _npn_for_item(item),
-                "id": _clean_text(
-                    item.get("display_id")
-                    or item.get("object_id")
-                    or item.get("tid")
-                    or "Sin identificar"
-                ),
+                "id": aid,
                 "layer": _clean_text(
                     item.get("object_class")
                     or item.get("class")
@@ -162,29 +161,13 @@ def _error_rows(report: dict[str, Any]) -> list[dict[str, str]]:
                     or "Clase no declarada"
                 ),
                 "error": rule_id,
+                "state": _clean_text(
+                    item.get("estado") or rule_meta.get("estado") or catalog_item.get("estado") or ""
+                ),
                 "description": description,
             }
         )
 
-    for item in _as_list(validation.get("schema_errors")):
-        if not isinstance(item, dict):
-            continue
-
-        rows.append(
-            {
-                "component": "Estructura",
-                "npn": _npn_for_item(item),
-                "id": _clean_text(
-                    item.get("display_id")
-                    or item.get("object_id")
-                    or item.get("tid")
-                    or "Sin identificar"
-                ),
-                "layer": _clean_text(item.get("object_class") or "Clase no declarada"),
-                "error": _clean_text(item.get("rule") or "Estructural"),
-                "description": _clean_text(item.get("message") or "Sin detalle adicional"),
-            }
-        )
 
     return rows
 
@@ -213,13 +196,15 @@ def _rule_meta_by_id(quality: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def _row_values(row: dict[str, str]) -> list[str]:
+    # Mismo orden y nombres de columnas que el Excel del plugin QGIS.
     return [
-        row["component"],
+        row.get("code", f"ERR_{row.get('error','')}_{row.get('id','')}"),
         row["id"],
         row["npn"],
         row["layer"],
         row["error"],
         row["description"],
+        row.get("state", ""),
     ]
 
 
@@ -513,6 +498,7 @@ def _module_worksheet_xml(
         _cell_xml(4, 4, HEADERS[3], style=19),
         _cell_xml(4, 5, HEADERS[4], style=1),
         _cell_xml(4, 6, HEADERS[5], style=19),
+        _cell_xml(4, 7, HEADERS[6], style=19),
     ]
     row_xml.append(f'<row r="4" ht="26" customHeight="1">{"".join(header_cells)}</row>')
 
@@ -526,24 +512,26 @@ def _module_worksheet_xml(
             s_wrap = 20 if is_alt else 2
 
             cells = [
-                _cell_xml(current_row, 1, row_item.get("component", ""), style=s_left),
+                _cell_xml(current_row, 1, row_item.get("code", ""), style=s_left),
                 _cell_xml(current_row, 2, row_item.get("id", ""), style=s_left),
                 _cell_xml(current_row, 3, row_item.get("npn", ""), style=s_center),
                 _cell_xml(current_row, 4, row_item.get("layer", ""), style=s_left),
                 _cell_xml(current_row, 5, row_item.get("error", ""), style=s_center),
                 _cell_xml(current_row, 6, row_item.get("description", ""), style=s_wrap),
+                _cell_xml(current_row, 7, row_item.get("state", ""), style=s_center),
             ]
             row_xml.append(f'<row r="{current_row}" ht="20" customHeight="1">{"".join(cells)}</row>')
             current_row += 1
     else:
         # Clean empty row
         cells = [
-            _cell_xml(current_row, 1, module_label, style=4),
+            _cell_xml(current_row, 1, "-", style=4),
             _cell_xml(current_row, 2, "-", style=3),
             _cell_xml(current_row, 3, "-", style=3),
             _cell_xml(current_row, 4, "-", style=3),
             _cell_xml(current_row, 5, "-", style=3),
             _cell_xml(current_row, 6, "No hay inconsistencias en este módulo.", style=2),
+            _cell_xml(current_row, 7, "-", style=3),
         ]
         row_xml.append(f'<row r="{current_row}" ht="20" customHeight="1">{"".join(cells)}</row>')
         current_row += 1
@@ -564,10 +552,11 @@ def _module_worksheet_xml(
         '<col min="3" max="3" width="34" customWidth="1"/>'
         '<col min="4" max="4" width="26" customWidth="1"/>'
         '<col min="5" max="5" width="16" customWidth="1"/>'
-        '<col min="6" max="6" width="75" customWidth="1"/>'
+        '<col min="6" max="6" width="20" customWidth="1"/>'
+        '<col min="7" max="7" width="75" customWidth="1"/>'
         '</cols>'
         f'<sheetData>{"".join(row_xml)}</sheetData>'
-        f'<autoFilter ref="A4:F{last_row}"/>'
+        f'<autoFilter ref="A4:G{last_row}"/>'
         "</worksheet>"
     )
 
@@ -622,6 +611,8 @@ def build_validation_errors_excel(report: dict[str, Any]) -> bytes:
 
         # Extra slugs if any
         for slug, m_rows in rows_by_slug.items():
+            if slug in HIDDEN_MODULE_SLUGS:
+                continue
             if slug not in handled_slugs:
                 label = slug.replace("_", " ").title()
                 summary_modules.append({
