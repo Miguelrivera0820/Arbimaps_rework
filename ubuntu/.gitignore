@@ -33,3 +33,4 @@ ubuntu/docker-compose.yml
 # Box OAuth tokens
 backend/tokens/box_oauth_tokens.json
 backend/tokens/*.json
+backend.zip

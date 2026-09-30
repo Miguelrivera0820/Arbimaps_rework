@@ -1821,3 +1821,55 @@ label {
     font-size: 1.05rem;
     line-height: 1;
 }
+
+/* Calidad: misma jerarquia visual del acordeon de Asignaciones. */
+#calidadAccordionDesktop .accordion-button,
+#calidadAccordionDesktop .accordion-button:focus,
+#calidadAccordionDesktop .accordion-button:not(.collapsed),
+#calidadAccordionDesktop .accordion-button:not(.collapsed):focus{
+    box-shadow:none!important;
+    outline:none!important;
+    border:0!important;
+    border-radius:13px;
+}
+#calidadAccordionDesktop .accordion-button{
+    background:transparent;
+    color:#0a2c1b;
+}
+#calidadAccordionDesktop .accordion-button:hover{
+    background:#dcdddd!important;
+    color:#0a2c1b!important;
+}
+#calidadAccordionDesktop .accordion-button:not(.collapsed),
+#calidadAccordionDesktop .accordion-button.active{
+    background:#dcdddd!important;
+    color:#0a2c1b!important;
+    border-left:6px solid #0a2c1b!important;
+}
+#calidadAccordionDesktop .accordion-button:not(.collapsed) i,
+#calidadAccordionDesktop .accordion-button:not(.collapsed) span,
+#calidadAccordionDesktop .accordion-button.active i,
+#calidadAccordionDesktop .accordion-button.active span{
+    color:#0a2c1b!important;
+}
+#calidadAccordionDesktop .accordion-body{
+    margin:6px 0 2px;
+    padding:10px 8px 8px!important;
+    border-radius:18px;
+    background:#ffffff;
+    box-shadow:0 4px 12px rgba(10,44,27,.08);
+}
+#calidadAccordionDesktop .accordion-body .popupItem{
+    min-height:38px;
+    margin-bottom:4px;
+    color:#7f8e85;
+}
+#calidadAccordionDesktop .accordion-body .popupItem:last-child{margin-bottom:0}
+#calidadAccordionDesktop .accordion-body .popupItem:hover{
+    background:#eef4f0;
+    color:#0a2c1b;
+}
+#calidadAccordionDesktop .accordion-body .popupItem.active{
+    background:#dde9e2;
+    color:#0a2c1b;
+}

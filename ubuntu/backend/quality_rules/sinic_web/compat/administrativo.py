@@ -1,8 +1,8 @@
 from __future__ import annotations
 import re
 import unicodedata
-from .base import DatasetReader, RuleIssue
-from .municipality_context import get_dataset_municipality_context
+from ...base import DatasetReader, RuleIssue
+from ...municipality_context import get_dataset_municipality_context
 
 COMPONENT_SLUG = "administrativo"
 DEFAULT_RULE_IDS = frozenset({

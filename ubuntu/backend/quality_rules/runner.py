@@ -4,10 +4,8 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
-from .dataset import InMemoryDataset
-from .components import COMPONENTS, run_all_components
-from .loader import load_rule_group
 from .xtf_reader import parse_xtf_tables, TARGET_CLASSES
+from .sinic_web_adapter import run_sinic_rules, _json_safe
 from .npn_resolver import (
     annotate_ids_with_npns,
     build_npn_lookup,
@@ -15,21 +13,6 @@ from .npn_resolver import (
     resolve_display_tid,
     resolve_issue_npn,
 )
-
-
-def _load_available_rule_ids() -> list[str]:
-    available_rule_ids: list[str] = []
-    for component in COMPONENTS.values():
-        try:
-            definitions = load_rule_group(component.slug)
-        except FileNotFoundError:
-            continue
-
-        for definition in definitions:
-            if definition.rule_id not in available_rule_ids:
-                available_rule_ids.append(definition.rule_id)
-
-    return available_rule_ids
 
 
 def _debug_tables(tables: dict[str, list[dict[str, Any]]]) -> None:
@@ -200,9 +183,9 @@ def run_quality_checks(
     department_name: str | None = None,
     municipality_name: str | None = None,
 ) -> dict[str, Any]:
+    """Ejecuta en web el catálogo y la lógica SINIC unificada."""
     try:
         tables = parse_xtf_tables(xtf_path, TARGET_CLASSES)
-        _debug_tables(tables)
         npn_lookup = build_npn_lookup(tables)
         tid_lookup = build_tid_lookup(tables)
     except Exception as exc:
@@ -212,151 +195,163 @@ def run_quality_checks(
             "message": f"No se pudieron leer las tablas del XTF: {exc}",
             "quality": {
                 "summary": {
-                    "total_rules": 0,
-                    "available_rules": 0,
-                    "implemented_rules": 0,
-                    "unimplemented_rules": 0,
-                    "passed_rules": 0,
-                    "failed_rules": 0,
-                    "total_issues": 0,
-                    "predios_con_errores": 0,
+                    "total_rules": 0, "available_rules": 0, "implemented_rules": 0,
+                    "unimplemented_rules": 0, "passed_rules": 0, "failed_rules": 0,
+                    "total_issues": 0, "total_predios": 0, "predios_con_errores": 0,
+                    "predios_sin_errores": 0,
                 },
-                "rules": [],
-                "rule_catalog": {},
-                "predio_summary": [],
-                "unimplemented_rule_ids": [],
+                "rules": [], "rule_catalog": {}, "predio_summary": [],
+                "unimplemented_rule_ids": [], "issues": [],
             },
         }
 
-    dataset = InMemoryDataset(
-        tables,
-        metadata={
-            "municipality_code": municipality_code,
-            "department_code": department_code,
-            "dane_municipality_code": dane_municipality_code,
-            "orip_code": orip_code,
-            "department_name": department_name,
-            "municipality_name": municipality_name,
-        },
+    execution = run_sinic_rules(tables, municipality_code=municipality_code)
+    raw_results = execution.get("results") or {}
+    rule_catalog = execution.get("catalog") or {}
+    executable_ids = sorted(raw_results.keys(), key=lambda value: int(value))
+    omitted_ids = sorted(
+        [rule_id for rule_id in rule_catalog if rule_id not in raw_results],
+        key=lambda value: int(value),
     )
-    component_results = run_all_components(dataset)
-    available_rule_ids = _load_available_rule_ids()
-    total_predios = _total_predios(tables)
 
     issues: list[dict[str, Any]] = []
-    for component_result in component_results:
-        result = component_result.result
-        for issue in result.issues:
-            raw_display_id = (
-                issue.details.get("t_ili_tid")
-                or issue.details.get("T_Ili_Tid")
-                or issue.details.get("T_ILI_TID")
-                or issue.object_ref
-                or issue.details.get("id_operacion")
-                or issue.details.get("Id_Operacion")
-                or issue.details.get("id_predio")
-                or issue.details.get("predio_id")
-            )
-            display_id = resolve_display_tid(raw_display_id, tid_lookup)
-
-            issues.append(
-                {
-                    "rule": issue.rule_id,
-                    "display_id": display_id,
-                    "object_id": display_id,
-                    "tid": issue.object_ref,
-                    "object_class": issue.details.get("class"),
-                    "npn": resolve_issue_npn(
-                        {
-                            "object_id": display_id,
-                            "object_ref": issue.object_ref,
-                            "details": issue.details,
-                        },
-                        npn_lookup,
-                    ),
-                    "message": annotate_ids_with_npns(issue.message, npn_lookup),
-                    "details": issue.details,
-                    "component": component_result.component,
-                }
-            )
-
-    rule_definitions_by_component: dict[str, dict[str, dict[str, str]]] = {}
-
-    for component in COMPONENTS.values():
-        try:
-            definitions = load_rule_group(component.slug)
-        except FileNotFoundError:
-            definitions = []
-
-        rule_definitions_by_component[component.slug] = {
-            definition.rule_id: {
-                "description": definition.description or "",
-                "component_label": definition.component or component.slug.title(),
-            }
-            for definition in definitions
-        }
-
-    rule_catalog: dict[str, dict[str, str]] = {}
-    for component_slug, rules_map in rule_definitions_by_component.items():
-        for rule_id, metadata in rules_map.items():
-            rule_catalog[rule_id] = {
-                "component_label": metadata.get("component_label", ""),
-                "description": metadata.get("description", ""),
-                "component_slug": component_slug,
-            }
-
     rule_status: list[dict[str, Any]] = []
-    for component_result in component_results:
-        rule_id = component_result.result.rule_id
-        catalog_item = rule_catalog.get(rule_id, {})
 
-        rule_status.append(
-            {
+    for rule_id in executable_ids:
+        result = raw_results.get(rule_id) or {}
+        catalog_item = rule_catalog.get(rule_id) or {}
+        component_slug = str(catalog_item.get("component_slug") or catalog_item.get("sheet_slug") or "").strip().lower()
+        component_label = str(catalog_item.get("component_label") or catalog_item.get("component") or component_slug.title()).strip()
+        errors = result.get("errores") if isinstance(result.get("errores"), list) else []
+        execution_error = str(result.get("error_ejecucion") or "").strip()
+
+        for error in errors:
+            if not isinstance(error, dict):
+                continue
+            details = error.get("detalles") if isinstance(error.get("detalles"), dict) else error.get("details")
+            details = _json_safe(dict(details)) if isinstance(details, dict) else {}
+            raw_aid = (
+                error.get("aid") or details.get("aid") or details.get("t_ili_tid")
+                or details.get("T_Ili_Tid") or details.get("T_ILI_TID")
+                or details.get("id_operacion") or details.get("id_predio")
+            )
+            # El AID y el NPN son conceptos distintos. Algunos objetos anidados
+            # (especialmente ARB_AvaluoValor) no traen TID propio y el helper
+            # puede devolver el NPN como aid. En ese caso se muestra el UUID/TID
+            # del predio relacionado y el NPN permanece exclusivamente en NPN.
+            predio_id_hint = str(details.get("predio_id") or details.get("predio_ref") or "").strip()
+            raw_aid_text = str(raw_aid or "").strip()
+            raw_aid_is_npn = raw_aid_text.isdigit() and len(raw_aid_text) == 30
+            display_source = predio_id_hint if (raw_aid_is_npn and predio_id_hint) else raw_aid
+            display_id = resolve_display_tid(display_source, tid_lookup) if display_source else None
+            if not display_id:
+                display_id = str(display_source or "Sin identificar")
+            object_class = str(
+                details.get("class") or details.get("tabla") or error.get("capa") or ""
+            ).strip()
+            npn = str(details.get("numero_predial") or details.get("npn") or "").strip()
+            if not npn:
+                for candidate in (
+                    raw_aid, details.get("predio"), details.get("predio_ref"),
+                    details.get("predio_id"), details.get("arb_predio"),
+                    details.get("ilc_predio"), details.get("id_terreno"),
+                    details.get("id_construccion"), details.get("id_uconstruccion"),
+                ):
+                    key = str(candidate or "").strip()
+                    if key and key in npn_lookup:
+                        npn = npn_lookup[key]
+                        break
+            message = str(error.get("descripcion") or error.get("message") or "Incumplimiento de la regla.")
+            message = annotate_ids_with_npns(message, npn_lookup)
+            issues.append({
                 "rule": rule_id,
-                "component": component_result.component,
-                "component_label": catalog_item.get("component_label", ""),
-                "description": catalog_item.get("description", ""),
-                "passed": component_result.result.passed,
-                "issue_count": len(component_result.result.issues),
-            }
-        )
+                "display_id": display_id,
+                "object_id": display_id,
+                "tid": raw_aid,
+                "object_class": object_class,
+                "npn": npn,
+                "message": message,
+                "details": details,
+                "component": component_slug,
+                "component_label": component_label,
+                "estado": catalog_item.get("estado"),
+                "clasificacion": catalog_item.get("clasificacion"),
+            })
 
-    passed_rules = [item for item in rule_status if item["passed"]]
-    failed_rules = [item for item in rule_status if not item["passed"]]
+        if execution_error:
+            issues.append({
+                "rule": rule_id,
+                "display_id": "Validador interno",
+                "object_id": None,
+                "tid": None,
+                "object_class": "",
+                "npn": "",
+                "message": f"No se pudo ejecutar la regla SINIC {rule_id}: {execution_error}",
+                "details": {"error_ejecucion": execution_error},
+                "component": component_slug,
+                "component_label": component_label,
+                "estado": catalog_item.get("estado"),
+                "clasificacion": catalog_item.get("clasificacion"),
+            })
 
-    implemented_rule_ids = [item["rule"] for item in rule_status]
-    unimplemented_rule_ids = [
-        rule_id for rule_id in available_rule_ids
-        if rule_id not in implemented_rule_ids
-    ]
+        issue_count = len(errors) + (1 if execution_error else 0)
+        if execution_error:
+            verification_status = "error_ejecucion"
+        elif result.get("no_verificable"):
+            verification_status = "parcial" if result.get("verificacion_parcial") else "no_verificable"
+        elif result.get("no_aplica"):
+            verification_status = "no_aplica"
+        else:
+            verification_status = "verificada"
+        rule_status.append({
+            "rule": rule_id,
+            "component": component_slug,
+            "component_label": component_label,
+            "description": str(catalog_item.get("description") or ""),
+            "passed": issue_count == 0,
+            "issue_count": issue_count,
+            "estado": catalog_item.get("estado"),
+            "clasificacion": catalog_item.get("clasificacion"),
+            "verification_status": verification_status,
+            "no_verificable": bool(result.get("no_verificable")),
+            "verificacion_parcial": bool(result.get("verificacion_parcial")),
+            "mensaje": result.get("mensaje"),
+        })
 
+    total_predios = _total_predios(tables)
     predio_summary = _build_predio_summary(issues, tables)
-    predios_con_errores = min(len(predio_summary), total_predios) if total_predios else len(predio_summary)
+    identified_predios = [item for item in predio_summary if item.get("object_id") != "Sin identificar"]
+    predios_con_errores = min(len(identified_predios), total_predios) if total_predios else len(identified_predios)
     predios_sin_errores = max(total_predios - predios_con_errores, 0)
+    passed_rules = sum(1 for item in rule_status if item["passed"])
+    failed_rules = len(rule_status) - passed_rules
 
-    status = "passed" if not issues else "failed"
-
+    quality = {
+        "npn_by_object_id": npn_lookup,
+        "issues": issues,
+        "summary": {
+            "total_rules": len(rule_status),
+            "available_rules": len(rule_catalog),
+            "implemented_rules": len(rule_status),
+            "unimplemented_rules": len(omitted_ids),
+            "passed_rules": passed_rules,
+            "failed_rules": failed_rules,
+            "total_issues": len(issues),
+            "total_predios": total_predios,
+            "predios_con_errores": predios_con_errores,
+            "predios_sin_errores": predios_sin_errores,
+        },
+        "rules": rule_status,
+        "rule_catalog": rule_catalog,
+        "predio_summary": predio_summary,
+        "unimplemented_rule_ids": omitted_ids,
+        "omitted_rule_ids": omitted_ids,
+        "cartography_source": execution.get("cartography_source") or "",
+        "loaded_layers": execution.get("loaded_layers") or [],
+    }
     return {
-        "status": status,
+        "status": "passed" if not issues else "failed",
         "issues": issues,
         "message": None,
-        "quality": {
-            "npn_by_object_id": npn_lookup,
-            "summary": {
-                "total_rules": len(rule_status),
-                "available_rules": len(available_rule_ids),
-                "implemented_rules": len(rule_status),
-                "unimplemented_rules": len(unimplemented_rule_ids),
-                "passed_rules": len(passed_rules),
-                "failed_rules": len(failed_rules),
-                "total_issues": len(issues),
-                "total_predios": total_predios,
-                "predios_con_errores": predios_con_errores,
-                "predios_sin_errores": predios_sin_errores,
-            },
-            "rules": rule_status,
-            "rule_catalog": rule_catalog,
-            "predio_summary": predio_summary,
-            "unimplemented_rule_ids": unimplemented_rule_ids,
-        },
+        "quality": quality,
     }

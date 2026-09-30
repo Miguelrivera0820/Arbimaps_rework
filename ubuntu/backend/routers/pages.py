@@ -636,6 +636,101 @@ def panel_validacion_xtf(request: Request):
     return _render_panel(request, user, view="validacion_xtf")
 
 
+@router.get("/panel/calidad/historial-validacion")
+def panel_historial_validacion(request: Request):
+    user = get_user(request)
+    if not user:
+        return RedirectResponse(
+            url=with_root_path(request, "/login"),
+            status_code=302
+        )
+
+    municipality_code = str(user.get("municipality_code") or "").strip()
+    history = xtf_service.list_validation_history(
+        municipality_code=municipality_code or None,
+        limit=2000,
+    )
+    tenant = _safe_get_current_tenant(request)
+    manager = get_connection_manager(request.app)
+    assignment_options: list[dict[str, Any]] = []
+    if tenant is not None and manager is not None:
+        try:
+            with manager.connection(tenant) as conn:
+                history = xtf_service.enrich_validation_history_with_assignments(
+                    history,
+                    conn=conn,
+                    tenant=tenant,
+                )
+                assignment_options = xtf_service.list_history_assignments(
+                    conn=conn,
+                    tenant=tenant,
+                    username=str(user.get("username") or user.get("email") or ""),
+                    user_id=user.get("id_global"),
+                    role=_effective_role(user),
+                )
+        except Exception:
+            logger.exception("No fue posible enriquecer el historial con asignaciones")
+            history = xtf_service.enrich_validation_history_with_assignments(history)
+    else:
+        history = xtf_service.enrich_validation_history_with_assignments(history)
+
+    # El bloque superior es consolidado: una última validación por asignación.
+    consolidated_history = xtf_service.consolidate_validation_history_by_assignment(history)
+    dashboard = xtf_service.validation_history_dashboard(consolidated_history)
+
+    # Si la BD no pudo devolver el listado, se construye un selector de respaldo
+    # con las asignaciones que sí aparecen en el historial.
+    if not assignment_options:
+        seen: set[int] = set()
+        for item in consolidated_history:
+            assignment_id = item.get("assignment_id")
+            try:
+                assignment_id = int(assignment_id)
+            except Exception:
+                continue
+            if assignment_id in seen:
+                continue
+            seen.add(assignment_id)
+            assignment_options.append({
+                "id": assignment_id,
+                "title": item.get("assignment_label") or f"Asignación #{assignment_id}",
+                "label": item.get("assignment_label") or f"Asignación #{assignment_id}",
+                "assigned_user": item.get("assignment_user") or "",
+                "state": item.get("assignment_state") or "EN_VALIDACION",
+                "is_synchronized": bool(item.get("is_synchronized")),
+                "sync_status": item.get("sync_status") or "En validación",
+            })
+
+    requested_assignment = str(request.query_params.get("assignment_id") or "").strip()
+    selected_assignment_id = None
+    if requested_assignment.isdigit() and any(str(item.get("id")) == requested_assignment for item in assignment_options):
+        selected_assignment_id = int(requested_assignment)
+    elif assignment_options:
+        selected_assignment_id = int(assignment_options[0]["id"])
+
+    # Los contadores de asignaciones representan el universo visible para el
+    # usuario, incluso cuando una asignación todavía no tiene ninguna validación.
+    if assignment_options:
+        dashboard["total_assignments"] = len(assignment_options)
+        dashboard["synchronized_assignments"] = sum(1 for item in assignment_options if item.get("is_synchronized"))
+        dashboard["in_validation_assignments"] = max(
+            dashboard["total_assignments"] - dashboard["synchronized_assignments"], 0
+        )
+        dashboard["sync_percent"] = round(
+            dashboard["synchronized_assignments"] * 100.0 / dashboard["total_assignments"], 1
+        ) if dashboard["total_assignments"] else 0.0
+
+    return _render_panel(
+        request,
+        user,
+        view="historial_validacion",
+        validation_history=history,
+        validation_dashboard=dashboard,
+        validation_assignment_options=assignment_options,
+        validation_selected_assignment_id=selected_assignment_id,
+    )
+
+
 @router.get("/panel/sincronizacion-mergin")
 def panel_sincronizacion_mergin(request: Request):
 

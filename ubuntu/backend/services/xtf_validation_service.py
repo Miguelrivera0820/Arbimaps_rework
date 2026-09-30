@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+
 from quality_rules.runner import run_quality_checks
 from quality_rules.npn_resolver import attach_npns_to_errors, resolve_issue_npn
 from quality_rules.xtf_reader import parse_xtf_tables, TARGET_CLASSES
@@ -24,15 +25,10 @@ from services.validation_pdf_report import build_validation_pdf, validation_pdf_
 
 
 COMPONENT_LABELS = {
-    "administrativo": "Administrativo",
+    "general": "General",
     "juridico": "Juridico",
     "fisico": "Fisico",
     "economico": "Económico",
-    "topologico": "Topológico",
-    "novedades": "Novedades",
-    "estructura": "Estructura",
-    "complementarias": "Complementarias",
-    "obligatorias": "Obligatorias",
 }
 
 
@@ -303,6 +299,513 @@ class XTFValidationService:
             encoding="utf-8",
         )
 
+    def list_validation_history(
+        self,
+        *,
+        municipality_code: str | None = None,
+        limit: int = 300,
+    ) -> list[dict[str, Any]]:
+        """Return compact persisted XTF validation history from report JSON files.
+
+        History is tenant-aware: when ``municipality_code`` is provided only jobs
+        generated for that municipality are returned. Corrupt/incomplete files are
+        ignored so one old report cannot break the panel.
+        """
+        normalized_municipality = str(municipality_code or "").strip().lower()
+        rows: list[dict[str, Any]] = []
+        files = sorted(
+            self.report_dir.glob("*.json"),
+            key=lambda item: item.stat().st_mtime if item.exists() else 0,
+            reverse=True,
+        )
+        for path in files:
+            if len(rows) >= max(int(limit or 0), 1):
+                break
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if not isinstance(payload, dict):
+                continue
+            payload_municipality = str(payload.get("municipality_code") or "").strip().lower()
+            if normalized_municipality and payload_municipality != normalized_municipality:
+                continue
+
+            validation = payload.get("validation") if isinstance(payload.get("validation"), dict) else {}
+            quality = validation.get("quality") if isinstance(validation.get("quality"), dict) else {}
+            summary = quality.get("summary") if isinstance(quality.get("summary"), dict) else {}
+            rule_errors = [item for item in self._as_list(validation.get("rule_errors")) if isinstance(item, dict)]
+            schema_errors = [item for item in self._as_list(validation.get("schema_errors")) if isinstance(item, dict)]
+            total_issues = self._coerce_int(summary.get("total_issues"), default=len(rule_errors) + len(schema_errors))
+            predios_catalog = [item for item in self._as_list(payload.get("predios_catalog")) if isinstance(item, dict)]
+            summary_total_predios = self._coerce_int(summary.get("total_predios"), default=0)
+            total_predios_in_file = len(predios_catalog) or summary_total_predios
+            selected_predios = self._as_list(payload.get("selected_predios"))
+            filtered_by_predios = bool(payload.get("filtered_by_predios")) and bool(selected_predios)
+            scope_key, normalized_selected = self._history_scope_identity(
+                selected_predios=selected_predios,
+                predios_catalog=predios_catalog,
+                filtered_by_predios=filtered_by_predios,
+            )
+            evaluated_predios = len(normalized_selected) if filtered_by_predios else total_predios_in_file
+            original_filename = str(payload.get("original_filename") or "Archivo XTF")
+            component_counts = self._history_component_counts(validation)
+            quality_metrics = self._history_quality_metrics(validation)
+
+            generated_at = str(payload.get("generated_at") or "").strip()
+            rows.append({
+                "job_id": str(payload.get("job_id") or path.stem),
+                "generated_at": generated_at,
+                "original_filename": original_filename,
+                "municipality_code": str(payload.get("municipality_code") or ""),
+                "username": str(payload.get("username") or "Usuario"),
+                "status": str(validation.get("status") or "unknown").lower(),
+                "message": str(validation.get("message") or ""),
+                "total_issues": total_issues,
+                "total_predios": summary_total_predios or total_predios_in_file,
+                "total_predios_in_file": total_predios_in_file,
+                "evaluated_predios": evaluated_predios,
+                "filtered_by_predios": filtered_by_predios,
+                "scope_type": "selected" if filtered_by_predios else "all",
+                "scope_label": "Predios seleccionados" if filtered_by_predios else "Todo el XTF",
+                "scope_detail": (
+                    f"{evaluated_predios} de {total_predios_in_file} predios"
+                    if filtered_by_predios and total_predios_in_file
+                    else f"{evaluated_predios} predios"
+                ),
+                "selected_predios_count": evaluated_predios if filtered_by_predios else 0,
+                "total_rules": self._coerce_int(summary.get("total_rules"), default=0),
+                "passed_rules": self._coerce_int(summary.get("passed_rules"), default=0),
+                "failed_rules": self._coerce_int(summary.get("failed_rules"), default=0),
+                "component_counts": component_counts,
+                "quality_percent": quality_metrics.get("quality_percent", 0.0),
+                "quality_checks": quality_metrics.get("quality_checks", 0),
+                "quality_passed": quality_metrics.get("quality_passed", 0),
+                "component_quality": quality_metrics.get("components", {}),
+            })
+        return rows
+
+
+    def _history_scope_identity(
+        self,
+        *,
+        selected_predios: list[Any],
+        predios_catalog: list[dict[str, Any]],
+        filtered_by_predios: bool,
+    ) -> tuple[str, list[str]]:
+        """Build a stable history identity for full-file vs partial validations.
+
+        Re-uploading the same XTF with the same selection keeps only the newest
+        execution in the history. Different selections are intentionally kept as
+        separate entries. Identifiers are normalized through the predio catalog so
+        equivalent TID/NPN/id-operacion selections collapse to the same scope.
+        """
+        if not filtered_by_predios or not selected_predios:
+            return "all", []
+
+        alias_to_canonical: dict[str, str] = {}
+        for predio in predios_catalog:
+            canonical = str(
+                predio.get("tid")
+                or predio.get("numero_predial")
+                or predio.get("id_operacion")
+                or predio.get("nupre")
+                or predio.get("index")
+                or ""
+            ).strip()
+            if not canonical:
+                continue
+            aliases = (
+                predio.get("tid"),
+                predio.get("numero_predial"),
+                predio.get("numero_predial_anterior"),
+                predio.get("id_operacion"),
+                predio.get("nupre"),
+                predio.get("matricula"),
+                predio.get("fmi"),
+                predio.get("index"),
+            )
+            for alias in aliases:
+                text = str(alias or "").strip()
+                if text:
+                    alias_to_canonical[text] = canonical
+
+        normalized = sorted({
+            alias_to_canonical.get(str(value).strip(), str(value).strip())
+            for value in selected_predios
+            if str(value).strip()
+        })
+        return "selected:" + "|".join(normalized), normalized
+
+    def _history_assignment_id(self, filename: str, municipality_code: str | None = None) -> int | None:
+        """Extract assignment id from ARBIMaps XTF filenames.
+
+        Accepts prefixes before ``asignacion_`` and any suffix/version after the
+        numeric assignment id, e.g. ``..._asignacion_neiva_156_Dig_001_....xtf``.
+        """
+        text = str(filename or "").strip()
+        if not text:
+            return None
+        match = re.search(r"(?:^|_)asignacion_[a-z0-9-]+_(\d+)(?:_|\.|$)", text, flags=re.IGNORECASE)
+        if not match:
+            return None
+        try:
+            return int(match.group(1))
+        except (TypeError, ValueError):
+            return None
+
+    def enrich_validation_history_with_assignments(
+        self,
+        rows: list[dict[str, Any]],
+        *,
+        conn=None,
+        tenant=None,
+    ) -> list[dict[str, Any]]:
+        """Attach assignment identity and synchronization status to history rows.
+
+        Synchronization is considered definitive when the assignment is in
+        ``SINCRONIZADO``/``SINCRONIZADO_PRODUCCION`` or has a PUBLICACION_MAIN
+        event. Missing/non-assignment files remain visible as "En validación".
+        """
+        enriched = [dict(row) for row in rows]
+        assignment_ids: set[int] = set()
+        for row in enriched:
+            assignment_id = self._history_assignment_id(
+                str(row.get("original_filename") or ""),
+                str(row.get("municipality_code") or "") or None,
+            )
+            row["assignment_id"] = assignment_id
+            row["assignment_label"] = f"Asignación #{assignment_id}" if assignment_id is not None else "Archivo sin asignación"
+            if assignment_id is not None:
+                assignment_ids.add(assignment_id)
+
+        assignment_map: dict[int, dict[str, Any]] = {}
+        if conn is not None and tenant is not None and assignment_ids:
+            schema = str(getattr(getattr(tenant, "schemas", None), "app", "arbimaps_app") or "arbimaps_app").strip()
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", schema):
+                schema = "arbimaps_app"
+            schema_q = '"' + schema.replace('"', '""') + '"'
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"""
+                    SELECT
+                        a.id,
+                        a.titulo,
+                        a.estado::text AS estado,
+                        a.usuario_asignado,
+                        a.creado_en,
+                        EXISTS (
+                            SELECT 1
+                            FROM {schema_q}.asignacion_event_log el
+                            WHERE el.asignacion_id = a.id
+                              AND (
+                                   el.evento::text = 'PUBLICACION_MAIN'
+                                OR el.mensaje LIKE '[PUBLICACION_MAIN]%%'
+                              )
+                        ) AS publicado_main
+                    FROM {schema_q}.asignacion a
+                    WHERE a.id = ANY(%s)
+                    """,
+                    (sorted(assignment_ids),),
+                )
+                columns = [getattr(col, "name", col[0]) for col in (cur.description or [])]
+                for raw in cur.fetchall() or []:
+                    item = dict(zip(columns, raw))
+                    try:
+                        assignment_map[int(item.get("id"))] = item
+                    except Exception:
+                        continue
+
+        synchronized_states = {"SINCRONIZADO", "SINCRONIZADO_PRODUCCION"}
+        for row in enriched:
+            assignment_id = row.get("assignment_id")
+            assignment = assignment_map.get(int(assignment_id)) if assignment_id is not None and str(assignment_id).isdigit() else None
+            state = str((assignment or {}).get("estado") or "").strip().upper()
+            is_synchronized = bool(state in synchronized_states or (assignment or {}).get("publicado_main"))
+            row["assignment_state"] = state or "EN_VALIDACION"
+            row["is_synchronized"] = is_synchronized
+            row["sync_status"] = "Sincronizado" if is_synchronized else "En validación"
+            row["assignment_user"] = str((assignment or {}).get("usuario_asignado") or "")
+            if assignment_id is not None:
+                title = str((assignment or {}).get("titulo") or "").strip()
+                row["assignment_title"] = title
+                row["assignment_label"] = title or f"Asignación #{assignment_id}"
+        return enriched
+
+
+    def list_history_assignments(
+        self,
+        *,
+        conn,
+        tenant,
+        username: str = "",
+        user_id: Any = None,
+        role: str = "",
+    ) -> list[dict[str, Any]]:
+        """Return assignments visible to the current user for the quality history.
+
+        The selector is assignment-centric and must include assignments even when
+        they do not have XTF validations yet. Closed assignments are omitted unless
+        they were already published/synchronized, matching the assignments module.
+        """
+        schema = str(getattr(getattr(tenant, "schemas", None), "app", "arbimaps_app") or "arbimaps_app").strip()
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", schema):
+            schema = "arbimaps_app"
+        schema_q = '"' + schema.replace('\"', '\"\"') + '"'
+        role_norm = str(role or "").strip().lower()
+        username_norm = str(username or "").strip()
+        user_id_text = str(user_id or "").strip()
+
+        scope_sql = "TRUE"
+        params: list[Any] = []
+        if role_norm in {"digitalizador", "reconocedor"}:
+            scope_sql = "(LOWER(COALESCE(a.usuario_asignado,'')) = LOWER(%s) OR LOWER(COALESCE(a.usuario_reconocedor,'')) = LOWER(%s))"
+            params.extend([username_norm, username_norm])
+        elif role_norm == "coordinador":
+            scope_sql = "(LOWER(COALESCE(a.creado_por,'')) = LOWER(%s) OR a.coordinador_asignado_id::text = %s)"
+            params.extend([username_norm, user_id_text])
+        elif role_norm not in {"admin", "soporte", "lider_tecnico"}:
+            scope_sql = "(LOWER(COALESCE(a.usuario_asignado,'')) = LOWER(%s) OR LOWER(COALESCE(a.creado_por,'')) = LOWER(%s))"
+            params.extend([username_norm, username_norm])
+
+        isolation_sql = "TRUE"
+        if role_norm == "admin":
+            isolation_sql = "LOWER(COALESCE(cu.rol,'')) <> 'soporte'"
+        elif role_norm == "soporte":
+            isolation_sql = "LOWER(COALESCE(cu.rol,'')) <> 'admin'"
+
+        query = f"""
+            SELECT
+                a.id,
+                a.titulo,
+                a.estado::text AS estado,
+                a.usuario_asignado,
+                COALESCE(au.first_name, '') AS first_name,
+                COALESCE(au.last_name, '') AS last_name,
+                EXISTS (
+                    SELECT 1
+                    FROM {schema_q}.asignacion_event_log el
+                    WHERE el.asignacion_id = a.id
+                      AND (el.evento::text = 'PUBLICACION_MAIN' OR el.mensaje LIKE '[PUBLICACION_MAIN]%%')
+                ) AS publicado_main
+            FROM {schema_q}.asignacion a
+            LEFT JOIN {schema_q}.users cu ON cu.username = a.creado_por
+            LEFT JOIN {schema_q}.users au ON au.username = a.usuario_asignado
+            WHERE (a.estado::text <> 'CERRADA' OR EXISTS (
+                SELECT 1 FROM {schema_q}.asignacion_event_log el2
+                WHERE el2.asignacion_id = a.id
+                  AND (el2.evento::text = 'PUBLICACION_MAIN' OR el2.mensaje LIKE '[PUBLICACION_MAIN]%%')
+            ))
+              AND {scope_sql}
+              AND {isolation_sql}
+            ORDER BY a.id DESC
+        """
+        with conn.cursor() as cur:
+            cur.execute(query, tuple(params))
+            columns = [getattr(col, "name", col[0]) for col in (cur.description or [])]
+            raw_rows = [dict(zip(columns, row)) for row in (cur.fetchall() or [])]
+
+        synced_states = {"SINCRONIZADO", "SINCRONIZADO_PRODUCCION"}
+        result: list[dict[str, Any]] = []
+        for item in raw_rows:
+            try:
+                assignment_id = int(item.get("id"))
+            except Exception:
+                continue
+            title = str(item.get("titulo") or "").strip() or f"Asignación #{assignment_id}"
+            state = str(item.get("estado") or "").strip().upper()
+            is_sync = bool(state in synced_states or item.get("publicado_main"))
+            full_name = " ".join(part for part in [str(item.get("first_name") or "").strip(), str(item.get("last_name") or "").strip()] if part).strip()
+            result.append({
+                "id": assignment_id,
+                "title": title,
+                "label": title,
+                "assigned_user": full_name or str(item.get("usuario_asignado") or "").strip(),
+                "state": state or "EN_VALIDACION",
+                "is_synchronized": is_sync,
+                "sync_status": "Sincronizado" if is_sync else "En validación",
+            })
+        return result
+
+    def consolidate_validation_history_by_assignment(self, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Keep one latest history row per assignment.
+
+        A single assignment may generate many XTF names/versions. The quality
+        history is assignment-centric: the newest validation represents the row,
+        while ``validation_runs_count`` records how many consolidated entries were
+        found for that assignment. Non-assignment XTFs are grouped by filename.
+        """
+        grouped: dict[str, dict[str, Any]] = {}
+        ordered_keys: list[str] = []
+        for row in rows:
+            assignment_id = row.get("assignment_id")
+            if assignment_id is not None:
+                key = f"assignment:{assignment_id}"
+            else:
+                key = "file:" + str(row.get("original_filename") or "").strip().casefold()
+            if key not in grouped:
+                item = dict(row)
+                item["validation_runs_count"] = 1
+                grouped[key] = item
+                ordered_keys.append(key)
+            else:
+                grouped[key]["validation_runs_count"] = int(grouped[key].get("validation_runs_count") or 1) + 1
+        return [grouped[key] for key in ordered_keys]
+
+    def validation_history_dashboard(self, rows: list[dict[str, Any]]) -> dict[str, Any]:
+        """Build the quality dashboard using only the four functional modules.
+
+        The validator UI works with General, Jurídico, Económico and Físico.
+        Historical/source-module labels (administrativo, topológico, obligatorias,
+        etc.) are never shown as independent modules here; every implemented SINIC
+        rule is resolved back to its catalog component before calculating quality.
+        """
+        module_order = ("general", "juridico", "economico", "fisico")
+        component_acc: dict[str, dict[str, Any]] = {
+            slug: {
+                "slug": slug,
+                "label": self._quality_component_label(slug),
+                "icon": self._quality_component_icon(slug),
+                "checks": 0,
+                "passed": 0,
+            }
+            for slug in module_order
+        }
+        total_predios = 0
+
+        for row in rows:
+            total_predios += self._coerce_int(row.get("evaluated_predios"), default=0)
+            component_quality = row.get("component_quality") if isinstance(row.get("component_quality"), dict) else {}
+            for slug in module_order:
+                data = component_quality.get(slug)
+                if not isinstance(data, dict):
+                    continue
+                component_acc[slug]["checks"] += self._coerce_int(data.get("checks"), default=0)
+                component_acc[slug]["passed"] += self._coerce_int(data.get("passed"), default=0)
+
+        components: list[dict[str, Any]] = []
+        total_checks = 0
+        total_passed = 0
+        for slug in module_order:
+            data = component_acc[slug]
+            checks = self._coerce_int(data.get("checks"), default=0)
+            passed = self._coerce_int(data.get("passed"), default=0)
+            total_checks += checks
+            total_passed += passed
+            item = dict(data)
+            item["failed"] = max(checks - passed, 0)
+            item["quality_percent"] = round((passed * 100.0 / checks), 1) if checks else 0.0
+            components.append(item)
+
+        overall_quality = round((total_passed * 100.0 / total_checks), 1) if total_checks else 0.0
+        assignment_rows = [row for row in rows if row.get("assignment_id") is not None]
+        synchronized_assignments = sum(1 for row in assignment_rows if row.get("is_synchronized"))
+        in_validation_assignments = max(len(assignment_rows) - synchronized_assignments, 0)
+        return {
+            "total_validations": len(rows),
+            "total_assignments": len(assignment_rows),
+            "synchronized_assignments": synchronized_assignments,
+            "in_validation_assignments": in_validation_assignments,
+            "sync_percent": round((synchronized_assignments * 100.0 / len(assignment_rows)), 1) if assignment_rows else 0.0,
+            "total_predios": total_predios,
+            "quality_checks": total_checks,
+            "quality_passed": total_passed,
+            "quality_failed": max(total_checks - total_passed, 0),
+            "overall_quality": overall_quality,
+            "components": components,
+        }
+
+    def _history_quality_metrics(self, validation: dict[str, Any]) -> dict[str, Any]:
+        """Calculate quality only for the four modules visible in Validación XTF."""
+        quality = validation.get("quality") if isinstance(validation.get("quality"), dict) else {}
+        rules = [item for item in self._as_list(quality.get("rules")) if isinstance(item, dict)]
+        catalog = quality.get("rule_catalog") if isinstance(quality.get("rule_catalog"), dict) else {}
+        rule_meta_by_id = {
+            str(item.get("rule") or item.get("rule_id") or "").strip(): item
+            for item in rules
+            if str(item.get("rule") or item.get("rule_id") or "").strip()
+        }
+        module_order = ("general", "juridico", "economico", "fisico")
+        components: dict[str, dict[str, Any]] = {
+            slug: {
+                "slug": slug,
+                "label": self._quality_component_label(slug),
+                "checks": 0,
+                "passed": 0,
+            }
+            for slug in module_order
+        }
+        passed_total = 0
+        checks_total = 0
+
+        for item in rules:
+            slug = self._component_slug_from_item(item, catalog, rule_meta_by_id)
+            if slug not in components:
+                continue
+            checks_total += 1
+            passed_value = item.get("passed")
+            if isinstance(passed_value, bool):
+                passed = passed_value
+            else:
+                passed = self._coerce_int(item.get("issue_count"), default=0) == 0
+            if passed:
+                passed_total += 1
+            components[slug]["checks"] += 1
+            if passed:
+                components[slug]["passed"] += 1
+
+        for data in components.values():
+            checks = self._coerce_int(data.get("checks"), default=0)
+            passed = self._coerce_int(data.get("passed"), default=0)
+            data["failed"] = max(checks - passed, 0)
+            data["quality_percent"] = round((passed * 100.0 / checks), 1) if checks else 0.0
+
+        return {
+            "quality_checks": checks_total,
+            "quality_passed": passed_total,
+            "quality_percent": round((passed_total * 100.0 / checks_total), 1) if checks_total else 0.0,
+            "components": components,
+        }
+
+    @staticmethod
+    def _quality_component_label(slug: str) -> str:
+        labels = {
+            "general": "General",
+            "juridico": "Jurídico",
+            "economico": "Económico",
+            "fisico": "Físico",
+        }
+        return labels.get(str(slug or "").strip().lower(), str(slug or "").replace("_", " ").title())
+
+    @staticmethod
+    def _quality_component_icon(slug: str) -> str:
+        icons = {
+            "general": "bi-ui-checks-grid",
+            "juridico": "bi-bank",
+            "economico": "bi-graph-up-arrow",
+            "fisico": "bi-bounding-box",
+        }
+        return icons.get(str(slug or "").strip().lower(), "bi-grid")
+
+    def _history_component_counts(self, validation: dict[str, Any]) -> dict[str, int]:
+        counts = {"general": 0, "juridico": 0, "fisico": 0, "economico": 0, "estructura": 0}
+        quality = validation.get("quality") if isinstance(validation.get("quality"), dict) else {}
+        catalog = quality.get("rule_catalog") if isinstance(quality.get("rule_catalog"), dict) else {}
+        all_rules = [item for item in self._as_list(quality.get("rules")) if isinstance(item, dict)]
+        rule_meta_by_id = {
+            str(item.get("rule") or item.get("rule_id") or "").strip(): item
+            for item in all_rules
+            if str(item.get("rule") or item.get("rule_id") or "").strip()
+        }
+        for item in self._as_list(validation.get("rule_errors")):
+            if not isinstance(item, dict):
+                continue
+            slug = self._component_slug_from_item(item, catalog, rule_meta_by_id)
+            if slug in counts:
+                counts[slug] += 1
+        counts["estructura"] += len([item for item in self._as_list(validation.get("schema_errors")) if isinstance(item, dict)])
+        return counts
+
     def _filter_report_by_component(
         self,
         report: dict[str, Any],
@@ -434,16 +937,16 @@ class XTFValidationService:
             catalog_item = {}
 
         raw_component = (
-            item.get("component")
-            or item.get("component_slug")
-            or rule_meta.get("component")
-            or rule_meta.get("component_slug")
-            or catalog_item.get("component_slug")
+            catalog_item.get("component_slug")
             or catalog_item.get("sheet_slug")
-            or item.get("component_label")
-            or rule_meta.get("component_label")
+            or rule_meta.get("component_slug")
+            or rule_meta.get("component")
+            or item.get("component_slug")
+            or item.get("component")
             or catalog_item.get("component_label")
             or catalog_item.get("component")
+            or rule_meta.get("component_label")
+            or item.get("component_label")
         )
         return self._normalize_component_slug(raw_component)
 
@@ -955,6 +1458,11 @@ class XTFValidationService:
                             or catalog_item.get("component")
                         ),
                         "description": item.get("description") or catalog_item.get("description"),
+                        "estado": item.get("estado") or catalog_item.get("estado"),
+                        "clasificacion": item.get("clasificacion") or catalog_item.get("clasificacion"),
+                        "verification_status": item.get("verification_status"),
+                        "no_verificable": bool(item.get("no_verificable")),
+                        "verificacion_parcial": bool(item.get("verificacion_parcial")),
                     }
                 )
 
@@ -987,6 +1495,11 @@ class XTFValidationService:
                             or catalog_item.get("component")
                         ),
                         "description": item.get("description") or catalog_item.get("description"),
+                        "estado": item.get("estado") or catalog_item.get("estado"),
+                        "clasificacion": item.get("clasificacion") or catalog_item.get("clasificacion"),
+                        "verification_status": item.get("verification_status"),
+                        "no_verificable": bool(item.get("no_verificable")),
+                        "verificacion_parcial": bool(item.get("verificacion_parcial")),
                     }
                 )
 
@@ -1043,6 +1556,11 @@ class XTFValidationService:
                     or catalog_item.get("component")
                 ),
                 "description": item.get("description") or catalog_item.get("description"),
+                "estado": item.get("estado") or catalog_item.get("estado"),
+                "clasificacion": item.get("clasificacion") or catalog_item.get("clasificacion"),
+                "verification_status": item.get("verification_status"),
+                "no_verificable": bool(item.get("no_verificable")),
+                "verificacion_parcial": bool(item.get("verificacion_parcial")),
             })
 
             if rule_id not in implemented_rule_ids:
@@ -1284,61 +1802,20 @@ class XTFValidationService:
         return tuple(parts)
 
     def _implemented_rule_ids_from_components(self) -> list[str]:
+        # Fuente única: exactamente las funciones ejecutables del motor SINIC web.
         try:
-            from quality_rules.components import COMPONENTS
+            from quality_rules.sinic_web.registry import RULE_FUNCTIONS
+            return sorted((str(rule_id) for rule_id in RULE_FUNCTIONS), key=self._rule_sort_key)
         except Exception:
             return []
 
-        rule_ids: list[str] = []
-        for component in COMPONENTS.values():
-            for rule_id in sorted(component.default_rule_ids, key=self._rule_sort_key):
-                if rule_id not in component.rule_functions:
-                    continue
-                if rule_id not in rule_ids:
-                    rule_ids.append(rule_id)
-        return rule_ids
-
-    def _load_rule_catalog_fallback(self) -> dict[str, dict[str, str]]:
-        base_dir = self._abs_path("resource", "quality_rules")
-        if not base_dir.exists():
-            return {}
-
+    def _load_rule_catalog_fallback(self) -> dict[str, dict[str, Any]]:
+        # Catálogo SINIC compartido por el validador web.
         try:
-            from quality_rules.components import COMPONENTS
-            component_slugs = list(COMPONENTS.keys())
+            from quality_rules.sinic_web_adapter import load_catalog
+            return load_catalog()
         except Exception:
-            component_slugs = [
-                path.stem
-                for path in sorted(base_dir.glob("*.json"))
-                if path.stem != "all_rules"
-            ]
-
-        catalog: dict[str, dict[str, str]] = {}
-        for slug in component_slugs:
-            path = base_dir / f"{slug}.json"
-            if not path.exists():
-                continue
-            try:
-                payload = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
-
-            for entry in payload.get("rules", []):
-                if not isinstance(entry, dict):
-                    continue
-                rule_id = str(entry.get("id") or "").strip()
-                if not rule_id:
-                    continue
-
-                component_label = str(entry.get("component") or "").strip()
-                component_slug = str(entry.get("sheet_slug") or slug).strip()
-                catalog[rule_id] = {
-                    "description": str(entry.get("description") or ""),
-                    "component_label": component_label or component_slug.replace("_", " ").title(),
-                    "component_slug": component_slug,
-                }
-
-        return catalog
+            return {}
 
     def _abs_path(self, *parts: str) -> Path:
         return self.project_root.joinpath(*parts)
@@ -1741,18 +2218,38 @@ class XTFValidationService:
                 or catalog_item.get("description")
             )
 
+            issue_details = issue.get("details") if isinstance(issue.get("details"), dict) else {}
+            issue_npn = str(issue.get("npn") or "").strip()
+            if not issue_npn:
+                for candidate in (
+                    object_id, issue_details.get("predio"), issue_details.get("predio_ref"),
+                    issue_details.get("predio_id"), issue_details.get("arb_predio"),
+                    issue_details.get("ilc_predio"), issue_details.get("id_terreno"),
+                    issue_details.get("id_construccion"), issue_details.get("id_uconstruccion"),
+                ):
+                    key = str(candidate or "").strip()
+                    if key and key in npn_lookup:
+                        issue_npn = str(npn_lookup[key])
+                        break
+            # Evita escanear WKT extensos buscando UUID: en errores geométricos la
+            # geometría exacta no es una fuente de relación predial.
+            if not issue_npn and not issue_details.get("geometria_error_wkt"):
+                issue_npn = resolve_issue_npn(issue, npn_lookup)
+
             rule_errors.append(
                 {
                     "severity": issue.get("severity") or "ERROR",
                     "object_id": str(object_id).strip() if object_id else None,
                     "object_class": issue.get("object_class") or issue.get("class") or issue.get("tabla"),
-                    "npn": issue.get("npn") or resolve_issue_npn(issue, npn_lookup),
+                    "npn": issue_npn,
                     "rule": rule_id,
                     "message": issue.get("message") or description or "Error de regla interna.",
                     "description": description,
-                    "details": issue.get("details") or {},
+                    "details": issue_details,
                     "component": component,
                     "component_label": component_label,
+                    "estado": issue.get("estado") or rule_meta.get("estado") or catalog_item.get("estado"),
+                    "clasificacion": issue.get("clasificacion") or rule_meta.get("clasificacion") or catalog_item.get("clasificacion"),
                 }
             )
 

@@ -32,8 +32,9 @@ from services import asignaciones_export as export_service
 from services import asignaciones_workspace as workspace_service
 from services.xtf_validation_service import XTFValidationService
 from tenants import TenantContext, app_table, get_tenant_db_connection, main_table, work_table
-from quality_rules.components import COMPONENTS
-from quality_rules.loader import load_rule_group
+from quality_rules.sinic_web.registry import RULE_FUNCTIONS
+from quality_rules.sinic_web_adapter import load_catalog
+from quality_rules.sinic_web.config import estado_regla, clasificacion_regla
 
 router = APIRouter(prefix="/asignaciones", tags=["asignaciones-detalle"])
 logger = logging.getLogger(__name__)
@@ -1057,36 +1058,20 @@ def _history_error_message(
 
 
 def _quality_rules_catalog() -> list[dict]:
-    catalog: list[dict] = []
-    for component_slug, component in COMPONENTS.items():
-        default_ids = sorted(str(rid) for rid in (component.default_rule_ids or []))
-        definitions_map: dict[str, str] = {}
-        try:
-            definitions = load_rule_group(component_slug)
-            definitions_map = {
-                str(defn.rule_id): str(defn.description or "").strip()
-                for defn in definitions
-            }
-        except Exception:
-            definitions_map = {}
-
-        rules = [
-            {
-                "rule_id": rid,
-                "description": definitions_map.get(rid) or "Sin descripcion cargada.",
-            }
-            for rid in default_ids
-        ]
-
-        catalog.append(
-            {
-                "component": component_slug,
-                "rules": rules,
-                "total_rules": len(rules),
-            }
-        )
-    return catalog
-
+    """Catalogo visible del validador: exclusivamente reglas SINIC ejecutables."""
+    metadata = load_catalog()
+    grouped: dict[str, list[dict[str, str]]] = {}
+    for rule_id in sorted((str(rid) for rid in RULE_FUNCTIONS), key=lambda value: int(value)):
+        item = metadata.get(rule_id, {})
+        component = str(item.get("component_slug") or "sinic").strip().lower() or "sinic"
+        grouped.setdefault(component, []).append({
+            "rule_id": rule_id,
+            "description": str(item.get("description") or item.get("descripcion") or "Sin descripcion cargada.").strip(),
+        })
+    return [
+        {"component": component, "rules": rules, "total_rules": len(rules)}
+        for component, rules in grouped.items()
+    ]
 
 def _validator_pipeline_labels() -> list[str]:
     labels = ["ili2_validator"]
@@ -1227,54 +1212,256 @@ def _auto_detect_cancelled_npns_from_xtf_xml(xtf_path: str) -> set[str]:
     return cancelled_npns
 
 
-def _filter_validation_result_for_exempt_npns(result: dict, exempt_npns: set[str]) -> dict:
-    if not exempt_npns or not isinstance(result, dict):
+COLINDANTE_SYNC_RULE_IDS = frozenset({"20", "21", "22", "23", "24", "25", "28", "29"})
+
+
+def _sync_validation_payload(result: dict) -> tuple[dict, dict]:
+    val = result.get("validation") if isinstance(result.get("validation"), dict) else result
+    quality = val.get("quality") if isinstance(val.get("quality"), dict) else (
+        result.get("quality") if isinstance(result.get("quality"), dict) else {}
+    )
+    return val, quality
+
+
+def _sync_issue_rule_id(issue: dict) -> str:
+    details = issue.get("details") if isinstance(issue.get("details"), dict) else {}
+    return str(issue.get("rule") or issue.get("rule_id") or details.get("rule") or details.get("rule_id") or "").strip()
+
+
+def _sync_issue_npns(issue: dict, npn_lookup: dict) -> set[str]:
+    values: list[str] = []
+    details = issue.get("details") if isinstance(issue.get("details"), dict) else {}
+    for value in (
+        issue.get("npn"),
+        issue.get("numero_predial"),
+        details.get("npn"),
+        details.get("numero_predial"),
+        details.get("numero_predial_nacional"),
+    ):
+        if value not in (None, ""):
+            values.append(str(value))
+
+    obj_id = str(
+        issue.get("object_id")
+        or issue.get("display_id")
+        or issue.get("object_ref")
+        or issue.get("tid")
+        or ""
+    ).strip()
+    if obj_id:
+        mapped = npn_lookup.get(obj_id)
+        if mapped not in (None, ""):
+            values.append(str(mapped))
+
+    found: set[str] = set()
+    for raw in values:
+        for token in re.split(r"\s*(?:\||;|,)\s*", raw):
+            clean = str(token or "").strip()
+            if clean:
+                found.add(clean)
+    return found
+
+
+def _sync_is_topological_issue(issue: dict) -> bool:
+    details = issue.get("details") if isinstance(issue.get("details"), dict) else {}
+    comp = str(issue.get("component") or issue.get("rule_group") or details.get("component") or "").strip().lower()
+    rule_name = str(issue.get("rule") or issue.get("rule_id") or "").strip().lower()
+    return comp in ("topologico", "topológico") or "topolog" in comp or rule_name.startswith("top_") or "topolog" in rule_name
+
+
+def _filter_validation_result_for_sync_roles(
+    result: dict,
+    roles_by_npn: dict[str, str],
+    cancelled_npns: set[str] | None = None,
+) -> dict:
+    """Aplica la politica de validacion previa a sincronizacion por rol de predio.
+
+    - Asignacion/Matriz/Nuevo: conserva todas las reglas.
+    - Colindante: conserva exclusivamente 20,21,22,23,24,25,28,29.
+    - Cancelado: mantiene la politica legacy (solo hallazgos topologicos).
+
+    La politica se aplica sobre los resultados, no sobre el motor completo, porque un
+    mismo XTF puede mezclar predios principales y colindantes en una sola ejecucion.
+    """
+    if not isinstance(result, dict):
         return result
 
-    val = result.get("validation") if isinstance(result.get("validation"), dict) else result
+    val, quality = _sync_validation_payload(result)
     rule_errors = val.get("rule_errors") or []
-    quality = val.get("quality") if isinstance(val.get("quality"), dict) else (result.get("quality") if isinstance(result.get("quality"), dict) else {})
     issues = quality.get("issues") or []
     npn_lookup = quality.get("npn_by_object_id") or {}
+    normalized_roles = {
+        str(npn).strip(): str(role or "").strip().lower()
+        for npn, role in (roles_by_npn or {}).items()
+        if str(npn or "").strip()
+    }
+    clean_cancelled = {str(n).strip() for n in (cancelled_npns or set()) if str(n or "").strip()}
 
-    clean_exempt = {str(n).strip() for n in exempt_npns if n}
+    def keep_issue(issue: dict) -> bool:
+        if not isinstance(issue, dict):
+            return True
+        npns = _sync_issue_npns(issue, npn_lookup)
+        if not npns:
+            return True
 
-    def is_exempt_issue(issue: dict) -> bool:
-        comp = str(issue.get("component") or issue.get("rule_group") or (issue.get("details") or {}).get("component") or "").strip().lower()
-        rule_name = str(issue.get("rule") or issue.get("rule_id") or "").strip().lower()
-        if comp in ("topologico", "topológico") or "topolog" in comp or rule_name.startswith("top_") or "topolog" in rule_name:
-            return False
+        roles = [normalized_roles.get(npn, "") for npn in npns]
+        all_known = bool(roles) and all(bool(role) for role in roles)
 
-        issue_npn = str(issue.get("npn") or "").strip()
-        details = issue.get("details") or {}
-        if not issue_npn and isinstance(details, dict):
-            issue_npn = str(details.get("npn") or details.get("numero_predial") or "").strip()
+        # Solo limitar cuando todos los NPN implicados estan identificados como colindantes.
+        # Si el hallazgo mezcla un principal y un colindante, se conserva porque el principal
+        # debe pasar la validacion completa.
+        if all_known and all(role == "colindante" for role in roles):
+            return _sync_issue_rule_id(issue) in COLINDANTE_SYNC_RULE_IDS
 
-        if not issue_npn:
-            obj_id = str(issue.get("object_id") or issue.get("display_id") or issue.get("object_ref") or issue.get("tid") or "").strip()
-            if obj_id:
-                issue_npn = str(npn_lookup.get(obj_id) or "").strip()
+        if all_known and all(role == "cancelado" for role in roles):
+            return _sync_is_topological_issue(issue)
 
-        return issue_npn in clean_exempt
+        if all(npn in clean_cancelled for npn in npns):
+            return _sync_is_topological_issue(issue)
 
-    filtered_rule_errors = [e for e in rule_errors if not is_exempt_issue(e)]
-    filtered_issues = [i for i in issues if not is_exempt_issue(i)]
+        return True
+
+    filtered_rule_errors = [e for e in rule_errors if keep_issue(e)]
+    filtered_issues = [i for i in issues if keep_issue(i)]
 
     val["rule_errors"] = filtered_rule_errors
     quality["issues"] = filtered_issues
     if "summary" in quality and isinstance(quality["summary"], dict):
         quality["summary"]["total_issues"] = len(filtered_issues)
-        quality["summary"]["failed_rules"] = len({str(i.get("rule")) for i in filtered_issues if i.get("rule")})
+        quality["summary"]["failed_rules"] = len({_sync_issue_rule_id(i) for i in filtered_issues if _sync_issue_rule_id(i)})
 
-    # Si no quedan errores no exentos, ajustar estado a success
-    if not filtered_rule_errors and not filtered_issues:
+    if not filtered_rule_errors and not filtered_issues and not (val.get("schema_errors") or []):
         result["status"] = "success"
         val["status"] = "success"
-        result["message"] = "Validacion XTF aprobada (errores alfanumericos de colindantes/cancelados omitidos)."
-        val["message"] = "Validacion XTF aprobada (errores alfanumericos de colindantes/cancelados omitidos)."
+        result["message"] = "Validacion XTF aprobada para sincronizacion segun el rol de cada predio."
+        val["message"] = result["message"]
 
     return result
 
+
+def _apply_retorno_validation_role_policy(
+    result: dict,
+    xtf_path: str,
+    *,
+    asignacion_id: int | None,
+    tenant: TenantContext | None,
+    connection_manager=None,
+) -> dict:
+    if not asignacion_id or not tenant or not connection_manager or not isinstance(result, dict):
+        return result
+
+    roles: dict[str, str] = {}
+    cancelled_npns: set[str] = set()
+    try:
+        with connection_manager.connection(tenant) as active_conn:
+            roles = asignaciones_repo.get_asignacion_predio_roles(active_conn, tenant, asignacion_id) or {}
+            schema_work = (getattr(tenant.schemas, "work", None) or "b_asignaciones_arb")
+            cancelled_npns.update(asignaciones_repo.auto_detect_cancelled_predios_sql(active_conn, schema_work) or set())
+    except Exception as exc:
+        logger.warning("Error leyendo roles/cancelados para validacion de sincronizacion %s: %s", asignacion_id, exc)
+
+    try:
+        cancelled_npns.update(_auto_detect_cancelled_npns_from_xtf_xml(xtf_path))
+    except Exception as exc:
+        logger.warning("Error detectando cancelados en XTF de asignacion %s: %s", asignacion_id, exc)
+
+    return _filter_validation_result_for_sync_roles(result, roles, cancelled_npns)
+
+
+def _build_sync_validation_gate(result: dict) -> dict:
+    """Resume hallazgos y decide si la sincronizacion puede continuar.
+
+    Solo las reglas con estado Obligatoria (y errores estructurales/infraestructura)
+    bloquean. Las reglas No obligatorias se muestran como observaciones y permiten
+    sincronizar.
+    """
+    if not isinstance(result, dict):
+        return {
+            "can_sync": False,
+            "status": "error",
+            "message": "El validador no devolvio una respuesta valida.",
+            "rules": [],
+            "mandatory_rules": [],
+            "non_mandatory_rules": [],
+            "schema_errors": 0,
+            "has_issues": True,
+        }
+
+    val, quality = _sync_validation_payload(result)
+    status_value = str(result.get("status") or val.get("status") or "unknown").strip().lower()
+    rule_errors = [e for e in (val.get("rule_errors") or []) if isinstance(e, dict)]
+    quality_issues = [e for e in (quality.get("issues") or []) if isinstance(e, dict)]
+    # rule_errors es la fuente normalizada preferida; quality.issues es fallback.
+    issues = rule_errors if rule_errors else quality_issues
+    schema_errors = [e for e in (val.get("schema_errors") or []) if isinstance(e, dict)]
+    catalog = quality.get("rule_catalog") if isinstance(quality.get("rule_catalog"), dict) else {}
+    if not catalog:
+        try:
+            catalog = load_catalog()
+        except Exception:
+            catalog = {}
+
+    grouped: dict[str, dict] = {}
+    for issue in issues:
+        rule_id = _sync_issue_rule_id(issue)
+        if not rule_id:
+            continue
+        meta = catalog.get(rule_id) if isinstance(catalog.get(rule_id), dict) else {}
+        row = grouped.setdefault(rule_id, {
+            "rule": rule_id,
+            "estado": estado_regla(rule_id),
+            "clasificacion": clasificacion_regla(rule_id),
+            "component": str(meta.get("component_label") or meta.get("component") or issue.get("component") or "").strip(),
+            "count": 0,
+            "message": "",
+        })
+        row["count"] += 1
+        if not row["message"]:
+            row["message"] = str(issue.get("message") or issue.get("mensaje") or "").strip()
+
+    def sort_key(item: dict):
+        token = str(item.get("rule") or "")
+        try:
+            return (0, int(token))
+        except Exception:
+            return (1, token)
+
+    rules = sorted(grouped.values(), key=sort_key)
+    mandatory_rules = [row["rule"] for row in rules if row.get("estado") == "Obligatoria"]
+    non_mandatory_rules = [row["rule"] for row in rules if row.get("estado") == "No obligatoria"]
+    unclassified_rules = [row["rule"] for row in rules if row.get("estado") not in {"Obligatoria", "No obligatoria"}]
+
+    infra_block = status_value in {"error", "skipped"}
+    structural_block = bool(schema_errors)
+    can_sync = not infra_block and not structural_block and not mandatory_rules and not unclassified_rules
+    has_issues = bool(rules or schema_errors)
+
+    if infra_block:
+        message = str(result.get("message") or val.get("message") or "No fue posible completar la validacion previa.").strip()
+    elif structural_block:
+        message = "El XTF presenta errores estructurales y no puede sincronizarse."
+    elif mandatory_rules:
+        message = f"No se puede sincronizar: existen errores en reglas obligatorias ({', '.join(mandatory_rules)})."
+    elif unclassified_rules:
+        message = f"No se puede sincronizar: existen reglas sin clasificacion ({', '.join(unclassified_rules)})."
+    elif non_mandatory_rules:
+        message = "La validacion termino con observaciones no obligatorias. Puedes sincronizar bajo confirmacion."
+    else:
+        message = "Validacion aprobada. No se detectaron errores que impidan sincronizar."
+
+    return {
+        "can_sync": can_sync,
+        "status": status_value,
+        "message": message,
+        "rules": rules,
+        "mandatory_rules": mandatory_rules,
+        "non_mandatory_rules": non_mandatory_rules,
+        "unclassified_rules": unclassified_rules,
+        "schema_errors": len(schema_errors),
+        "has_issues": has_issues,
+        "has_non_mandatory_issues": bool(non_mandatory_rules),
+        "colindante_rules": sorted(COLINDANTE_SYNC_RULE_IDS, key=int),
+    }
 
 def _validate_retorno_xtf_rules(
     xtf_path: str,
@@ -1325,35 +1512,28 @@ def _validate_retorno_xtf_rules(
             ),
         )
 
-    # Exención de validaciones alfanuméricas para predios colindantes y cancelados (APLICAR PRIMERO)
-    if asignacion_id and tenant:
-        try:
-            cm = connection_manager
-            if cm:
-                with cm.connection(tenant) as active_conn:
-                    roles = asignaciones_repo.get_asignacion_predio_roles(active_conn, tenant, asignacion_id)
-                    exempt_npns = {npn for npn, rol in roles.items() if rol in ("colindante", "cancelado")}
-                    schema_work = (getattr(tenant.schemas, "work", None) or "b_asignaciones_arb")
-                    auto_cancelled = asignaciones_repo.auto_detect_cancelled_predios_sql(active_conn, schema_work)
-                    exempt_npns.update(auto_cancelled)
-                    xtf_cancelled = _auto_detect_cancelled_npns_from_xtf_xml(xtf_path)
-                    exempt_npns.update(xtf_cancelled)
-                    if exempt_npns:
-                        result = _filter_validation_result_for_exempt_npns(result, exempt_npns)
-        except Exception as exc:
-            logger.warning("Error aplicando exencion de roles en validacion XTF para asignacion %s: %s", asignacion_id, exc)
+    result = _apply_retorno_validation_role_policy(
+        result,
+        xtf_path,
+        asignacion_id=asignacion_id,
+        tenant=tenant,
+        connection_manager=connection_manager,
+    )
+    gate = _build_sync_validation_gate(result)
+    result["sync_gate"] = gate
 
     status = str(result.get("status") or "").strip().lower()
 
-    if status in {"failed", "invalid"}:
-        message = str(result.get("message") or "Validacion XTF fallida.").strip()
+    # Un resultado invalid/failed por observaciones NO obligatorias puede continuar.
+    # Los errores obligatorios, estructurales o sin clasificar siempre bloquean.
+    if status in {"failed", "invalid"} and not gate.get("can_sync"):
+        detail = str(gate.get("message") or "El retorno XTF no supero la validacion requerida para sincronizar.").strip()
         try:
-            preview = _xtf_validation_error_preview(result)
+            preview = _xtf_validation_error_preview(result, limit=8)
         except Exception:
             preview = ""
-        detail = f"El retorno XTF no supero la validacion de calidad/consistencia ({status}). {message}"
         if preview:
-            detail = f"{detail} Errores: {preview}."
+            detail = f"{detail} Detalle: {preview}."
         raise export_service.ExportServiceError(status_code=409, detail=detail)
 
     if status == "error":
@@ -1383,13 +1563,10 @@ def _validate_retorno_xtf_rules(
             ),
         )
 
-    if _is_production_runtime() and status != "success":
+    if _is_production_runtime() and not gate.get("can_sync"):
         raise export_service.ExportServiceError(
             status_code=409,
-            detail=(
-                "La sincronizacion en produccion requiere validacion XTF exitosa "
-                f"(status=success). Estado recibido: {status or 'unknown'}."
-            ),
+            detail=str(gate.get("message") or "La sincronizacion en produccion fue bloqueada por la validacion XTF."),
         )
 
     return result
@@ -4052,6 +4229,7 @@ def _procesar_retorno_xtf(
             "note": _xtf_validation_note(xtf_validation_result),
             "pipeline": _validator_pipeline_labels(),
             "rules_with_issues": _extract_rule_ids_from_validation(xtf_validation_result),
+            "sync_gate": (xtf_validation_result or {}).get("sync_gate") or _build_sync_validation_gate(xtf_validation_result or {}),
         },
         "message": (
             (
@@ -4087,6 +4265,7 @@ def inspeccionar_retorno_xtf(
         with open(tmp_path, "wb") as buffer:
             shutil.copyfileobj(archivo.file, buffer)
 
+        connection_manager = request.app.state.tenant_connection_manager
         raw_predios = []
         try:
             raw_predios = xtf_validation_service.extract_predios(tmp_path)
@@ -4095,7 +4274,6 @@ def inspeccionar_retorno_xtf(
 
         roles = {}
         try:
-            connection_manager = request.app.state.tenant_connection_manager
             with connection_manager.connection(tenant) as conn:
                 roles = asignaciones_repo.get_asignacion_predio_roles(conn, tenant, asignacion_id)
         except Exception as repo_err:
@@ -4104,7 +4282,6 @@ def inspeccionar_retorno_xtf(
         # Detectar NPNs matrices desde el workspace b_asignaciones_arb si ya existen
         matriz_npns = set()
         try:
-            connection_manager = request.app.state.tenant_connection_manager
             with connection_manager.connection(tenant) as conn:
                 schema_work = (getattr(tenant.schemas, "work", None) or "b_asignaciones_arb")
                 with conn.cursor() as cur:
@@ -4185,6 +4362,22 @@ def inspeccionar_retorno_xtf(
                 "es_asignacion": rol_tipo != "colindante",
             })
 
+        # Ejecutar la misma validacion previa que protege el endpoint real de sincronizacion.
+        # Asignacion/Matriz: validacion completa. Colindantes: solo 20-25, 28 y 29.
+        validation_result = xtf_validation_service.validate_file_path(
+            tmp_path,
+            municipality_code=tenant.municipality_code,
+            job_id=f"sync-preview-{asignacion_id}-{uuid4().hex[:8]}",
+        )
+        validation_result = _apply_retorno_validation_role_policy(
+            validation_result,
+            tmp_path,
+            asignacion_id=asignacion_id,
+            tenant=tenant,
+            connection_manager=connection_manager,
+        )
+        validation_gate = _build_sync_validation_gate(validation_result)
+
         return {
             "success": True,
             "filename": archivo.filename,
@@ -4193,6 +4386,7 @@ def inspeccionar_retorno_xtf(
             "total_colindantes": c_colindante,
             "total_matriz": c_matriz,
             "predios": predios_info,
+            "validation_gate": validation_gate,
         }
     except HTTPException:
         raise
