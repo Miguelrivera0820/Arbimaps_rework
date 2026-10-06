@@ -1,0 +1,192 @@
+[33m21cf082[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Ajuste de estados para validadores sinic
+[33m1cd62ca[m Merge pull request #3 from programador02arbitrium-a11y/rama-prueba-04-sep
+[33md906f30[m reglas SINIC - sincronizacion - historial validacion
+[33mb29ca89[m Merge pull request #2 from programador02arbitrium-a11y/rama-prueba-04-sep
+[33m70d93d7[m Fix sincronización histórico para varios predios asociados a un mismo trámite
+[33mcd4cedd[m Merge pull request #1 from programador02arbitrium-a11y/rama-prueba-04-sep
+[33maa14348[m Ajuste sincronización para matriz y ajuste visual detalle asignacioon
+[33m63ab7bc[m fix(sinic): corregir nombres de columnas version_code y usuario en consulta de sinic_versiones
+[33m41f0d97[m Merge branch 'origin/rama-prueba-04-sep' into main con integracion completa
+[33mfd5190d[m fix_xtf_name_23_09_26
+[33m7569466[m Optimizar rendimiento de capas GeoJSON con simplificacion espacial 0.5m y bbox limit
+[33mbe0b18f[m Desconcatenar prefijo 200 de matricula_inmobiliaria asignando codigo_orip y folio correcto
+[33ma3e9f7f[m Asignar codigo_orip '200' automaticamente cuando existe matricula_inmobiliaria
+[33m42fb0a7[m Incluir matricula inmobiliaria en carga inicial y enriquecimiento ETL g_sinic
+[33m83cc18c[m Validadores_preliminares_sinic
+[33m0fe3159[m 4.11
+[33mdc75de0[m fix_etl_d_19_09_26
+[33m1edf1c4[m omitida 5.6
+[33m2340add[m reglas_omitidad
+[33m53f6dca[m reglas
+[33m063825f[m d_fix_capas_nuevas
+[33m649f8f9[m reglas omitidas
+[33m5e09f11[m feat(generador-npn): Implementación de módulo NPN, plantilla Alfa, alertas y filtros
+[33m14520cd[m ajuste Nombre
+[33m0c27ff4[m comentadas 1.40-1.43 5.6
+[33m1909c12[m f_r1_r2 corregido_etl
+[33m7dfd1c1[m eliminar boton duplicado
+[33m7a385f1[m filtro sincronizar
+[33mf8b78ef[m omisión  5.5 5.6
+[33mc95779e[m omision reglas admin
+[33mdcca610[m omision regla 10.3
+[33m2e7531c[m fix_juani_rama_04_09_2026
+[33m49a3e72[m filtro validadores
+[33m9bb3fc5[m david_re_fix_feature_and_actions
+[33m8cd3d7d[m Ajuste de dirección
+[33m23abab7[m Corregir
+[33m3eaf725[m Corregir
+[33m7846c09[m Auto-sincronizacion
+[33m31ba0e6[m juanita/03/09/26
+[33m6c1731f[m Corregir
+[33m64b7f94[m Resolución
+[33macb6449[m Soporte
+[33m8ce9ebf[m Corregir
+[33m8b2df63[m Blindaje
+[33m28f4709[m Sincronizacion
+[33mb080105[m juanita2/09/2026
+[33md577b71[m Incorporación campo rol Predio para colindantes
+[33m930ec66[m juanita-1/09/2026
+[33m468fff5[m juanita/31/08/26
+[33m71a0994[m fix_modal_Marcas_novedades_y_trámites
+[33mfcc2a68[m actualizacion modal aprobar digitalizacion
+[33m4fbbe08[m Ajuste visutal consulta de interesados en el r1r2
+[33m7daa228[m re_fix_flujo_asignaciones
+[33me671f08[m fix_buscar_predios_f_r1
+[33m08dd9a0[m das_25_08_28
+[33m7878625[m fix_matricula_estado
+[33m6490344[m fix_d_24_08_26
+[33m60f3d3a[m modales actualizados
+[33ma2ff611[m juanita_validadores
+[33mab75a9c[m fix_ETL_inverso
+[33mcca5b55[m per_24-08-2026_1018
+[33md4f61c4[m repor_24-08-2026_1003
+[33md5f13b3[m tab_24-08-2026
+[33ma815aa1[m re_fix_24_08_26
+[33mfde168c[m dav_24_08_26
+[33m36d9254[m vistas actualizadas con pruebas
+[33ma964698[m reinforcemengte_asign
+[33mb27ef70[m stp
+[33m733cc70[m con prendas_devalor
+[33mcb619ca[m fin_asig
+[33m90e0b17[m prd_segregacion
+[33m7589ef8[m re_factorizacion_asignacion
+[33mdafaa11[m parch_22_08_26
+[33m8e7b4bd[m etl_inv_22_08_26
+[33m87d2ef0[m re_fact_22_08_26
+[33m9201088[m re_mix_22_08_26
+[33ma5c24aa[m ETL_correction
+[33ma9e93d9[m revision_asign_22_08_26
+[33m67da96d[m re_fix_asignaciones_22_08_26
+[33m83cc781[m fix_asignaciones_22_08_26
+[33m47c3b02[m das_12
+[33m1d2f51f[m Modales actualizados
+[33me6778b2[m Modales actualizados
+[33m9665aab[m Actualizacion modal de comentarios
+[33m3e4e6d8[m Diseño del modal de historial de asignacion mejorado
+[33m195503e[m Actualizacion Front-End modales y vistas
+[33mf15bc72[m n_default_21_08_26
+[33mccf53b1[m juanita-21/08/2026
+[33m9dfce9e[m commit_antes_re_work
+[33m7f25f08[m feature_20_08_26
+[33m4622cd7[m d_fix_merge_asignaciones
+[33m5109dc7[m f_d_19_08_26
+[33m0c45f8e[m Actualizacion Front-End modal de generar nuevos npns y vista de ver asignaciones
+[33m1687d9b[m ajuste de permisos para exportar xtf JM_19_08_26
+[33m3be5eb1[m Ajustes visuales vista de asignaciones JM_19_8_26
+[33m7d74141[m Ajustes_visuales JM_18_08_26
+[33mfc4c600[m finish_himm
+[33m00f0130[m fix-18_08_26
+[33m3836ff2[m fix-asign-08
+[33md6cd856[m l_ga_lac_ti_c_05
+[33m33431e2[m fix-asig-18-08-26
+[33m120e9bd[m fix-b_asig_h
+[33m211679b[m co_fix_da_14_08_26
+[33m0427eb5[m Rebranding Visual V1 JM_14_08_26
+[33ma1f085f[m dav_13_08_26
+[33m868973f[m Generador de Numero predial_V3
+[33m19387c3[m Generador de Numero predial_V2
+[33mfa03acc[m Generador de Numero predial
+[33m342cc7a[m p_1
+[33ma767472[m coment-button-panel-lider
+[33maf52d2b[m validadores predio nuevo y cancelados_v6
+[33maed462f[m validadores predio nuevo y cancelados_v5
+[33mc49825d[m validadores predio nuevo y cancelados_v4
+[33mbdb14b9[m validadores predio nuevo y cancelados_v3
+[33m6dd1167[m validadores predio nuevo y cancelados_v2
+[33mc0a278d[m validadores predio nuevo y cancelados
+[33mfc60c5d[m corrección de interesado en generación xtf
+[33m0011b1b[m asd_06_08_26
+[33m0992d8c[m dav_06_08_26
+[33m0913fbb[m d_06_08_26
+[33me427305[m dasc_05_08_26
+[33m71a59e4[m dav_05_08_26
+[33m8f2d3af[m dvp_05_08_26
+[33m3b003c5[m ite_fix_05_08_26
+[33m1fa27c5[m rf_05_08_26
+[33m539e733[m f_d_q_05_08_26
+[33m3c41a6e[m p_a_q_05_08_26
+[33m4cdef50[m asd_05_08_26-v
+[33m8cc2f7d[m Ajuste vista consulta y asignación JM_05_08_26
+[33m84d5fec[m das_v_05_08_26
+[33m9f32b12[m sol_d_05_08_26
+[33m5835ae1[m refact_05_08_26
+[33mae8ecf5[m reas_05_08_26
+[33mdd5fd7d[m d_ro_05_08_26
+[33mab19388[m da_05_08_26
+[33mf304ec3[m asd_123
+[33m77b62fc[m dv_04_08_26
+[33m0e05ec1[m vista consulta predio JM_04_08
+[33m4d3f575[m Merge branch 'main' of https://github.com/MasterErrorCLONE04/Arbimaps_rework
+[33m17ccdf8[m d_fix_04_08_26
+[33m11e53ea[m das_04_08_26
+[33m27e58d2[m JM 03_08_2026
+[33m091b805[m dav_03_08_26
+[33mefacb23[m Fix robusto para copiado de catálogos y sincronización continua en asignaciones
+[33md2e03f9[m moonshoot
+[33m323c83d[m as_cas_t_01_08_26
+[33m8b4a939[m f_d_01_08_26
+[33me53745b[m juanita-31/07/26
+[33m9008417[m da_31_07_26
+[33m53e4b60[m das_30_07_26
+[33m02965ef[m j_30_07_26
+[33m6842ebd[m juanita-30/07/26-11.24
+[33ma88c97c[m as_29_07_26
+[33me7888e5[m d_28_07_2026
+[33mdd8011f[m d_28_07_26
+[33m4f9ab44[m das_28_07_26
+[33m758e08d[m s_ins_28_07_26
+[33mb0b4f23[m das_sas_28_07_26
+[33m52447df[m refactor: actualiza flujo de asignaciones y remueve script de migración
+[33m46556b6[m re_ze_d_27_07_26
+[33mf901f57[m first commit
+[33mc185db8[m juanita15/07/26
+[33mde8632a[m Implementa módulo de sincronización Mergin
+[33m5c63060[m juanita/02/07/26
+[33mc2c864b[m JM_02_07_2026
+[33m96f5b16[m d_fix_02_07_26
+[33ma7377f1[m juanita-1/07/26
+[33m2768dce[m Restablecimiento funcion BOX+modal mockup JM_01_07_2026
+[33maed3d95[m juanita-30/06/2026
+[33m1d6ab2a[m Fix vista detalle asignación JM_30_06_2026
+[33m7338a94[m Ajustes JM_29_06_2026
+[33m107634d[m d_fun_25_06_26
+[33m15a264f[m Modificación archivo loader.py A_25_06_2026
+[33mbacfb47[m Finalización vista de consulta JM_25_06_2026
+[33m53efca5[m Ajuste vista consulta JM_24_06_2026
+[33medc5c63[m Ajuste vista consulta JM_23_06_2026
+[33me66037f[m Ajuste vista de consulta JM_22_06_2026
+[33mf971b22[m a_22_06_26
+[33m8f8f852[m d_V2_fix_19_06_26
+[33m955f1c2[m JM_19_06_2026
+[33m2497488[m Mejora visor y configuracion tenants
+[33m68c799f[m d_fix_19_06_26
+[33m36c5ee0[m d_fix_18_06_26_v4
+[33m0cd349a[m d_18_06_26_fix
+[33m51dd125[m JM_18_06_2026
+[33mb2e2f6c[m Alex_v1_20260618
+[33m8e2e65e[m t_d_17_06_26_v4
+[33mf221338[m fix_d_17_06_26
+[33m8f5dced[m upd_d_17_06_26_v3
+[33m39b8460[m d_fix_17_06_26_v2
+[33m605f821[m d_17_06_26
+[33m0424117[m Ajuste final vista:
