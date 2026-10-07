@@ -78,7 +78,7 @@ CLASIFICACION_REGLAS = {
     '72': ('Obligatoria', 'Regla restrictiva'),
     '73': ('Obligatoria', 'Regla restrictiva'),
     '74': ('Obligatoria', 'Regla restrictiva'),
-    '75': ('No obigatoria', 'Reglas de Diagnóstico o de Mejoramiento Continuo'),
+    '75': ('No obligatoria', 'Reglas de Diagnóstico o de Mejoramiento Continuo'),
     '76': ('Obligatoria', 'Regla restrictiva'),
     '77': ('Obligatoria', 'Regla restrictiva'),
     '78': ('Obligatoria', 'Regla restrictiva'),
