@@ -1655,22 +1655,83 @@ def regla_85(layer_dict=None, **kwargs):
 
 
 def regla_86(layer_dict=None, **kwargs):
-    capas=_layers(layer_dict); p_layer,preds,pidx=_predio_index(capas); _,t_by_p,_=_terrains_by_predio(capas,pidx); errors=[]
-    exempt=("CEMENTERIOUNIDADPREDIAL","PHUNIDADPREDIAL")
+    """2_CLC_CF_86: terreno obligatorio para predios activos no exceptuados."""
+    capas = _layers(layer_dict)
+    p_layer, preds, pidx = _predio_index(capas)
+    _, terrenos_por_predio, _ = _terrains_by_predio(capas, pidx)
+    errors = []
+
+    excepciones = (
+        "PHUNIDADPREDIAL",
+        "PARQUECEMENTERIOUNIDADPREDIAL",
+        "CEMENTERIOUNIDADPREDIAL",
+        "INFORMALENALTURA",
+    )
+
     for p in preds:
-        cond=_condition(p)
-        if _active(p) and not any(x in cond for x in exempt) and not _is_informal_height(p) and not t_by_p.get(_aid(p)):
-            errors.append(_error("86",p_layer,p,"El predio activo debe tener terreno asociado, salvo las excepciones SINIC."))
-    return _result("86",errors)
+        estado = _norm(_get(p, ESTADO_FIELDS))
+        if estado not in ("ACTIVO", "105"):
+            continue
+        npn = _npn(p)
+        condicion = _condition(p)
+        exento_npn = len(npn) >= 22 and npn[21] == "5"
+        exento_condicion = condicion in ("62", "67") or any(
+            nombre in condicion for nombre in excepciones
+        )
+        exento_altura = _is_informal_height(p)
+        if exento_npn or exento_condicion or exento_altura:
+            continue
+        if not terrenos_por_predio.get(_aid(p)):
+            errors.append(
+                _error(
+                    "86",
+                    p_layer,
+                    p,
+                    "Predio activo sin terreno asociado; "
+                    "no aplica ninguna excepcion de la regla 86."
+                )
+            )
+    return _result("86", errors)
 
 
 def regla_87(layer_dict=None, **kwargs):
-    capas=_layers(layer_dict); layer,preds=_predios(capas); errors=[]
+    """2_CLC_CF_87: area catastral positiva en predios activos no exentos."""
+    capas = _layers(layer_dict)
+    layer, preds = _predios(capas)
+    errors = []
+    excepciones = (
+        "PHUNIDADPREDIAL",
+        "PARQUECEMENTERIOUNIDADPREDIAL",
+        "CEMENTERIOUNIDADPREDIAL",
+        "INFORMALENALTURA",
+    )
     for p in preds:
-        if _is_informal_height(p): continue
-        a=_float(_get(p,AREA_CAT_FIELDS))
-        if a is None or a<=0: errors.append(_error("87",layer,p,"El área catastral de terreno debe ser mayor a 0.",area_catastral_terreno=a))
-    return _result("87",errors)
+        estado = _norm(_get(p, ESTADO_FIELDS))
+        if estado not in ("ACTIVO", "105"):
+            continue
+        npn = _npn(p)
+        condicion = _condition(p)
+        exento_npn = len(npn) >= 22 and npn[21] == "5"
+        exento_condicion = condicion in ("62", "67") or any(
+            nombre in condicion for nombre in excepciones
+        )
+        exento_altura = _is_informal_height(p)
+        if exento_npn or exento_condicion or exento_altura:
+            continue
+        area = _float(_get(p, AREA_CAT_FIELDS))
+        if area is None or area <= 0:
+            errors.append(
+                _error(
+                    "87",
+                    layer,
+                    p,
+                    "Predio activo con area catastral de terreno "
+                    "nula o menor o igual a cero; "
+                    "no aplica ninguna excepcion de la regla 87.",
+                    area_catastral_terreno=area,
+                )
+            )
+    return _result("87", errors)
 
 
 def regla_106(layer_dict=None, **kwargs):

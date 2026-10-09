@@ -277,12 +277,63 @@ class SinicValidationService:
              "Año de construcción definido y menor o igual al año del reporte.",
              "SELECT COUNT(*) FROM g_sinic.cr_caracteristicasunidadconstruccion WHERE anio_construccion IS NULL OR anio_construccion > 2026;", 0),
 
-            (86, "Caracterización", "2_CLC_CF_86", "Consistencia Lógica Conceptual", "Componente Físico", 0.50,
-             "Predio activo (no matriz ni informal en altura) -> terreno asociado.",
-             "SELECT COUNT(*) FROM g_sinic.sinic_predio p WHERE p.estado = 105 AND p.condicion_predio NOT IN (67, 62, 66) AND NOT EXISTS (SELECT 1 FROM g_sinic.col_uebaunit u WHERE u.baunit = p.t_id AND u.ue_cr_terreno IS NOT NULL);", 0),
-            (87, "Caracterización", "2_CLC_CF_87", "Consistencia Lógica Conceptual", "Componente Físico", 0.25,
-             "Área catastral de terreno mayor a cero (0).",
-             "SELECT COUNT(*) FROM g_sinic.sinic_predio p WHERE p.estado = 105 AND p.condicion_predio != 66 AND COALESCE(p.area_catastral_terreno, 0) <= 0;", 0),
+            (86, "Caracterización", "2_CLC_CF_86",
+             "Consistencia Lógica Conceptual", "Componente Físico", 0.50,
+             "Predio activo, salvo PH Unidad Predial, Parque Cementerio Unidad Predial, informal en altura o NPN con digito 5 en posicion 22, debe tener terreno asociado.",
+             """
+             SELECT COUNT(*)
+             FROM g_sinic.sinic_predio p
+             WHERE p.estado = 105
+             AND p.condicion_predio IS DISTINCT FROM 67
+             AND p.condicion_predio IS DISTINCT FROM 62
+             AND SUBSTRING(
+                 p.numero_predial_nacional FROM 22 FOR 1
+             ) IS DISTINCT FROM '5'
+             AND NOT (
+                 COALESCE(
+                     SUBSTRING(p.numero_predial_nacional FROM 22 FOR 1), ''
+                 ) = '2'
+                 AND COALESCE(
+                     SUBSTRING(p.numero_predial_nacional FROM 23 FOR 8), ''
+                 ) != '00000000'
+             )
+             AND NOT EXISTS (
+                 SELECT 1
+                 FROM g_sinic.col_uebaunit u
+                 WHERE u.baunit = p.t_id
+                     AND u.ue_cr_terreno IS NOT NULL
+             );
+             """, 0),
+            (87, "Caracterización", "2_CLC_CF_87",
+             "Consistencia Lógica Conceptual", "Componente Físico", 0.25,
+             "Área catastral de terreno mayor a cero para predios activos no exceptuados según regla 86.",
+             """
+             SELECT COUNT(*)
+             FROM g_sinic.sinic_predio p
+             WHERE p.estado = 105
+
+             -- Excluir PH Unidad Predial y Parque Cementerio Unidad Predial
+             AND p.condicion_predio IS DISTINCT FROM 67
+             AND p.condicion_predio IS DISTINCT FROM 62
+
+             -- Excluir los predios con posicion 22 del NPN igual a 5
+             AND SUBSTRING(
+                 p.numero_predial_nacional FROM 22 FOR 1
+             ) IS DISTINCT FROM '5'
+
+             -- Excluir informales en altura
+             AND NOT (
+                 COALESCE(
+                     SUBSTRING(p.numero_predial_nacional FROM 22 FOR 1), ''
+                 ) = '2'
+                 AND COALESCE(
+                     SUBSTRING(p.numero_predial_nacional FROM 23 FOR 8), ''
+                 ) != '00000000'
+             )
+
+             -- Reportar area catastral nula, cero o negativa
+             AND COALESCE(p.area_catastral_terreno, 0) <= 0;
+             """, 0),            
             (88, "Caracterización", "2_CLC_CJ_88", "Consistencia Lógica Conceptual", "Componente Jurídico", 0.25,
              "Predio Privado con Dominio -> Matrícula Inmobiliaria diligenciada.",
              "SELECT COUNT(*) FROM g_sinic.sinic_predio p JOIN g_sinic.sinic_derechocatastral d ON d.unidad = p.t_id WHERE p.estado = 105 AND p.tipo_predio = 1 AND d.tipo = 1 AND p.matricula_inmobiliaria IS NULL;", 0),
