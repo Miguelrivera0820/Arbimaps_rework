@@ -312,13 +312,20 @@ def _fuente_presente(helper, row):
 
 def _sexo_sinic(helper, row):
     raw = _raw_row_value(helper, row, arb_jur.SEXO_FIELDS)
+
+    # Si Sexo está vacío o es nulo, interpretar No_Aplica.
+    if not _raw_text(raw):
+        return "No_Aplica"
+
     token_raw = _norm_token(raw)
     if token_raw in {"NOAPLICA", "NOAPLICABLE"}:
         return "No_Aplica"
     if token_raw in {"NOBINARIO", "NOBINARIA"}:
         return "No_Binario"
+
     normalized = arb_jur._normalizar_valor_dominio("i_sexo", raw)
     token = _norm_token(normalized)
+
     if token == "MASCULINO":
         return "Masculino"
     if token == "FEMENINO":
@@ -327,6 +334,7 @@ def _sexo_sinic(helper, row):
         return "Sin_Determinar"
     if token in {"NOBINARIO", "NOBINARIA"}:
         return "No_Binario"
+
     return _raw_text(raw)
 
 
