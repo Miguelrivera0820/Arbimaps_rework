@@ -1674,7 +1674,7 @@ def regla_86(layer_dict=None, **kwargs):
             continue
         npn = _npn(p)
         condicion = _condition(p)
-        exento_npn = len(npn) >= 22 and npn[21] == "5"
+        exento_npn = len(npn) < 22 or npn[21] != "5"
         exento_condicion = condicion in ("62", "67") or any(
             nombre in condicion for nombre in excepciones
         )
@@ -1711,7 +1711,7 @@ def regla_87(layer_dict=None, **kwargs):
             continue
         npn = _npn(p)
         condicion = _condition(p)
-        exento_npn = len(npn) >= 22 and npn[21] == "5"
+        exento_npn = len(npn) < 22 or npn[21] != "5"
         exento_condicion = condicion in ("62", "67") or any(
             nombre in condicion for nombre in excepciones
         )
