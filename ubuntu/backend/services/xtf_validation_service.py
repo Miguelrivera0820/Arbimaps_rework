@@ -221,7 +221,7 @@ class XTFValidationService:
             "validation": validation,
             "predios_catalog": predios_catalog,
             "selected_predios": selected_predios or [],
-            "filtered_by_predios": bool(selected_predios),
+            "filtered_by_predios": bool(validation.get("filtered_by_predios")),
         }
         self._write_job_result(job_id, result)
         return result
@@ -1172,6 +1172,18 @@ class XTFValidationService:
             }
             if p_keys & selected_raw:
                 matched_catalog.append(p)
+
+        if (
+            predios_catalog
+            and len(matched_catalog) == len(predios_catalog)
+        ):
+            validation["filtered_by_predios"] = False
+            validation["selected_predios"] = []
+            validation["selected_predios_count"] = len(predios_catalog)
+            validation["total_predios_in_file"] = len(predios_catalog)
+            validation["matched_predios"] = matched_catalog
+
+            return validation
 
         selected_tids = {str(p["tid"]).strip() for p in matched_catalog if p.get("tid")}
         selected_npns = {str(p["numero_predial"]).strip() for p in matched_catalog if p.get("numero_predial")}
