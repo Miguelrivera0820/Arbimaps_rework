@@ -61,7 +61,7 @@ CLASIFICACION_REGLAS = {
     '55': ('No obligatoria', 'Reglas de Diagnóstico o de Mejoramiento Continuo'),
     '56': ('No obligatoria', 'Reglas de Diagnóstico o de Mejoramiento Continuo'),
     '57': ('Obligatoria', 'Regla restrictiva'),
-    '58': ('Obligatoria', 'Regla restrictiva'),
+    '58': ('No obligatoria', 'Reglas de Diagnóstico o de Mejoramiento Continuo'),
     '59': ('Obligatoria', 'Regla restrictiva'),
     '60': ('Obligatoria', 'Regla restrictiva'),
     '61': ('Obligatoria', 'Regla restrictiva'),

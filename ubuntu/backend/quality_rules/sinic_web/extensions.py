@@ -1674,7 +1674,7 @@ def regla_86(layer_dict=None, **kwargs):
             continue
         npn = _npn(p)
         condicion = _condition(p)
-        exento_npn = len(npn) < 22 or npn[21] != "5"
+        exento_npn = len(npn) >= 22 and npn[21] == "5"
         exento_condicion = condicion in ("62", "67") or any(
             nombre in condicion for nombre in excepciones
         )
@@ -1691,7 +1691,73 @@ def regla_86(layer_dict=None, **kwargs):
                     "no aplica ninguna excepcion de la regla 86."
                 )
             )
-    return _result("86", errors)
+    return _resultado_condicional_86_87("86", errors, preds)
+
+
+
+def _resultado_condicional_86_87(codigo, errores, predios):
+    """
+    Define la obligatoriedad de las reglas 86 y 87
+    según el dígito 22 del Número Predial Nacional.
+
+    Posición 22 = 5:
+        No obligatoria / no aplica.
+
+    Posición 22 != 5:
+        Obligatoria / Regla restrictiva.
+    """
+
+    activos = [
+        predio
+        for predio in predios
+        if _norm(_get(predio, ESTADO_FIELDS))
+        in ("ACTIVO", "105")
+    ]
+
+    exentos_npn = sum(
+        1
+        for predio in activos
+        if len(_npn(predio)) >= 22
+        and _npn(predio)[21] == "5"
+    )
+
+    obligatorios = len(activos) - exentos_npn
+    no_obligatoria = obligatorios == 0
+
+    estado = (
+        "No obligatoria"
+        if no_obligatoria
+        else "Obligatoria"
+    )
+
+    clasificacion = (
+        "No restrictiva"
+        if no_obligatoria
+        else "Regla restrictiva"
+    )
+
+    mensaje = None
+
+    if no_obligatoria:
+        mensaje = (
+            f"Regla SINIC {codigo}: No obligatoria. "
+            f"No existen predios activos sujetos a esta "
+            f"validacion. Predios exentos por NPN con "
+            f"digito 5 en posicion 22: {exentos_npn}."
+        )
+
+    return _result(
+        codigo,
+        errores,
+        mensaje,
+        estado=estado,
+        clasificacion=clasificacion,
+        no_aplica=no_obligatoria,
+        predios_activos=len(activos),
+        predios_exentos_npn_5=exentos_npn,
+        predios_con_regla_restrictiva=obligatorios,
+    )
+
 
 
 def regla_87(layer_dict=None, **kwargs):
@@ -1711,7 +1777,7 @@ def regla_87(layer_dict=None, **kwargs):
             continue
         npn = _npn(p)
         condicion = _condition(p)
-        exento_npn = len(npn) < 22 or npn[21] != "5"
+        exento_npn = len(npn) >= 22 and npn[21] == "5"
         exento_condicion = condicion in ("62", "67") or any(
             nombre in condicion for nombre in excepciones
         )
@@ -1731,7 +1797,7 @@ def regla_87(layer_dict=None, **kwargs):
                     area_catastral_terreno=area,
                 )
             )
-    return _result("87", errors)
+    return _resultado_condicional_86_87("87", errors, preds)
 
 
 def regla_106(layer_dict=None, **kwargs):

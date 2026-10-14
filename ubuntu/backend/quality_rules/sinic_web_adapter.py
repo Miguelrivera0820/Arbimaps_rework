@@ -58,6 +58,22 @@ def run_sinic_rules(tables: dict[str, list[dict[str, Any]]], *, municipality_cod
         except Exception as exc:
             result = {"cumple": False, "errores": [], "error_ejecucion": f"{type(exc).__name__}: {exc}", "mensaje": f"Error ejecutando la regla SINIC {rule_id}: {exc}"}
         results[str(rule_id)] = result
+        if str(rule_id) in {"86", "87"}:
+            catalog_item = dict(
+                catalog.get(str(rule_id), {})
+            )
+
+            catalog_item["estado"] = result.get(
+                "estado",
+                catalog_item.get("estado")
+            )
+
+            catalog_item["clasificacion"] = result.get(
+                "clasificacion",
+                catalog_item.get("clasificacion")
+            )
+
+            catalog[str(rule_id)] = catalog_item
     return {"results": results, "catalog": catalog, "cartography_source": cartography_source, "loaded_layers": sorted(layers.keys())}
 
 _json_safe = json_safe
