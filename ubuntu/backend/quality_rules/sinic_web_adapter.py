@@ -6,7 +6,11 @@ from typing import Any
 
 from .cartography_reader import CARTOGRAPHY_TABLES, ZONE_TABLES, load_cartography_from_database
 from .sinic_web.registry import RULE_FUNCTIONS
-from .sinic_web.config import estado_regla, clasificacion_regla
+from .sinic_web.config import (
+    estado_regla,
+    clasificacion_regla,
+    clasificacion_efectiva,
+)
 from .sinic_web.support import WebLayer, json_safe, normalize_key
 from .sinic_web.extensions import clear_geometry_cache
 
@@ -57,23 +61,15 @@ def run_sinic_rules(tables: dict[str, list[dict[str, Any]]], *, municipality_cod
             if not isinstance(result, dict): result = {"cumple": False, "errores": [], "error_ejecucion": f"La regla {rule_id} devolvió un resultado no válido."}
         except Exception as exc:
             result = {"cumple": False, "errores": [], "error_ejecucion": f"{type(exc).__name__}: {exc}", "mensaje": f"Error ejecutando la regla SINIC {rule_id}: {exc}"}
+        # Guardar siempre el resultado de cada regla, también cuando falla.
         results[str(rule_id)] = result
+
+        # Esta clasificación solo afecta a la validación actual: el catálogo
+        # predeterminado de las reglas 86 y 87 permanece restrictivo.
         if str(rule_id) in {"86", "87"}:
-            catalog_item = dict(
-                catalog.get(str(rule_id), {})
-            )
-
-            catalog_item["estado"] = result.get(
-                "estado",
-                catalog_item.get("estado")
-            )
-
-            catalog_item["clasificacion"] = result.get(
-                "clasificacion",
-                catalog_item.get("clasificacion")
-            )
-
-            catalog[str(rule_id)] = catalog_item
+            estado, clasificacion = clasificacion_efectiva(rule_id, result)
+            catalog[str(rule_id)]["estado"] = estado
+            catalog[str(rule_id)]["clasificacion"] = clasificacion
     return {"results": results, "catalog": catalog, "cartography_source": cartography_source, "loaded_layers": sorted(layers.keys())}
 
 _json_safe = json_safe

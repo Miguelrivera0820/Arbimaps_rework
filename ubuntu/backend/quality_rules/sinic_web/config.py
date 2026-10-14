@@ -170,3 +170,27 @@ def clasificacion_regla(regla):
 
 def es_regla_obligatoria(regla):
     return estado_regla(regla) == "Obligatoria"
+
+
+def clasificacion_efectiva(regla, resultado=None):
+    """
+    Obtiene la clasificación efectiva de una regla SINIC.
+
+    Para las reglas 86 y 87 permite utilizar la
+    clasificación calculada durante la validación.
+
+    Para las demás reglas conserva la configuración.
+    """
+    codigo = str(regla or "").strip()
+
+    if codigo in {"86", "87"} and isinstance(resultado, dict):
+        estado = resultado.get("obligatoriedad")
+        clasificacion = resultado.get("clasificacion")
+
+        if (
+            estado in {"Obligatoria", "No obligatoria"}
+            and clasificacion
+        ):
+            return estado, clasificacion
+
+    return estado_regla(codigo), clasificacion_regla(codigo)
