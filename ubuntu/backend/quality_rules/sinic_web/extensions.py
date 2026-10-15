@@ -9,6 +9,7 @@ de carga de las capas.
 from __future__ import annotations
 
 import datetime as _dt
+from decimal import Decimal, InvalidOperation
 import math
 import re
 import unicodedata
@@ -707,7 +708,7 @@ CARAC_ALIASES = ("ARB_CaracteristicasUnidadConstruccion", "ARB Características 
 DIRECCION_ALIASES = ("ARB_Direccion", "(ARB) Dirección", "(ARB) Direccion", "ARB Dirección", "LC_Direccion", "Direccion", "Dirección")
 DERECHO_ALIASES = ("ARB_DerechoInteresadoFuente", "(ARB) Derecho Interesado Fuente", "ARB Derecho Interesado Fuente", "LC_Derecho", "DerechoInteresadoFuente")
 COPROPIEDAD_ALIASES = ("ARB_Copropiedad", "ARB_PredioCopropiedad", "CR_Copropiedad", "PredioCopropiedad", "Copropiedad")
-INFO_PH_ALIASES = ("ARB_InformacionPH", "(ARB) Información PH", "(ARB) Informacion PH", "ARB Información PH", "CR_InformacionPH", "InformacionPH", "Informacion_PH")
+INFO_PH_ALIASES = ("ARB_InformacionPH", "(ARB) Información PH", "(ARB) Informacion PH", "ARB Información PH", "CR_InformacionPH", "InformacionPH", "Informacion_PH", "CR_DatosPHCondominio", "CR_Datos_PH_Condominio", "DatosPHCondominio")
 TRAMITE_ALIASES = ("ARB_Tramite", "(ARB) Tramite", "(ARB) Trámite", "ARB Tramite", "ILC_Tramite", "Tramite")
 BARRIO_ALIASES = ("CC_Barrio", "(CC) Barrio", "Barrio")
 LOCALIDAD_COMUNA_ALIASES = ("CC_LocalidadComuna", "(CC) Localidad Comuna", "LocalidadComuna", "Localidad Comuna")
@@ -1921,12 +1922,69 @@ def regla_116(layer_dict=None, **kwargs):
 
 
 def regla_125(layer_dict=None, **kwargs):
-    capas=_layers(layer_dict); p_layer,preds,pidx=_predio_index(capas); _,t_by_p,_=_terrains_by_predio(capas,pidx); errors=[]
-    for p in preds:
-        cond=_condition(p)
-        if ("NPH" in cond or "CONDOMINIOUNIDADPREDIAL" in cond) and not t_by_p.get(_aid(p)):
-            errors.append(_error("125",p_layer,p,"El predio NPH o Condominio UP debe tener terreno asociado."))
-    return _result("125",errors)
+    """3_ET_CF_125: terreno obligatorio SOLO para NPH y Condominio UP activos.
+
+    El terreno debe existir y estar relacionado con el predio; se admiten las
+    relaciones directas de ARB/XTF y la tabla intermedia de LADM-COL/SINIC.
+    """
+    capas = _layers(layer_dict)
+    p_layer, preds, pidx = _predio_index(capas)
+    t_layer, terrenos_por_predio, _ = _terrains_by_predio(capas, pidx)
+
+    # Algunas fuentes XTF/QGIS guardan la FK directa con este nombre, sin
+    # el campo genérico 'predio' que maneja el índice compartido.
+    terrenos_por_id = {}
+    for terreno in _features(t_layer):
+        for identificador in _entity_keys(terreno):
+            terrenos_por_id[_ref(identificador)] = terreno
+        referencia = _ref(_get_raw(terreno, (
+            "arb_predio_terreno", "terreno_predio", "ilc_predio", "baunit",
+        )))
+        predio = pidx.get(referencia)
+        if predio is not None:
+            terrenos_por_predio[_aid(predio)].append(terreno)
+
+    # Relación N:M: ARB_Predio_Terreno o COL_UEBAUnit (SINIC).
+    relacion = _find_layer(capas, (
+        "ARB_Predio_Terreno", "arb_predio_terreno", "ILC_Predio_Terreno",
+        "COL_UEBAUnit", "col_uebaunit",
+    ))
+    for enlace in _features(relacion):
+        referencia_predio = _ref(_get_raw(enlace, (
+            "baunit", "arb_predio", "ilc_predio", "predio", "id_predio",
+        )))
+        referencia_terreno = _ref(_get_raw(enlace, (
+            "ue_cr_terreno", "arb_terreno", "cr_terreno", "terreno", "id_terreno",
+        )))
+        predio = pidx.get(referencia_predio)
+        terreno = terrenos_por_id.get(referencia_terreno)
+        if predio is not None and terreno is not None:
+            terrenos_por_predio[_aid(predio)].append(terreno)
+
+    errores = []
+    for predio in preds:
+        estado = _norm(_get(predio, ESTADO_FIELDS))
+        if estado not in ("ACTIVO", "105"):
+            continue
+
+        condicion = _condition(predio)
+        aplica = (
+            condicion in ("65", "60", "NPH", "CONDOMINIOUNIDADPREDIAL")
+            or condicion.endswith("CONDICIONPREDIOTIPONPH")
+            or condicion.endswith("CONDICIONPREDIOTIPOCONDOMINIOUNIDADPREDIAL")
+        )
+        if not aplica:
+            continue
+
+        if not terrenos_por_predio.get(_aid(predio)):
+            errores.append(_error(
+                "125", p_layer, predio,
+                "Predio activo NPH o Condominio.Unidad_Predial sin terreno asociado.",
+                estado_predio=_text(_get(predio, ESTADO_FIELDS)),
+                condicion_predio=_text(_get(predio, COND_FIELDS)),
+                numero_predial=_npn(predio),
+            ))
+    return _result("125", errores)
 
 
 def regla_126(layer_dict=None, **kwargs):
@@ -2023,12 +2081,66 @@ def regla_140(layer_dict=None, **kwargs):
 
 
 def regla_141(layer_dict=None, **kwargs):
-    capas=_layers(layer_dict); layer,preds=_predios(capas); errors=[]
-    for p in preds:
-        if "CONDOMINIOMATRIZ" not in _condition(p): continue
-        d=_matrix_special_data(p); total=_float(d["area_total_terreno"]); priv=_float(d["area_privada_terreno"]); common=_float(d["area_terreno_comun"])
-        if None in (total,priv,common) or abs(total-(priv+common))>0.01: errors.append(_error("141",layer,p,"Condominio Matriz exige área total terreno = área privada terreno + área terreno común.",area_total=total,area_privada=priv,area_comun=common))
-    return _result("141",errors)
+    """Condominio.Matriz: Area_Total_Terreno = Area_Total_Terreno_Privada + Area_Total_Terreno_Comun.
+
+    Los tres valores se leen de ARB_InformacionPH / CR_DatosPHCondominio,
+    asociada a la matriz. Solo si no existe dicha ficha se admite la misma
+    terna de campos en el predio, para fuentes que los incorporan directamente.
+    NO se sustituyen por Area_Privada_Terreno ni Area_Terreno_Comun: ambos son
+    atributos distintos en el modelo y no son los solicitados para la regla.
+    """
+    capas = _layers(layer_dict)
+    layer, predios = _predios(capas)
+    info_layer, infos = _info_ph_by_predio(capas)
+    errors = []
+    campos = {
+        "area_total": ("Area_Total_Terreno", "area_total_terreno"),
+        "area_privada": ("Area_Total_Terreno_Privada", "area_total_terreno_privada"),
+        "area_comun": ("Area_Total_Terreno_Comun", "area_total_terreno_comun"),
+    }
+    for predio in predios:
+        if "CONDOMINIOMATRIZ" not in _condition(predio) and _condition(predio) != "63":
+            continue
+
+        # El registro separado de información PH/Condominio es la fuente oficial.
+        referencias = (_aid(predio), _npn(predio))
+        fichas = []
+        for referencia in dict.fromkeys(referencias):
+            fichas.extend(infos.get(referencia, []))
+        fuente = fichas[0] if fichas else predio
+
+        # Decimal evita errores de coma flotante (0.1 + 0.2 == 0.3).
+        # No hay tolerancia: cualquier diferencia numerica es incumplimiento.
+        def valor_decimal(valor):
+            texto = _text(valor)
+            if not texto:
+                return None
+            try:
+                numero = Decimal(texto.replace(",", "."))
+                return numero if numero.is_finite() else None
+            except (InvalidOperation, ValueError):
+                return None
+
+        valores = {nombre: valor_decimal(_get(fuente, aliases)) for nombre, aliases in campos.items()}
+        total, privado, comun = (valores[k] for k in ("area_total", "area_privada", "area_comun"))
+        faltantes = [aliases[0] for nombre, aliases in campos.items() if valores[nombre] is None]
+        calculado = privado + comun if privado is not None and comun is not None else None
+        if faltantes or total != calculado:
+            errors.append(_error(
+                "141", info_layer if fichas else layer, fuente,
+                "Condominio.Matriz: deben existir Area_Total_Terreno, "
+                "Area_Total_Terreno_Privada y Area_Total_Terreno_Comun, y "
+                "Area_Total_Terreno debe ser EXACTAMENTE igual a la suma "
+                "de los otros dos campos.",
+                predio_matriz=_aid(predio), numero_predial=_npn(predio),
+                area_total_terreno=(float(total) if total is not None else None),
+                area_total_terreno_privada=(float(privado) if privado is not None else None),
+                area_total_terreno_comun=(float(comun) if comun is not None else None),
+                suma_privada_comun=(float(calculado) if calculado is not None else None),
+                diferencia=(float(total-calculado) if total is not None and calculado is not None else None),
+                campos_faltantes=faltantes,
+            ))
+    return _result("141", errors)
 
 
 def regla_142(layer_dict=None, **kwargs):
