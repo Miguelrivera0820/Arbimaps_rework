@@ -1212,29 +1212,171 @@ def regla_76(layer_dict=None, layer_dic=None, **kwargs):
             ))
     return _resultado_issues("76", issues, dataset, "Relacionada, no equivalente", "2.21")
 
+
+# -----------------------------------------------------------------------------
+# SINIC 77 / 128: fuentes administrativas y predios activos.
+# En SINIC col_baunitfuente es ESPACIAL: las fuentes administrativas se
+# relacionan mediante col_unidadfuente y, para la 77, vía RRR.
+# -----------------------------------------------------------------------------
+FUENTE_ADMIN_TABLES = ("CR_FuenteAdministrativa", "COL_FuenteAdministrativa")
+UNIDAD_FUENTE_TABLES = ("COL_UnidadFuente", "col_unidadfuente")
+RRR_FUENTE_TABLES = ("COL_RRRFuente", "col_rrrfuente")
+BAUNIT_RRR_TABLES = ("COL_BAUnitRrr", "col_baunitrrr")
+DERECHO_SINIC_TABLES = ("SINIC_DerechoCatastral", "CR_Derecho", "COL_DRR")
+FUENTE_REF_FIELDS = ("fuente_administrativa", "Fuente_Administrativa", "fuenteadministrativa", "fuente", "fuente_id", "id_fuente")
+UNIDAD_REF_FIELDS = ("unidad", "Unidad", "baunit", "BAUnit", "predio", "Predio", "id_predio", "predio_id")
+RRR_REF_FIELDS = ("rrr", "RRR", "derecho", "Derecho", "derecho_id", "id_derecho")
+STABLE_SOURCE_ID_FIELDS = ("t_ili_tid", "T_Ili_Tid", "t_id", "T_ID", "TID", "tid", "id", "ID")
+
+
+def _filas_disponibles(dataset, names):
+    # Solo una variante por clase, para no contar filas dos veces.
+    for name in names:
+        if dataset.has_table(name):
+            return name, list(dataset.get_records(name))
+    return "", []
+
+
+def _refs_campo(helper, row, fields):
+    """IDs de una referencia explícita, sin confundir el TID del objeto con su FK."""
+    ref = _stable_ref(_raw_row_value(helper, row, fields))
+    return {ref} if ref else set()
+
+
+def _ids_entidad(helper, row):
+    return {val for key in STABLE_SOURCE_ID_FIELDS
+            if (val := _stable_ref(_raw_row_value(helper, row, (key,))))}
+
+
+def _estado_activo_fuente(helper, row):
+    """True Activo, False no Activo, None si falta o es ilegible el estado."""
+    value = _raw_text(_raw_row_value(helper, row, ESTADO_PREDIO_FIELDS))
+    token = _norm_token(value)
+    if token in ("105", "ACTIVO", "ESTADOACTIVO", "CRESTADOTIPOACTIVO"):
+        return True
+    if not token:
+        return None
+    if token in ("INACTIVO", "CANCELADO", "CANCELACION", "RETIRADO", "ELIMINADO", "106"):
+        return False
+    # No asumir que un valor de dominio desconocido significa Activo.
+    return None
+
+
+def _mapa_fuentes_juridicas(dataset, helper):
+    """Construye asociaciones desde fuentes REALES, no desde referencias sueltas.
+
+    - ARB captura: fuente embebida en DerechoInteresadoFuente, FK predio.
+    - SINIC normalizado: COL_UnidadFuente (camino directo) o
+      COL_RRRFuente + COL_BAUnitRrr (camino por derecho).
+    Ambos caminos cuentan para la 77 y para la adaptación operativa de la 128.
+    La especificación oficial de la 128 es distinta y verifica fuentes.
+    """
+    normal_tabla, normal_fuentes = _filas_disponibles(dataset, FUENTE_ADMIN_TABLES)
+    arb_tabla, arb_rows = _filas_disponibles(dataset, ("ARB_DerechoInteresadoFuente",))
+    normalizados = []
+    flattened = []
+    for row in normal_fuentes:
+        normalizados.append({"row": row, "tabla": normal_tabla, "directas": set(), "via_rrr": set()})
+    for row in arb_rows:
+        if _fuente_presente(helper, row):
+            flattened.append({"row": row, "tabla": arb_tabla,
+                              "directas": _refs_campo(helper, row, UNIDAD_REF_FIELDS), "via_rrr": set()})
+
+    by_source = defaultdict(list)
+    for src in normalizados:
+        for key in _ids_entidad(helper, src["row"]):
+            by_source[key].append(src)
+
+    # Camino 1: predio -> col_unidadfuente -> fuente administrativa.
+    _, unit_links = _filas_disponibles(dataset, UNIDAD_FUENTE_TABLES)
+    for link in unit_links:
+        source_refs = _refs_campo(helper, link, FUENTE_REF_FIELDS)
+        predio_refs = _refs_campo(helper, link, UNIDAD_REF_FIELDS)
+        for source_ref in source_refs:
+            for source in by_source.get(source_ref, ()):
+                source["directas"].update(predio_refs)
+
+    # Camino 2: predio -> col_baunitrrr -> derecho -> col_rrrfuente -> fuente.
+    _, rrr_links = _filas_disponibles(dataset, RRR_FUENTE_TABLES)
+    _, baunit_rrr_links = _filas_disponibles(dataset, BAUNIT_RRR_TABLES)
+    _, derechos = _filas_disponibles(dataset, DERECHO_SINIC_TABLES)
+    predio_por_rrr = defaultdict(set)
+    for link in baunit_rrr_links:
+        for rrr_ref in _refs_campo(helper, link, RRR_REF_FIELDS):
+            predio_por_rrr[rrr_ref].update(_refs_campo(helper, link, UNIDAD_REF_FIELDS))
+    for derecho in derechos:
+        refs_predio = _refs_campo(helper, derecho, UNIDAD_REF_FIELDS)
+        for rrr_key in _ids_entidad(helper, derecho):
+            predio_por_rrr[rrr_key].update(refs_predio)
+    for link in rrr_links:
+        rights = _refs_campo(helper, link, RRR_REF_FIELDS)
+        source_refs = _refs_campo(helper, link, FUENTE_REF_FIELDS)
+        for source_ref in source_refs:
+            for source in by_source.get(source_ref, ()):
+                for right in rights:
+                    source["via_rrr"].update(predio_por_rrr.get(right, set()))
+
+    return flattened + normalizados, bool(normal_tabla or arb_tabla)
+
+
+def _indice_predios_fuente(helper):
+    """Indexa solo identificadores estructurales, sin NPN ni FID internos."""
+    index = defaultdict(list)
+    for _, predio in helper.iter_predios():
+        for key in _ids_entidad(helper, predio):
+            index[key].append(predio)
+    return index
+
+
+def _predio_respaldo_fuentes(helper, fuentes):
+    resp = defaultdict(list)
+    for source in fuentes:
+        for ref in source["directas"] | source["via_rrr"]:
+            resp[ref].append(source)
+    return resp
+
+
+def _marcar_no_verificable_fuentes(result, codigo, motivos):
+    if motivos:
+        razon = f"Regla {codigo}: " + "; ".join(dict.fromkeys(motivos))
+        result["no_verificable"] = True
+        result["motivo_no_verificable"] = razon
+        result["mensaje"] = result.get("mensaje", "") + " " + razon
+        if not result.get("errores"):
+            result["cumple"] = False  # no certificar cumplimiento sin comprobarlo
+    return result
+
+
 def regla_77(layer_dict=None, layer_dic=None, **kwargs):
-    """Todo predio activo debe tener asociada al menos una fuente administrativa."""
-    # Equivalencia del cruce: Parcial | ARBIMAPS: 2.12
-    # Ajuste SINIC: 2.12 condiciona la fuente a la existencia de FMI; SINIC la
-    # exige para TODO predio activo, incluso si no tiene matrícula.
+    """Todo predio ACTIVO debe tener una fuente administrativa vinculada.
+
+    Admite ambos caminos jurídicos SINIC: col_unidadfuente y col_rrrfuente
+    (esta última pasando por col_baunitrrr). También la estructura ARB plana.
+    """
     _, dataset, helper = _dataset_y_helper(layer_dict, layer_dic)
-    if not dataset.has_table("ARB_Predio") or not dataset.has_table("ARB_DerechoInteresadoFuente"):
-        return _resultado_omitido("77", "Regla SINIC 77 omitida: faltan ARB_Predio o ARB_DerechoInteresadoFuente.")
-    _, relaciones = _relaciones_por_predio(helper)
+    if not dataset.has_table("ARB_Predio") and not dataset.has_table("SINIC_Predio"):
+        return _resultado_omitido("77", "Regla 77 no verificable: falta la capa de predios.")
+    fuentes, disponibles = _mapa_fuentes_juridicas(dataset, helper)
+    if not disponibles:
+        return _resultado_omitido("77", "Regla 77 no verificable: faltan capas de Fuentes Administrativas.")
+    asociadas = _predio_respaldo_fuentes(helper, fuentes)
     issues = []
+    inciertos = []
     for table_name, predio in helper.iter_predios():
-        if not _predio_activo(helper, predio):
+        activo = _estado_activo_fuente(helper, predio)
+        if activo is None:
+            inciertos.append("hay predios con Estado faltante o desconocido")
             continue
-        rows = _relaciones_de_predio(helper, predio, relaciones)
-        if any(_fuente_presente(helper, row) for _, row in rows):
+        if not activo:
             continue
-        issues.append(helper.make_issue(
-            predio,
-            rule_id="77",
-            message="Todo predio activo debe tener asociada al menos una Fuente Administrativa.",
-            details={"tabla": table_name, "estado_predio": helper.get_field_value(predio, ESTADO_PREDIO_FIELDS), "numero_predial": helper.get_field_value(predio, arb_jur.NUMERO_PREDIAL_FIELDS)},
-        ))
-    return _resultado_issues("77", issues, dataset, "Parcial", "2.12")
+        if any(asociadas.get(key) for key in _ids_entidad(helper, predio)):
+            continue
+        issues.append(helper.make_issue(predio, rule_id="77",
+            message="Predio activo sin Fuente Administrativa asociada (ninguno de los dos caminos).",
+            details={"tabla": table_name, "estado_predio": helper.get_field_value(predio, ESTADO_PREDIO_FIELDS),
+                     "numero_predial": helper.get_field_value(predio, arb_jur.NUMERO_PREDIAL_FIELDS)}))
+    resultado = _resultado_issues("77", issues, dataset, "Parcial", "2.12")
+    return _marcar_no_verificable_fuentes(resultado, "77", inciertos)
 
 def regla_78(layer_dict=None, layer_dic=None, **kwargs):
     """Predios con trámite asociado deben tener fuente diferente a 'Sin Documento'."""
@@ -1829,27 +1971,50 @@ def regla_123(layer_dict=None, layer_dic=None, **kwargs):
     return _resultado_issues("123", issues, dataset, "Sin correspondencia directa", "—")
 
 def regla_128(layer_dict=None, layer_dic=None, **kwargs):
-    """Todas las Fuentes Administrativas deben estar asociadas a un predio activo."""
-    # Sin correspondencia directa: implementación nativa SINIC.
+    """Adaptación operativa de la 128: predios Activos con respaldo jurídico.
+
+    Se revisan únicamente los predios con Estado Activo. Los predios
+    Cancelados/Inactivos no se evalúan, tengan o no Fuente Administrativa.
+    Para los activos se aceptan asociaciones directas en COL_UnidadFuente,
+    por derecho en COL_BAUnitRrr + COL_RRRFuente o la fuente embebida ARB.
+    NOTA: este enfoque centrado en predios difiere de la regla 128 oficial,
+    centrada en Fuentes Administrativas; su criterio coincide con la regla 77.
+    """
     _, dataset, helper = _dataset_y_helper(layer_dict, layer_dic)
-    if not dataset.has_table("ARB_DerechoInteresadoFuente") or not dataset.has_table("ARB_Predio"):
-        return _resultado_omitido("128", "Regla SINIC 128 omitida: faltan ARB_DerechoInteresadoFuente o ARB_Predio.")
-    predios_by_id = arb_jur._indexar_predios_por_identificador(helper)
+    if not dataset.has_table("ARB_Predio") and not dataset.has_table("SINIC_Predio"):
+        return _resultado_omitido("128", "Regla 128 no verificable: falta la capa de predios.")
+
+    fuentes, disponibles = _mapa_fuentes_juridicas(dataset, helper)
+    if not disponibles:
+        return _resultado_omitido("128", "Regla 128 no verificable: faltan datos/capas de Fuente Administrativa.")
+
+    asociadas = _predio_respaldo_fuentes(helper, fuentes)
     issues = []
-    for table_name, row in helper.iter_derecho_interesado_fuente():
-        if not _fuente_presente(helper, row):
+    inciertos = []
+    for table_name, predio in helper.iter_predios():
+        estado = _estado_activo_fuente(helper, predio)
+        if estado is None:
+            inciertos.append("hay predios con Estado faltante o desconocido")
             continue
-        predio_ref, predio_row = arb_jur._buscar_predio_relacionado(helper, row, predios_by_id)
-        if predio_row is not None and _predio_activo(helper, predio_row):
+        if not estado:
+            # Cancelados, inactivos, etc.: no les aplica esta adaptación.
             continue
-        estado = helper.get_field_value(predio_row or {}, ESTADO_PREDIO_FIELDS) if predio_row is not None else None
+        if any(asociadas.get(key) for key in _ids_entidad(helper, predio)):
+            continue
         issues.append(helper.make_issue(
-            row, rule_id="128",
-            message="Toda Fuente Administrativa debe estar asociada a un predio activo.",
-            details={"tabla": table_name, "predio_ref": predio_ref, "predio_encontrado": predio_row is not None,
-                     "estado_predio": estado, "tipo_fuente": _tipo_fuente(helper, row)},
+            predio,
+            rule_id="128",
+            message="Predio Activo sin Fuente Administrativa asociada por ninguno de los dos caminos jurídicos.",
+            details={
+                "tabla": table_name,
+                "estado_predio": _raw_row_value(helper, predio, ESTADO_PREDIO_FIELDS),
+                "numero_predial": helper.get_field_value(predio, arb_jur.NUMERO_PREDIAL_FIELDS),
+                "caminos_verificados": ["COL_UnidadFuente", "COL_BAUnitRrr + COL_RRRFuente", "ARB embebido"],
+            },
         ))
-    return _resultado_issues("128", issues, dataset, "Sin correspondencia directa", "—")
+
+    resultado = _resultado_issues("128", issues, dataset, "Adaptación operativa", "77 (criterio equivalente)")
+    return _marcar_no_verificable_fuentes(resultado, "128", inciertos)
 
 def regla_144(layer_dict=None, layer_dic=None, **kwargs):
     """Agrupación de Interesados exige suma de participaciones igual a 1 (100%)."""

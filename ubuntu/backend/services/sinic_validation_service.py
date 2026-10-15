@@ -250,7 +250,14 @@ class SinicValidationService:
 
             (77, "Caracterización", "2_CLFA_CJ_77", "Consistencia Fuente Administrativa", "Componente Jurídico", 0.80,
              "Todo predio activo posee al menos una fuente administrativa asociada.",
-             "SELECT COUNT(*) FROM g_sinic.sinic_predio p WHERE p.estado = 105 AND NOT EXISTS (SELECT 1 FROM g_sinic.col_baunitfuente f WHERE f.unidad = p.t_id);", 0),
+             "SELECT COUNT(*) FROM g_sinic.sinic_predio p WHERE p.estado = 105 AND "
+             "NOT EXISTS (SELECT 1 FROM g_sinic.col_unidadfuente uf "
+             "JOIN g_sinic.cr_fuenteadministrativa fa ON fa.t_id = uf.fuente_administrativa "
+             "WHERE uf.unidad = p.t_id) AND "
+             "NOT EXISTS (SELECT 1 FROM g_sinic.col_baunitrrr br "
+             "JOIN g_sinic.col_rrrfuente rf ON rf.rrr = br.rrr "
+             "JOIN g_sinic.cr_fuenteadministrativa fa ON fa.t_id = rf.fuente_administrativa "
+             "WHERE br.unidad = p.t_id);", 0),
             (78, "Caracterización", "2_CLFA_CJ_78", "Consistencia Fuente Administrativa", "Componente Jurídico", 0.25,
              "Trámite catastral asociado -> tipo de fuente administrativa != 'Sin Documento'.",
              "SELECT COUNT(*) FROM g_sinic.cr_fuenteadministrativa f WHERE f.tipo = 1;", 0),
@@ -451,8 +458,8 @@ class SinicValidationService:
              "PH Unidad (62) / Cementerio Unidad (67) -> al menos 1 unidad de construcción asociada.",
              "SELECT COUNT(*) FROM g_sinic.sinic_predio p WHERE p.estado = 105 AND p.condicion_predio IN (62, 67) AND NOT EXISTS (SELECT 1 FROM g_sinic.col_uebaunit u WHERE u.baunit = p.t_id AND u.ue_cr_unidadconstruccion IS NOT NULL);", 0),
             (125, "Temático", "3_ET_CF_125", "Exactitud Temática", "Componente Físico", 1.00,
-             "NPH (65) / Condominio Unidad (60) -> terreno asociado.",
-             "SELECT COUNT(*) FROM g_sinic.sinic_predio p WHERE p.estado = 105 AND p.condicion_predio IN (65, 60) AND NOT EXISTS (SELECT 1 FROM g_sinic.col_uebaunit u WHERE u.baunit = p.t_id AND u.ue_cr_terreno IS NOT NULL);", 0),
+             "Predios activos NPH (65) o Condominio.Unidad_Predial (60) sin terreno asociado.",
+             "SELECT COUNT(*) FROM g_sinic.sinic_predio p WHERE p.estado = 105 AND p.condicion_predio IN (65, 60) AND NOT EXISTS (SELECT 1 FROM g_sinic.col_uebaunit u JOIN g_sinic.cr_terreno t ON t.t_id = u.ue_cr_terreno WHERE u.baunit = p.t_id);", 0),
             (126, "Temático", "3_ET_CF_126", "Exactitud Temática", "Componente Físico", 2.00,
              "Todos los terrenos asociados al menos a un predio activo.",
              "SELECT COUNT(*) FROM g_sinic.cr_terreno t WHERE NOT EXISTS (SELECT 1 FROM g_sinic.col_uebaunit u JOIN g_sinic.sinic_predio p ON p.t_id = u.baunit WHERE u.ue_cr_terreno = t.t_id AND p.estado = 105);", 0),
@@ -460,8 +467,15 @@ class SinicValidationService:
              "Copropiedad -> coeficiente mayor a cero (0).",
              "SELECT COUNT(*) FROM g_sinic.cr_predio_copropiedad WHERE COALESCE(coeficiente, 0) <= 0;", 0),
             (128, "Temático", "3_ET_CJ_128", "Exactitud Temática", "Componente Jurídico", 1.00,
-             "Fuentes administrativas asociadas a predios activos.",
-             "SELECT COUNT(*) FROM g_sinic.cr_fuenteadministrativa f WHERE NOT EXISTS (SELECT 1 FROM g_sinic.col_baunitfuente b JOIN g_sinic.sinic_predio p ON p.t_id = b.unidad WHERE b.fuente_espacial = f.t_id AND p.estado = 105);", 0),
+             "Adaptación operativa: predios activos sin Fuente Administrativa; se ignoran cancelados.",
+             "SELECT COUNT(*) FROM g_sinic.sinic_predio p WHERE p.estado = 105 AND "
+             "NOT EXISTS (SELECT 1 FROM g_sinic.col_unidadfuente uf "
+             "JOIN g_sinic.cr_fuenteadministrativa fa ON fa.t_id = uf.fuente_administrativa "
+             "WHERE uf.unidad = p.t_id) AND "
+             "NOT EXISTS (SELECT 1 FROM g_sinic.col_baunitrrr br "
+             "JOIN g_sinic.col_rrrfuente rf ON rf.rrr = br.rrr "
+             "JOIN g_sinic.cr_fuenteadministrativa fa ON fa.t_id = rf.fuente_administrativa "
+             "WHERE br.unidad = p.t_id);", 0),
             (129, "Temático", "3_ET_CF_129", "Exactitud Temática", "Componente Físico", 1.00,
              "Uso de construcciones Anexo en valores de Anexos.",
              "SELECT COUNT(*) FROM g_sinic.cr_caracteristicasunidadconstruccion WHERE tipo_unidad_construccion = 2 AND uso IS NULL;", 0),

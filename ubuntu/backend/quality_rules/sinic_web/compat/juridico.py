@@ -88,6 +88,8 @@ class JuridicoHelper:
     PREDIO_TABLES = (
         "ARB_Predio",
         "arb_predio",
+        "SINIC_Predio",
+        "sinic_predio",
     )
 
     DERECHO_INTERESADO_FUENTE_TABLES = (

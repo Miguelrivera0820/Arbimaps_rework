@@ -1,1587 +1,1397 @@
 {
-  "slug": "juridico",
-  "catalog": "SINIC",
-  "comparison_source": "Comparacion_SINIC_vs_ARBIMAPS_AUDITADA_XTF(1).xlsx",
-  "rule_count": 42,
-  "implemented_count": 42,
-  "omitted_by_definition_count": 0,
-  "pending_logic_count": 0,
-  "rules": [
-    {
-      "id": "45",
-      "level": "Caracterización",
-      "abbreviation": "2_CLP_CJ_45",
-      "rule_type": "Consistencia Lógica Predios",
-      "component": "Componente Jurídico",
-      "description": "Todo predio activo debe contar con un valor único de Matrícula Inmobiliaria (no duplicada).",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.75,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "1.12"
-        ],
-        "arbimaps_rule_ids_raw": "1.12",
-        "arbimaps_modules": "ADMINISTRATIVOS",
-        "arbimaps_rule_descriptions": "• 1.12: El valor de Matricula_inmobiliaria no puede estar relacionado a más de un numero predial (FMI duplicados, pueden existir excepciones).",
-        "source_status_functioning": "1.12: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 1.12 controla FMI asociado a más de un número predial, con nota de posibles excepciones."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "1.12"
-        ],
-        "source_module_keys": [
-          "administrativo"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_45",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "46",
-      "level": "Caracterización",
-      "abbreviation": "2_CLP_CJ_46",
-      "rule_type": "Consistencia Lógica Predios",
-      "component": "Componente Jurídico",
-      "description": "Predios en condición Informal deben estar vinculados al menos a un predio formal registrado.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.75,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "1.50"
-        ],
-        "arbimaps_rule_ids_raw": "1.50",
-        "arbimaps_modules": "ADMINISTRATIVOS",
-        "arbimaps_rule_descriptions": "• 1.50: Todo predio informal debe relacionar un predio formal mediante la tabla ilc_predio_informalidad",
-        "source_status_functioning": "—",
-        "cross_observation": "La 1.50 exige que todo predio informal relacione un predio formal mediante ilc_predio_informalidad."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "RESERVADA_EQUIVALENCIA_EXACTA",
-        "source_rule_ids": [
-          "1.50"
-        ],
-        "source_module_keys": [
-          "administrativo"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_46",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "66",
-      "level": "Caracterización",
-      "abbreviation": "2_CLD_CJ_66",
-      "rule_type": "Consistencia Lógica Derechos",
-      "component": "Componente Jurídico",
-      "description": "Derecho de tipo Dominio exige condición de predio formal (diferente a informal).",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Media",
-        "arbimaps_rule_ids": [
-          "2.2"
-        ],
-        "arbimaps_rule_ids_raw": "2.2",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.2: Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).",
-        "source_status_functioning": "2.2: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.2 distingue formal/Dominio e informal/Posesión-Ocupación; se aproxima a Dominio→formal, aunque su formulación está acotada a tipos y FMI."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.2"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_66",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "67",
-      "level": "Caracterización",
-      "abbreviation": "2_CLD_CJ_67",
-      "rule_type": "Consistencia Lógica Derechos",
-      "component": "Componente Jurídico",
-      "description": "Derecho de tipo Posesión exige tipo de predio Privado.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.3"
-        ],
-        "arbimaps_rule_ids_raw": "2.3",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.3: Los predios asociados a tipos de derecho de “posesión” deben ser tipo de predios “Privados”",
-        "source_status_functioning": "2.3: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.3 exige que predios con derecho Posesión sean Privados."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.3"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_67",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "68",
-      "level": "Caracterización",
-      "abbreviation": "2_CLD_CJ_68",
-      "rule_type": "Consistencia Lógica Derechos",
-      "component": "Componente Jurídico",
-      "description": "Derecho de tipo Ocupación exige tipo de predio Público (Baldío, Fiscal, Uso Público, Presunto Baldío).",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Media",
-        "arbimaps_rule_ids": [
-          "2.4",
-          "2.5"
-        ],
-        "arbimaps_rule_ids_raw": "2.4; 2.5",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.4: Los predios con tipo de predio: Privado no deben estar asociados a derechos de “ocupación”\n• 2.5: Para los predios asociados a tipo de predio público, el tipo de derecho no puede ser posesión",
-        "source_status_functioning": "2.4: Estado=OK, Funcionamiento=OK; 2.5: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.4 prohíbe Ocupación en privados y la 2.5 prohíbe Posesión en públicos; la regla SINIC expresa directamente Ocupación→Público."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.4",
-          "2.5"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_68",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "69",
-      "level": "Caracterización",
-      "abbreviation": "2_CLD_CJ_69",
-      "rule_type": "Consistencia Lógica Derechos",
-      "component": "Componente Jurídico",
-      "description": "Derechos en predios (excepto Matrices) deben tener asociado al menos un interesado o agrupación.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.29"
-        ],
-        "arbimaps_rule_ids_raw": "2.29",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.29: Todo predio debe tener asociado un interesado o agrupación de interesados.",
-        "source_status_functioning": "2.29: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.29 exige interesado o agrupación para todo predio; SINIC lo vincula a derechos y exceptúa matrices."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.29"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_69",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "70",
-      "level": "Caracterización",
-      "abbreviation": "2_CLI_CJ_70",
-      "rule_type": "Consistencia Lógica Interesados",
-      "component": "Componente Jurídico",
-      "description": "Todo interesado debe tener un Tipo definido (no vacío ni nulo).",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "11.48"
-        ],
-        "arbimaps_rule_ids_raw": "11.48",
-        "arbimaps_modules": "OBLIGATORIAS",
-        "arbimaps_rule_descriptions": "• 11.48: El interesado no tiene un tipo definido",
-        "source_status_functioning": "11.48: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La obligatoria 11.48 detecta interesados sin tipo definido."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "11.48"
-        ],
-        "source_module_keys": [
-          "obligatorias"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_70",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "71",
-      "level": "Caracterización",
-      "abbreviation": "2_CLI_CJ_71",
-      "rule_type": "Consistencia Lógica Interesados",
-      "component": "Componente Jurídico",
-      "description": "Interesados Persona Natural no deben tener Tipo de Documento NIT.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.14"
-        ],
-        "arbimaps_rule_ids_raw": "2.14",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.14: Los interesados de tipo “Persona_Natural” deben asociar solamente en tipo de documento “Cedula de Ciudadanía” o \"Pasaporte\" o “Cédula de Extranjería” o “Tarjeta de identidad” o “Registro Civil” o número secuencial (este secuencial solamente se utilizará en el caso de los interesados que no fue posible encontrar su documento de identidad)",
-        "source_status_functioning": "2.14: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.14 limita Persona_Natural a documentos distintos de NIT (CC, Pasaporte, CE, TI, RC o secuencial)."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.14"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_71",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "72",
-      "level": "Caracterización",
-      "abbreviation": "2_CLI_CJ_72",
-      "rule_type": "Consistencia Lógica Interesados",
-      "component": "Componente Jurídico",
-      "description": "Interesados Persona Jurídica deben tener Tipo de Documento NIT.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.13"
-        ],
-        "arbimaps_rule_ids_raw": "2.13",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.13: Los interesados de tipo “Persona_Jurídica” deben asociar solamente en tipo de documento NIT o número secuencial (este secuencial solamente se utiliza en el caso de los interesados que no fue posible encontrar su documento de identidad).",
-        "source_status_functioning": "2.13: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.13 exige NIT para Persona_Jurídica, pero admite también número secuencial en casos sin documento."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.13"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_72",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "73",
-      "level": "Caracterización",
-      "abbreviation": "2_CLI_CJ_73",
-      "rule_type": "Consistencia Lógica Interesados",
-      "component": "Componente Jurídico",
-      "description": "Persona Natural exige existencia de Primer Nombre y Primer Apellido.",
-      "level_score_percent": 35,
-      "rule_score_percent": 1,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Media",
-        "arbimaps_rule_ids": [
-          "2.17"
-        ],
-        "arbimaps_rule_ids_raw": "2.17",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.17: El atributo de primer nombre, segundo nombre, primer apellido y segundo apellido en interesado solo será usado para aquellos que correspondan a “Personas naturales” y no debe ser numérico ni contener caracteres especiales",
-        "source_status_functioning": "2.17: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.17 reserva nombres/apellidos a personas naturales y valida su contenido, pero no expresa de forma explícita que Primer Nombre y Primer Apellido sean obligatorios."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.17"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_73",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "74",
-      "level": "Caracterización",
-      "abbreviation": "2_CLI_CJ_74",
-      "rule_type": "Consistencia Lógica Interesados",
-      "component": "Componente Jurídico",
-      "description": "Persona Jurídica exige existencia de Razón Social.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.20"
-        ],
-        "arbimaps_rule_ids_raw": "2.20",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.20: Para los interesados asociados a personas jurídicas, solamente se debe diligenciar el campo de razón social",
-        "source_status_functioning": "2.20: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.20 establece que para persona jurídica solo se diligencia Razón Social."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.20"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_74",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "75",
-      "level": "Caracterización",
-      "abbreviation": "2_CLI_CJ_75",
-      "rule_type": "Consistencia Lógica Interesados",
-      "component": "Componente Jurídico",
-      "description": "Persona Jurídica debe tener Sexo igual a 'No Aplica'.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Relacionada, no equivalente",
-        "confidence": "Baja",
-        "arbimaps_rule_ids": [
-          "2.21"
-        ],
-        "arbimaps_rule_ids_raw": "2.21",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.21: El atributo de Sexo en interesado solo será usado para aquellos que correspondan a Personas naturales.",
-        "source_status_functioning": "2.21: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.21 indica que Sexo solo se usa para personas naturales; SINIC exige específicamente el valor “No Aplica” en Persona Jurídica."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.21"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_75",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "76",
-      "level": "Caracterización",
-      "abbreviation": "2_CLI_CJ_76",
-      "rule_type": "Consistencia Lógica Interesados",
-      "component": "Componente Jurídico",
-      "description": "Persona Natural debe tener Sexo Masculino, Femenino, No Binario o Sin Determinar.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Relacionada, no equivalente",
-        "confidence": "Baja",
-        "arbimaps_rule_ids": [
-          "2.21"
-        ],
-        "arbimaps_rule_ids_raw": "2.21",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.21: El atributo de Sexo en interesado solo será usado para aquellos que correspondan a Personas naturales.",
-        "source_status_functioning": "2.21: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.21 restringe el uso de Sexo a personas naturales, pero no define el catálogo Masculino/Femenino/No Binario/Sin Determinar."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.21"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_76",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "77",
-      "level": "Caracterización",
-      "abbreviation": "2_CLFA_CJ_77",
-      "rule_type": "Consistencia Lógica Fuente Administrativa",
-      "component": "Componente Jurídico",
-      "description": "Todo predio activo debe tener asociada al menos una fuente administrativa.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.8,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Media",
-        "arbimaps_rule_ids": [
-          "2.12"
-        ],
-        "arbimaps_rule_ids_raw": "2.12",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.12: Si el predio tiene folio de matrícula en la tabla ILC_Predio, entonces debe tener registrada una fecha de documento fuente, tipo de fuente administrativa, numero de fuente administrativa y ente emisor. El valor registrado en fecha de documento fuente no puede ser posterior a la fecha de levantamiento",
-        "source_status_functioning": "2.12: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.12 exige fuente administrativa cuando existe FMI; SINIC exige al menos una fuente para todo predio activo."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.12"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_77",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "78",
-      "level": "Caracterización",
-      "abbreviation": "2_CLFA_CJ_78",
-      "rule_type": "Consistencia Lógica Fuente Administrativa",
-      "component": "Componente Jurídico",
-      "description": "Predios con trámite asociado deben tener fuente diferente a 'Sin Documento'.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Sin correspondencia directa",
-        "confidence": "—",
-        "arbimaps_rule_ids": [],
-        "arbimaps_rule_ids_raw": "—",
-        "arbimaps_modules": "—",
-        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
-        "source_status_functioning": "—",
-        "cross_observation": "No se encontró una regla que prohíba “Sin Documento” cuando el predio tiene trámite asociado."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_78",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "79",
-      "level": "Caracterización",
-      "abbreviation": "2_CLFA_CJ_79",
-      "rule_type": "Consistencia Lógica Fuente Administrativa",
-      "component": "Componente Jurídico",
-      "description": "Fuentes distintas a privado/sin documento deben diligenciar Ente Emisor, Oficina, Ciudad y Fecha.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Media",
-        "arbimaps_rule_ids": [
-          "2.27",
-          "2.28"
-        ],
-        "arbimaps_rule_ids_raw": "2.27; 2.28",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.27: El registro de un dato en ente emisor, numero de fuente y fecha de documento debe ser congruente con el tipo de fuente administrativa asignado.\n• 2.28: El ente emisor debe corresponder al  tipo de fuente administrativa diligenciado.",
-        "source_status_functioning": "2.27: Estado=OK, Funcionamiento=OK; 2.28: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "Las 2.27/2.28 exigen congruencia entre tipo de fuente y datos/ente emisor; SINIC explicita Ente Emisor, Oficina, Ciudad y Fecha para ciertos tipos."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.27",
-          "2.28"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_79",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "88",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_88",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio Privado con derecho Dominio exige Matrícula Inmobiliaria mayor a 0.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.2"
-        ],
-        "arbimaps_rule_ids_raw": "2.2",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.2: Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).",
-        "source_status_functioning": "2.2: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.2 exige FMI para predio formal privado con derecho Dominio."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.2"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_88",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "89",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_89",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio Baldío con derecho Dominio exige estar ubicado en zona rural.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Sin correspondencia directa",
-        "confidence": "—",
-        "arbimaps_rule_ids": [],
-        "arbimaps_rule_ids_raw": "—",
-        "arbimaps_modules": "—",
-        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
-        "source_status_functioning": "—",
-        "cross_observation": "No se halló regla que exija zona rural para predio Baldío con Dominio."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_89",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "90",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_90",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio Baldío con derecho Dominio exige Matrícula Inmobiliaria mayor a 0.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Sin correspondencia directa",
-        "confidence": "—",
-        "arbimaps_rule_ids": [],
-        "arbimaps_rule_ids_raw": "—",
-        "arbimaps_modules": "—",
-        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
-        "source_status_functioning": "—",
-        "cross_observation": "No se halló regla específica que exija FMI >0 para Baldío con Dominio."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_90",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "91",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_91",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio Baldío con derecho Dominio exige tener un único interesado relacionado.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Media",
-        "arbimaps_rule_ids": [
-          "2.6"
-        ],
-        "arbimaps_rule_ids_raw": "2.6",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.6: En los predios baldíos y asociados a tipo de derecho dominio, el interesado relacionado debe corresponder a la Nación o Municipio o Agencia Nacional de Tierras",
-        "source_status_functioning": "2.6: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.6 controla quién debe ser el interesado en Baldío+Dominio (Nación/Municipio/ANT), pero no exige unicidad del interesado."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.6"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_91",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "92",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_92",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio informal superpuesto con Baldío exige derecho de Ocupación.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Relacionada, no equivalente",
-        "confidence": "Baja",
-        "arbimaps_rule_ids": [
-          "5.20"
-        ],
-        "arbimaps_rule_ids_raw": "5.20",
-        "arbimaps_modules": "TOPOLOGICO",
-        "arbimaps_rule_descriptions": "• 5.20: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Informal ocupacion) | Clase 2: CR_Terreno (Predio tipo \"privado\") | Condición: CR_Terreno informal (CPN posicion 22 igual \"2\") asociado a un derecho de \"Ocupación\" no debe superponerse con un CR_Terreno asociado a un LC_Predio.Tipo \"Privado\"",
-        "source_status_functioning": "—",
-        "cross_observation": "La 5.20 impide superposición de una Ocupación informal con predio Privado; no expresa la inferencia Baldío superpuesto→Ocupación."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "5.20"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_92",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "93",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_93",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio informal con Ocupación superpuesto con Baldío exige estar en zona rural.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Sin correspondencia directa",
-        "confidence": "—",
-        "arbimaps_rule_ids": [],
-        "arbimaps_rule_ids_raw": "—",
-        "arbimaps_modules": "—",
-        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
-        "source_status_functioning": "—",
-        "cross_observation": "No se encontró una regla que combine Ocupación informal + superposición con Baldío + obligación de ubicación rural."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_93",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "94",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_94",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio informal con Ocupación superpuesto con Baldío exige no tener matrícula inmobiliaria.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.2"
-        ],
-        "arbimaps_rule_ids_raw": "2.2",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.2: Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).",
-        "source_status_functioning": "2.2: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.2 establece que predios informales con Posesión u Ocupación no deben tener matrícula inmobiliaria, con excepciones documentadas."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.2"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_94",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "95",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_95",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio Fiscal Patrimonial no informal exige derecho de Dominio.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Relacionada, no equivalente",
-        "confidence": "Baja",
-        "arbimaps_rule_ids": [
-          "2.5"
-        ],
-        "arbimaps_rule_ids_raw": "2.5",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.5: Para los predios asociados a tipo de predio público, el tipo de derecho no puede ser posesión",
-        "source_status_functioning": "2.5: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.5 prohíbe Posesión en predios públicos; no obliga de forma expresa Dominio para Fiscal Patrimonial no informal."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.5"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_95",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "96",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_96",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio Fiscal Patrimonial con Dominio exige Matrícula Inmobiliaria mayor a 0.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Sin correspondencia directa",
-        "confidence": "—",
-        "arbimaps_rule_ids": [],
-        "arbimaps_rule_ids_raw": "—",
-        "arbimaps_modules": "—",
-        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
-        "source_status_functioning": "—",
-        "cross_observation": "No se encontró regla específica FMI>0 para Fiscal Patrimonial con Dominio."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_96",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "97",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_97",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio informal superpuesto con Fiscal Patrimonial exige derecho de Ocupación.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Relacionada, no equivalente",
-        "confidence": "Baja",
-        "arbimaps_rule_ids": [
-          "5.20"
-        ],
-        "arbimaps_rule_ids_raw": "5.20",
-        "arbimaps_modules": "TOPOLOGICO",
-        "arbimaps_rule_descriptions": "• 5.20: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Informal ocupacion) | Clase 2: CR_Terreno (Predio tipo \"privado\") | Condición: CR_Terreno informal (CPN posicion 22 igual \"2\") asociado a un derecho de \"Ocupación\" no debe superponerse con un CR_Terreno asociado a un LC_Predio.Tipo \"Privado\"",
-        "source_status_functioning": "—",
-        "cross_observation": "La 5.20 relaciona Ocupación informal con no superposición a privados, pero no infiere Ocupación a partir de superposición con Fiscal Patrimonial."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "5.20"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_97",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "98",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_98",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio Uso Público no informal exige derecho de Dominio.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.10"
-        ],
-        "arbimaps_rule_ids_raw": "2.10",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.10: Para los predios que son vía o de uso público el tipo de predio es “Uso Público” y el tipo de derecho relacionado es dominio.",
-        "source_status_functioning": "2.10: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.10 exige derecho Dominio para predios Vía/Uso Público."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.10"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_98",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "99",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_99",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio con NPN pos 22='3' u '4' exige tipo Uso Público y derecho Dominio.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Equivalente por combinación",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "1.1",
-          "2.10"
-        ],
-        "arbimaps_rule_ids_raw": "1.1; 2.10",
-        "arbimaps_modules": "ADMINISTRATIVOS; JURIDICO",
-        "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"\n• 2.10: Para los predios que son vía o de uso público el tipo de predio es “Uso Público” y el tipo de derecho relacionado es dominio.",
-        "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK; 2.10: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 1.1 identifica los patrones NPN 3/4 como Bien_Uso_Publico/Vía y la 2.10 exige tipo Uso Público y derecho Dominio."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "1.1",
-          "2.10"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_99",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "100",
-      "level": "Caracterización",
-      "abbreviation": "2_CLC_CJ_100",
-      "rule_type": "Consistencia Lógica Conceptual",
-      "component": "Componente Jurídico",
-      "description": "Predio informal de Uso Público exige derecho de Ocupación.",
-      "level_score_percent": 35,
-      "rule_score_percent": 0.25,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Baja",
-        "arbimaps_rule_ids": [
-          "2.5"
-        ],
-        "arbimaps_rule_ids_raw": "2.5",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.5: Para los predios asociados a tipo de predio público, el tipo de derecho no puede ser posesión",
-        "source_status_functioning": "2.5: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.5 impide Posesión en públicos; no establece explícitamente que un Uso Público informal deba tener Ocupación."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.5"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_100",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "109",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_109",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Interesados con NIT exigen documento de identidad diligenciado sin espacios ni caracteres especiales.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.16"
-        ],
-        "arbimaps_rule_ids_raw": "2.16",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.16: Si el tipo de documento del interesado es “NIT”, entonces el numero de indentidad debe ser mayor a 0, sin letras ni caracteres especiales exceptuando guion \"-\" y no debe ser consecutivo (12345678-9). Antes del guion solo numérico y después del guion únicamente un entero, entre 0 y 9.",
-        "source_status_functioning": "2.16: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.16 valida NIT mayor a 0, sin letras ni caracteres especiales salvo guion y con estructura numérica."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.16"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_109",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "110",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_110",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Interesados Persona Jurídica no deben tener diligenciados nombres ni apellidos.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.18",
-          "2.20"
-        ],
-        "arbimaps_rule_ids_raw": "2.18; 2.20",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.18: El atributo de primer nombre, segundo nombre, primer apellido y segundo apellido no será usado para interesados que correspondan a “Personas jurídicas”.\n• 2.20: Para los interesados asociados a personas jurídicas, solamente se debe diligenciar el campo de razón social",
-        "source_status_functioning": "2.18: Estado=OK, Funcionamiento=OK; 2.20: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.18 prohíbe nombres/apellidos en Persona Jurídica y la 2.20 limita el diligenciamiento a Razón Social."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.18",
-          "2.20"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_110",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "111",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_111",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Documentos de identidad (CC, CE, NIT, Pasaporte, RC, TI) exigen > 5 dígitos sin espacios/caracteres especiales.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Media",
-        "arbimaps_rule_ids": [
-          "2.15",
-          "2.16"
-        ],
-        "arbimaps_rule_ids_raw": "2.15; 2.16",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.15: Si el tipo de documento asociado al interesado es \"Cédula de ciudadanía” o “Cedula de Extranjería” o “Tarjeta de identidad” o “Registro Civil”, el número de documento de identidad debe ser diferente de “cero” o vacío. La opción de secuencial se usa en el caso de interesados en los cuales no fue posible encontrar documento de identificación, al no existir otra opción\n• 2.16: Si el tipo de documento del interesado es “NIT”, entonces el numero de indentidad debe ser mayor a 0, sin letras ni caracteres especiales exceptuando guion \"-\" y no debe ser consecutivo (12345678-9). Antes del guion solo numérico y después del guion únicamente un entero, entre 0 y 9.",
-        "source_status_functioning": "2.15: Estado=OK, Funcionamiento=OK; 2.16: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "El primer Excel valida no vacío/cero para documentos personales y formato de NIT, pero no exige de manera general >5 dígitos ni ausencia de espacios para todos los tipos listados."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.15",
-          "2.16"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_111",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "113",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_113",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Predios no informales exigen un único derecho de tipo Dominio.",
-      "level_score_percent": 30,
-      "rule_score_percent": 1,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Relacionada, no equivalente",
-        "confidence": "Baja",
-        "arbimaps_rule_ids": [
-          "2.2",
-          "2.10"
-        ],
-        "arbimaps_rule_ids_raw": "2.2; 2.10",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.2: Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).\n• 2.10: Para los predios que son vía o de uso público el tipo de predio es “Uso Público” y el tipo de derecho relacionado es dominio.",
-        "source_status_functioning": "2.2: Estado=OK, Funcionamiento=OK; 2.10: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "Existen reglas de Dominio por tipos concretos (privado formal y vía/uso público), pero no una regla global que exija un único derecho Dominio para todo predio no informal."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.2",
-          "2.10"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_113",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "117",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_117",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Agrupación de interesados Grupo Civil exige que todos los interesados sean Persona Natural.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.24"
-        ],
-        "arbimaps_rule_ids_raw": "2.24",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.24: Si la agrupación de interesados de un predio está conformada por personas naturales, el tipo de agrupación debe ser Grupo_Civil",
-        "source_status_functioning": "—",
-        "cross_observation": "La 2.24 exige Grupo_Civil cuando la agrupación está conformada por personas naturales."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.24"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_117",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "118",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_118",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Agrupación de interesados Grupo Empresarial exige que todos los interesados sean Persona Jurídica.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.25"
-        ],
-        "arbimaps_rule_ids_raw": "2.25",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.25: Si la agrupación de interesados de un predio está conformada por personas jurídicas el tipo de agrupación debe ser Grupo_Empresarial",
-        "source_status_functioning": "—",
-        "cross_observation": "La 2.25 exige Grupo_Empresarial cuando la agrupación está conformada por personas jurídicas."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.25"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_118",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "119",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_119",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Agrupación con Personas Naturales y Jurídicas simultáneamente exige tipo Grupo_Mixto.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.23"
-        ],
-        "arbimaps_rule_ids_raw": "2.23",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.23: Si la agrupación de interesados de un predio está conformada por personas naturales y jurídicas, el tipo de agrupación debe ser Grupo_Mixto",
-        "source_status_functioning": "—",
-        "cross_observation": "La 2.23 exige Grupo_Mixto cuando coexisten personas naturales y jurídicas."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.23"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_119",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "120",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_120",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Matrícula > 0 exige Fuente Administrativa asociada con fecha, tipo y ente emisor.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Exacta",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.12"
-        ],
-        "arbimaps_rule_ids_raw": "2.12",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.12: Si el predio tiene folio de matrícula en la tabla ILC_Predio, entonces debe tener registrada una fecha de documento fuente, tipo de fuente administrativa, numero de fuente administrativa y ente emisor. El valor registrado en fecha de documento fuente no puede ser posterior a la fecha de levantamiento",
-        "source_status_functioning": "2.12: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "La 2.12 exige fuente administrativa, fecha, tipo, número y ente emisor cuando existe FMI."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
-        "source_rule_ids": [
-          "2.12"
-        ],
-        "source_module_keys": [
-          "juridico"
-        ],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_120",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "121",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_121",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Predio Matriz con un único interesado exige que sea Persona Jurídica.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Sin correspondencia directa",
-        "confidence": "—",
-        "arbimaps_rule_ids": [],
-        "arbimaps_rule_ids_raw": "—",
-        "arbimaps_modules": "—",
-        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
-        "source_status_functioning": "—",
-        "cross_observation": "No se encontró regla que obligue Persona Jurídica cuando un predio Matriz tiene un único interesado."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_121",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "122",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_122",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Fuente Documento_Publico exige Ente Emisor, Oficina, Ciudad y Fecha diligenciados.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Media",
-        "arbimaps_rule_ids": [
-          "2.27",
-          "2.28"
-        ],
-        "arbimaps_rule_ids_raw": "2.27; 2.28",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.27: El registro de un dato en ente emisor, numero de fuente y fecha de documento debe ser congruente con el tipo de fuente administrativa asignado.\n• 2.28: El ente emisor debe corresponder al  tipo de fuente administrativa diligenciado.",
-        "source_status_functioning": "2.27: Estado=OK, Funcionamiento=OK; 2.28: Estado=OK, Funcionamiento=OK",
-        "cross_observation": "Las reglas existentes exigen congruencia de datos y ente emisor con el tipo de fuente, pero no enumeran literalmente Documento_Publico + Oficina + Ciudad + Fecha."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.27",
-          "2.28"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_122",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "123",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_123",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Fuente Sin Documento exige Ente Emisor, Oficina, Ciudad y Fecha NO diligenciados.",
-      "level_score_percent": 30,
-      "rule_score_percent": 0.5,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Sin correspondencia directa",
-        "confidence": "—",
-        "arbimaps_rule_ids": [],
-        "arbimaps_rule_ids_raw": "—",
-        "arbimaps_modules": "—",
-        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
-        "source_status_functioning": "—",
-        "cross_observation": "No se encontró regla explícita que obligue a dejar Ente Emisor, Oficina, Ciudad y Fecha vacíos cuando la fuente es Sin Documento."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_123",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "128",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_128",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Todas las Fuentes Administrativas deben estar asociadas a un predio activo.",
-      "level_score_percent": 30,
-      "rule_score_percent": 1,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Sin correspondencia directa",
-        "confidence": "—",
-        "arbimaps_rule_ids": [],
-        "arbimaps_rule_ids_raw": "—",
-        "arbimaps_modules": "—",
-        "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
-        "source_status_functioning": "—",
-        "cross_observation": "No se identificó una regla inversa que obligue a toda Fuente Administrativa a estar asociada a un predio activo."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_128",
-        "target_file": "reglas_juridicos.py"
-      }
-    },
-    {
-      "id": "144",
-      "level": "Temático",
-      "abbreviation": "3_ET_CJ_144",
-      "rule_type": "Exactitud Temática",
-      "component": "Componente Jurídico",
-      "description": "Agrupación de Interesados exige suma de participaciones igual a 1 (100%).",
-      "level_score_percent": 30,
-      "rule_score_percent": 1,
-      "sheet_slug": "juridico",
-      "equivalence": {
-        "type": "Parcial",
-        "confidence": "Alta",
-        "arbimaps_rule_ids": [
-          "2.26"
-        ],
-        "arbimaps_rule_ids_raw": "2.26",
-        "arbimaps_modules": "JURIDICO",
-        "arbimaps_rule_descriptions": "• 2.26: La suma de los valores de participación de la tabla col_miembros debe sumar 1 para los interesados asociados a una misma agrupación (En predios que cuente con FMI y que ellos se detalle el porcentaje de participación); de lo contrario esta suma debe ser cero o Null.",
-        "source_status_functioning": "—",
-        "cross_observation": "La 2.26 exige suma de participaciones=1 cuando el FMI detalla porcentajes, pero permite cero/null en otros casos; SINIC lo formula como requisito general de la agrupación."
-      },
-      "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
-      "implementation": {
-        "status": "IMPLEMENTADA_LOGICA_SINIC",
-        "executable": true,
-        "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
-        "source_rule_ids": [
-          "2.26"
-        ],
-        "source_module_keys": [],
-        "missing_source_rule_ids": [],
-        "pending_reason": "",
-        "target_function": "regla_144",
-        "target_file": "reglas_juridicos.py"
-      }
-    }
-  ]
+    "slug": "juridico",
+    "catalog": "SINIC",
+    "comparison_source": "Comparacion_SINIC_vs_ARBIMAPS_AUDITADA_XTF(1).xlsx",
+    "rule_count": 42,
+    "implemented_count": 42,
+    "omitted_by_definition_count": 0,
+    "pending_logic_count": 0,
+    "rules": [
+        {
+            "id": "45",
+            "level": "Caracterización",
+            "abbreviation": "2_CLP_CJ_45",
+            "rule_type": "Consistencia Lógica Predios",
+            "component": "Componente Jurídico",
+            "description": "Todo predio activo debe contar con un valor único de Matrícula Inmobiliaria (no duplicada).",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.75,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["1.12"],
+                "arbimaps_rule_ids_raw": "1.12",
+                "arbimaps_modules": "ADMINISTRATIVOS",
+                "arbimaps_rule_descriptions": "• 1.12: El valor de Matricula_inmobiliaria no puede estar relacionado a más de un numero predial (FMI duplicados, pueden existir excepciones).",
+                "source_status_functioning": "1.12: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 1.12 controla FMI asociado a más de un número predial, con nota de posibles excepciones."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["1.12"],
+                "source_module_keys": ["administrativo"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_45",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "46",
+            "level": "Caracterización",
+            "abbreviation": "2_CLP_CJ_46",
+            "rule_type": "Consistencia Lógica Predios",
+            "component": "Componente Jurídico",
+            "description": "Predios en condición Informal deben estar vinculados al menos a un predio formal registrado.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.75,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["1.50"],
+                "arbimaps_rule_ids_raw": "1.50",
+                "arbimaps_modules": "ADMINISTRATIVOS",
+                "arbimaps_rule_descriptions": "• 1.50: Todo predio informal debe relacionar un predio formal mediante la tabla ilc_predio_informalidad",
+                "source_status_functioning": "—",
+                "cross_observation": "La 1.50 exige que todo predio informal relacione un predio formal mediante ilc_predio_informalidad."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "RESERVADA_EQUIVALENCIA_EXACTA",
+                "source_rule_ids": ["1.50"],
+                "source_module_keys": ["administrativo"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_46",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "66",
+            "level": "Caracterización",
+            "abbreviation": "2_CLD_CJ_66",
+            "rule_type": "Consistencia Lógica Derechos",
+            "component": "Componente Jurídico",
+            "description": "Derecho de tipo Dominio exige condición de predio formal (diferente a informal).",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Media",
+                "arbimaps_rule_ids": ["2.2"],
+                "arbimaps_rule_ids_raw": "2.2",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.2: Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).",
+                "source_status_functioning": "2.2: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.2 distingue formal/Dominio e informal/Posesión-Ocupación; se aproxima a Dominio→formal, aunque su formulación está acotada a tipos y FMI."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.2"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_66",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "67",
+            "level": "Caracterización",
+            "abbreviation": "2_CLD_CJ_67",
+            "rule_type": "Consistencia Lógica Derechos",
+            "component": "Componente Jurídico",
+            "description": "Derecho de tipo Posesión exige tipo de predio Privado.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.3"],
+                "arbimaps_rule_ids_raw": "2.3",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.3: Los predios asociados a tipos de derecho de “posesión” deben ser tipo de predios “Privados”",
+                "source_status_functioning": "2.3: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.3 exige que predios con derecho Posesión sean Privados."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.3"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_67",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "68",
+            "level": "Caracterización",
+            "abbreviation": "2_CLD_CJ_68",
+            "rule_type": "Consistencia Lógica Derechos",
+            "component": "Componente Jurídico",
+            "description": "Derecho de tipo Ocupación exige tipo de predio Público (Baldío, Fiscal, Uso Público, Presunto Baldío).",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Media",
+                "arbimaps_rule_ids": ["2.4", "2.5"],
+                "arbimaps_rule_ids_raw": "2.4; 2.5",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.4: Los predios con tipo de predio: Privado no deben estar asociados a derechos de “ocupación”\n• 2.5: Para los predios asociados a tipo de predio público, el tipo de derecho no puede ser posesión",
+                "source_status_functioning": "2.4: Estado=OK, Funcionamiento=OK; 2.5: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.4 prohíbe Ocupación en privados y la 2.5 prohíbe Posesión en públicos; la regla SINIC expresa directamente Ocupación→Público."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.4", "2.5"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_68",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "69",
+            "level": "Caracterización",
+            "abbreviation": "2_CLD_CJ_69",
+            "rule_type": "Consistencia Lógica Derechos",
+            "component": "Componente Jurídico",
+            "description": "Derechos en predios (excepto Matrices) deben tener asociado al menos un interesado o agrupación.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.29"],
+                "arbimaps_rule_ids_raw": "2.29",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.29: Todo predio debe tener asociado un interesado o agrupación de interesados.",
+                "source_status_functioning": "2.29: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.29 exige interesado o agrupación para todo predio; SINIC lo vincula a derechos y exceptúa matrices."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.29"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_69",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "70",
+            "level": "Caracterización",
+            "abbreviation": "2_CLI_CJ_70",
+            "rule_type": "Consistencia Lógica Interesados",
+            "component": "Componente Jurídico",
+            "description": "Todo interesado debe tener un Tipo definido (no vacío ni nulo).",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["11.48"],
+                "arbimaps_rule_ids_raw": "11.48",
+                "arbimaps_modules": "OBLIGATORIAS",
+                "arbimaps_rule_descriptions": "• 11.48: El interesado no tiene un tipo definido",
+                "source_status_functioning": "11.48: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La obligatoria 11.48 detecta interesados sin tipo definido."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["11.48"],
+                "source_module_keys": ["obligatorias"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_70",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "71",
+            "level": "Caracterización",
+            "abbreviation": "2_CLI_CJ_71",
+            "rule_type": "Consistencia Lógica Interesados",
+            "component": "Componente Jurídico",
+            "description": "Interesados Persona Natural no deben tener Tipo de Documento NIT.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.14"],
+                "arbimaps_rule_ids_raw": "2.14",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.14: Los interesados de tipo “Persona_Natural” deben asociar solamente en tipo de documento “Cedula de Ciudadanía” o \"Pasaporte\" o “Cédula de Extranjería” o “Tarjeta de identidad” o “Registro Civil” o número secuencial (este secuencial solamente se utilizará en el caso de los interesados que no fue posible encontrar su documento de identidad)",
+                "source_status_functioning": "2.14: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.14 limita Persona_Natural a documentos distintos de NIT (CC, Pasaporte, CE, TI, RC o secuencial)."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.14"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_71",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "72",
+            "level": "Caracterización",
+            "abbreviation": "2_CLI_CJ_72",
+            "rule_type": "Consistencia Lógica Interesados",
+            "component": "Componente Jurídico",
+            "description": "Interesados Persona Jurídica deben tener Tipo de Documento NIT.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.13"],
+                "arbimaps_rule_ids_raw": "2.13",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.13: Los interesados de tipo “Persona_Jurídica” deben asociar solamente en tipo de documento NIT o número secuencial (este secuencial solamente se utiliza en el caso de los interesados que no fue posible encontrar su documento de identidad).",
+                "source_status_functioning": "2.13: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.13 exige NIT para Persona_Jurídica, pero admite también número secuencial en casos sin documento."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.13"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_72",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "73",
+            "level": "Caracterización",
+            "abbreviation": "2_CLI_CJ_73",
+            "rule_type": "Consistencia Lógica Interesados",
+            "component": "Componente Jurídico",
+            "description": "Persona Natural exige existencia de Primer Nombre y Primer Apellido.",
+            "level_score_percent": 35,
+            "rule_score_percent": 1,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Media",
+                "arbimaps_rule_ids": ["2.17"],
+                "arbimaps_rule_ids_raw": "2.17",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.17: El atributo de primer nombre, segundo nombre, primer apellido y segundo apellido en interesado solo será usado para aquellos que correspondan a “Personas naturales” y no debe ser numérico ni contener caracteres especiales",
+                "source_status_functioning": "2.17: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.17 reserva nombres/apellidos a personas naturales y valida su contenido, pero no expresa de forma explícita que Primer Nombre y Primer Apellido sean obligatorios."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.17"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_73",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "74",
+            "level": "Caracterización",
+            "abbreviation": "2_CLI_CJ_74",
+            "rule_type": "Consistencia Lógica Interesados",
+            "component": "Componente Jurídico",
+            "description": "Persona Jurídica exige existencia de Razón Social.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.20"],
+                "arbimaps_rule_ids_raw": "2.20",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.20: Para los interesados asociados a personas jurídicas, solamente se debe diligenciar el campo de razón social",
+                "source_status_functioning": "2.20: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.20 establece que para persona jurídica solo se diligencia Razón Social."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.20"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_74",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "75",
+            "level": "Caracterización",
+            "abbreviation": "2_CLI_CJ_75",
+            "rule_type": "Consistencia Lógica Interesados",
+            "component": "Componente Jurídico",
+            "description": "Persona Jurídica debe tener Sexo igual a 'No Aplica'.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Relacionada, no equivalente",
+                "confidence": "Baja",
+                "arbimaps_rule_ids": ["2.21"],
+                "arbimaps_rule_ids_raw": "2.21",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.21: El atributo de Sexo en interesado solo será usado para aquellos que correspondan a Personas naturales.",
+                "source_status_functioning": "2.21: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.21 indica que Sexo solo se usa para personas naturales; SINIC exige específicamente el valor “No Aplica” en Persona Jurídica."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.21"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_75",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "76",
+            "level": "Caracterización",
+            "abbreviation": "2_CLI_CJ_76",
+            "rule_type": "Consistencia Lógica Interesados",
+            "component": "Componente Jurídico",
+            "description": "Persona Natural debe tener Sexo Masculino, Femenino, No Binario o Sin Determinar.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Relacionada, no equivalente",
+                "confidence": "Baja",
+                "arbimaps_rule_ids": ["2.21"],
+                "arbimaps_rule_ids_raw": "2.21",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.21: El atributo de Sexo en interesado solo será usado para aquellos que correspondan a Personas naturales.",
+                "source_status_functioning": "2.21: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.21 restringe el uso de Sexo a personas naturales, pero no define el catálogo Masculino/Femenino/No Binario/Sin Determinar."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.21"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_76",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "77",
+            "level": "Caracterización",
+            "abbreviation": "2_CLFA_CJ_77",
+            "rule_type": "Consistencia Lógica Fuente Administrativa",
+            "component": "Componente Jurídico",
+            "description": "Cada predio con estado Activo debe tener asociada al menos una Fuente Administrativa mediante COL_UnidadFuente o la ruta COL_BAUnitRrr + COL_RRRFuente (o la relación embebida ARB).",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.8,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Media",
+                "arbimaps_rule_ids": ["2.12"],
+                "arbimaps_rule_ids_raw": "2.12",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.12: Si el predio tiene folio de matrícula en la tabla ILC_Predio, entonces debe tener registrada una fecha de documento fuente, tipo de fuente administrativa, numero de fuente administrativa y ente emisor. El valor registrado en fecha de documento fuente no puede ser posterior a la fecha de levantamiento",
+                "source_status_functioning": "2.12: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.12 exige fuente administrativa cuando existe FMI; SINIC exige al menos una fuente para todo predio activo."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.12"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_77",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "78",
+            "level": "Caracterización",
+            "abbreviation": "2_CLFA_CJ_78",
+            "rule_type": "Consistencia Lógica Fuente Administrativa",
+            "component": "Componente Jurídico",
+            "description": "Predios con trámite asociado deben tener fuente diferente a 'Sin Documento'.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Sin correspondencia directa",
+                "confidence": "—",
+                "arbimaps_rule_ids": [],
+                "arbimaps_rule_ids_raw": "—",
+                "arbimaps_modules": "—",
+                "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+                "source_status_functioning": "—",
+                "cross_observation": "No se encontró una regla que prohíba “Sin Documento” cuando el predio tiene trámite asociado."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": [],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_78",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "79",
+            "level": "Caracterización",
+            "abbreviation": "2_CLFA_CJ_79",
+            "rule_type": "Consistencia Lógica Fuente Administrativa",
+            "component": "Componente Jurídico",
+            "description": "Fuentes distintas a privado/sin documento deben diligenciar Ente Emisor, Oficina, Ciudad y Fecha.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Media",
+                "arbimaps_rule_ids": ["2.27", "2.28"],
+                "arbimaps_rule_ids_raw": "2.27; 2.28",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.27: El registro de un dato en ente emisor, numero de fuente y fecha de documento debe ser congruente con el tipo de fuente administrativa asignado.\n• 2.28: El ente emisor debe corresponder al  tipo de fuente administrativa diligenciado.",
+                "source_status_functioning": "2.27: Estado=OK, Funcionamiento=OK; 2.28: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "Las 2.27/2.28 exigen congruencia entre tipo de fuente y datos/ente emisor; SINIC explicita Ente Emisor, Oficina, Ciudad y Fecha para ciertos tipos."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.27", "2.28"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_79",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "88",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_88",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio Privado con derecho Dominio exige Matrícula Inmobiliaria mayor a 0.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.2"],
+                "arbimaps_rule_ids_raw": "2.2",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.2: Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).",
+                "source_status_functioning": "2.2: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.2 exige FMI para predio formal privado con derecho Dominio."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.2"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_88",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "89",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_89",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio Baldío con derecho Dominio exige estar ubicado en zona rural.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Sin correspondencia directa",
+                "confidence": "—",
+                "arbimaps_rule_ids": [],
+                "arbimaps_rule_ids_raw": "—",
+                "arbimaps_modules": "—",
+                "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+                "source_status_functioning": "—",
+                "cross_observation": "No se halló regla que exija zona rural para predio Baldío con Dominio."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": [],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_89",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "90",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_90",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio Baldío con derecho Dominio exige Matrícula Inmobiliaria mayor a 0.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Sin correspondencia directa",
+                "confidence": "—",
+                "arbimaps_rule_ids": [],
+                "arbimaps_rule_ids_raw": "—",
+                "arbimaps_modules": "—",
+                "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+                "source_status_functioning": "—",
+                "cross_observation": "No se halló regla específica que exija FMI >0 para Baldío con Dominio."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": [],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_90",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "91",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_91",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio Baldío con derecho Dominio exige tener un único interesado relacionado.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Media",
+                "arbimaps_rule_ids": ["2.6"],
+                "arbimaps_rule_ids_raw": "2.6",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.6: En los predios baldíos y asociados a tipo de derecho dominio, el interesado relacionado debe corresponder a la Nación o Municipio o Agencia Nacional de Tierras",
+                "source_status_functioning": "2.6: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.6 controla quién debe ser el interesado en Baldío+Dominio (Nación/Municipio/ANT), pero no exige unicidad del interesado."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.6"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_91",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "92",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_92",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio informal superpuesto con Baldío exige derecho de Ocupación.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Relacionada, no equivalente",
+                "confidence": "Baja",
+                "arbimaps_rule_ids": ["5.20"],
+                "arbimaps_rule_ids_raw": "5.20",
+                "arbimaps_modules": "TOPOLOGICO",
+                "arbimaps_rule_descriptions": "• 5.20: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Informal ocupacion) | Clase 2: CR_Terreno (Predio tipo \"privado\") | Condición: CR_Terreno informal (CPN posicion 22 igual \"2\") asociado a un derecho de \"Ocupación\" no debe superponerse con un CR_Terreno asociado a un LC_Predio.Tipo \"Privado\"",
+                "source_status_functioning": "—",
+                "cross_observation": "La 5.20 impide superposición de una Ocupación informal con predio Privado; no expresa la inferencia Baldío superpuesto→Ocupación."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["5.20"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_92",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "93",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_93",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio informal con Ocupación superpuesto con Baldío exige estar en zona rural.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Sin correspondencia directa",
+                "confidence": "—",
+                "arbimaps_rule_ids": [],
+                "arbimaps_rule_ids_raw": "—",
+                "arbimaps_modules": "—",
+                "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+                "source_status_functioning": "—",
+                "cross_observation": "No se encontró una regla que combine Ocupación informal + superposición con Baldío + obligación de ubicación rural."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": [],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_93",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "94",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_94",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio informal con Ocupación superpuesto con Baldío exige no tener matrícula inmobiliaria.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.2"],
+                "arbimaps_rule_ids_raw": "2.2",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.2: Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).",
+                "source_status_functioning": "2.2: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.2 establece que predios informales con Posesión u Ocupación no deben tener matrícula inmobiliaria, con excepciones documentadas."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.2"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_94",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "95",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_95",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio Fiscal Patrimonial no informal exige derecho de Dominio.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Relacionada, no equivalente",
+                "confidence": "Baja",
+                "arbimaps_rule_ids": ["2.5"],
+                "arbimaps_rule_ids_raw": "2.5",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.5: Para los predios asociados a tipo de predio público, el tipo de derecho no puede ser posesión",
+                "source_status_functioning": "2.5: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.5 prohíbe Posesión en predios públicos; no obliga de forma expresa Dominio para Fiscal Patrimonial no informal."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.5"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_95",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "96",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_96",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio Fiscal Patrimonial con Dominio exige Matrícula Inmobiliaria mayor a 0.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Sin correspondencia directa",
+                "confidence": "—",
+                "arbimaps_rule_ids": [],
+                "arbimaps_rule_ids_raw": "—",
+                "arbimaps_modules": "—",
+                "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+                "source_status_functioning": "—",
+                "cross_observation": "No se encontró regla específica FMI>0 para Fiscal Patrimonial con Dominio."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": [],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_96",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "97",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_97",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio informal superpuesto con Fiscal Patrimonial exige derecho de Ocupación.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Relacionada, no equivalente",
+                "confidence": "Baja",
+                "arbimaps_rule_ids": ["5.20"],
+                "arbimaps_rule_ids_raw": "5.20",
+                "arbimaps_modules": "TOPOLOGICO",
+                "arbimaps_rule_descriptions": "• 5.20: No debe superponerse | No se debe sobreponer ninguno de los elementos de la misma clase de entidad | Clase 1: CR_Terreno (Informal ocupacion) | Clase 2: CR_Terreno (Predio tipo \"privado\") | Condición: CR_Terreno informal (CPN posicion 22 igual \"2\") asociado a un derecho de \"Ocupación\" no debe superponerse con un CR_Terreno asociado a un LC_Predio.Tipo \"Privado\"",
+                "source_status_functioning": "—",
+                "cross_observation": "La 5.20 relaciona Ocupación informal con no superposición a privados, pero no infiere Ocupación a partir de superposición con Fiscal Patrimonial."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["5.20"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_97",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "98",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_98",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio Uso Público no informal exige derecho de Dominio.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.10"],
+                "arbimaps_rule_ids_raw": "2.10",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.10: Para los predios que son vía o de uso público el tipo de predio es “Uso Público” y el tipo de derecho relacionado es dominio.",
+                "source_status_functioning": "2.10: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.10 exige derecho Dominio para predios Vía/Uso Público."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.10"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_98",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "99",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_99",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio con NPN pos 22='3' u '4' exige tipo Uso Público y derecho Dominio.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Equivalente por combinación",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["1.1", "2.10"],
+                "arbimaps_rule_ids_raw": "1.1; 2.10",
+                "arbimaps_modules": "ADMINISTRATIVOS; JURIDICO",
+                "arbimaps_rule_descriptions": "• 1.1: Los campos 22 a 30 del número predial nacional para predios con condición de propiedad NPH se estandarizan como \"000000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad bien de uso público se estandarizan como \"300000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad via se estandarizan como \"400000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de propiedad parque cementerio se estandarizan como \"700000000\"\nLos campos 22 a 30 del número predial nacional para predios con condición de Informal se estandarizan como \"200000000\"\n• 2.10: Para los predios que son vía o de uso público el tipo de predio es “Uso Público” y el tipo de derecho relacionado es dominio.",
+                "source_status_functioning": "1.1: Estado=OK, Funcionamiento=OK; 2.10: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 1.1 identifica los patrones NPN 3/4 como Bien_Uso_Publico/Vía y la 2.10 exige tipo Uso Público y derecho Dominio."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["1.1", "2.10"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_99",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "100",
+            "level": "Caracterización",
+            "abbreviation": "2_CLC_CJ_100",
+            "rule_type": "Consistencia Lógica Conceptual",
+            "component": "Componente Jurídico",
+            "description": "Predio informal de Uso Público exige derecho de Ocupación.",
+            "level_score_percent": 35,
+            "rule_score_percent": 0.25,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Baja",
+                "arbimaps_rule_ids": ["2.5"],
+                "arbimaps_rule_ids_raw": "2.5",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.5: Para los predios asociados a tipo de predio público, el tipo de derecho no puede ser posesión",
+                "source_status_functioning": "2.5: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.5 impide Posesión en públicos; no establece explícitamente que un Uso Público informal deba tener Ocupación."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.5"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_100",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "109",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_109",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Interesados con NIT exigen documento de identidad diligenciado sin espacios ni caracteres especiales.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.16"],
+                "arbimaps_rule_ids_raw": "2.16",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.16: Si el tipo de documento del interesado es “NIT”, entonces el numero de indentidad debe ser mayor a 0, sin letras ni caracteres especiales exceptuando guion \"-\" y no debe ser consecutivo (12345678-9). Antes del guion solo numérico y después del guion únicamente un entero, entre 0 y 9.",
+                "source_status_functioning": "2.16: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.16 valida NIT mayor a 0, sin letras ni caracteres especiales salvo guion y con estructura numérica."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.16"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_109",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "110",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_110",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Interesados Persona Jurídica no deben tener diligenciados nombres ni apellidos.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.18", "2.20"],
+                "arbimaps_rule_ids_raw": "2.18; 2.20",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.18: El atributo de primer nombre, segundo nombre, primer apellido y segundo apellido no será usado para interesados que correspondan a “Personas jurídicas”.\n• 2.20: Para los interesados asociados a personas jurídicas, solamente se debe diligenciar el campo de razón social",
+                "source_status_functioning": "2.18: Estado=OK, Funcionamiento=OK; 2.20: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.18 prohíbe nombres/apellidos en Persona Jurídica y la 2.20 limita el diligenciamiento a Razón Social."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.18", "2.20"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_110",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "111",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_111",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Documentos de identidad (CC, CE, NIT, Pasaporte, RC, TI) exigen > 5 dígitos sin espacios/caracteres especiales.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Media",
+                "arbimaps_rule_ids": ["2.15", "2.16"],
+                "arbimaps_rule_ids_raw": "2.15; 2.16",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.15: Si el tipo de documento asociado al interesado es \"Cédula de ciudadanía” o “Cedula de Extranjería” o “Tarjeta de identidad” o “Registro Civil”, el número de documento de identidad debe ser diferente de “cero” o vacío. La opción de secuencial se usa en el caso de interesados en los cuales no fue posible encontrar documento de identificación, al no existir otra opción\n• 2.16: Si el tipo de documento del interesado es “NIT”, entonces el numero de indentidad debe ser mayor a 0, sin letras ni caracteres especiales exceptuando guion \"-\" y no debe ser consecutivo (12345678-9). Antes del guion solo numérico y después del guion únicamente un entero, entre 0 y 9.",
+                "source_status_functioning": "2.15: Estado=OK, Funcionamiento=OK; 2.16: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "El primer Excel valida no vacío/cero para documentos personales y formato de NIT, pero no exige de manera general >5 dígitos ni ausencia de espacios para todos los tipos listados."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.15", "2.16"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_111",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "113",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_113",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Predios no informales exigen un único derecho de tipo Dominio.",
+            "level_score_percent": 30,
+            "rule_score_percent": 1,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Relacionada, no equivalente",
+                "confidence": "Baja",
+                "arbimaps_rule_ids": ["2.2", "2.10"],
+                "arbimaps_rule_ids_raw": "2.2; 2.10",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.2: Un predio formal de tipo privado con Derecho de tipo \"Dominio\" debe tener Matricula inmobiliaria. De igual manera, un predio informal con Derecho de tipo \"Posesión\" u \"Ocupación\" no debe tener Matricula Inmobiliaria asociada (Aplican Excepciones en la existencia de algunos predios informales con FMI).\n• 2.10: Para los predios que son vía o de uso público el tipo de predio es “Uso Público” y el tipo de derecho relacionado es dominio.",
+                "source_status_functioning": "2.2: Estado=OK, Funcionamiento=OK; 2.10: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "Existen reglas de Dominio por tipos concretos (privado formal y vía/uso público), pero no una regla global que exija un único derecho Dominio para todo predio no informal."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.2", "2.10"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_113",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "117",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_117",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Agrupación de interesados Grupo Civil exige que todos los interesados sean Persona Natural.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.24"],
+                "arbimaps_rule_ids_raw": "2.24",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.24: Si la agrupación de interesados de un predio está conformada por personas naturales, el tipo de agrupación debe ser Grupo_Civil",
+                "source_status_functioning": "—",
+                "cross_observation": "La 2.24 exige Grupo_Civil cuando la agrupación está conformada por personas naturales."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.24"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_117",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "118",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_118",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Agrupación de interesados Grupo Empresarial exige que todos los interesados sean Persona Jurídica.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.25"],
+                "arbimaps_rule_ids_raw": "2.25",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.25: Si la agrupación de interesados de un predio está conformada por personas jurídicas el tipo de agrupación debe ser Grupo_Empresarial",
+                "source_status_functioning": "—",
+                "cross_observation": "La 2.25 exige Grupo_Empresarial cuando la agrupación está conformada por personas jurídicas."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.25"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_118",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "119",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_119",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Agrupación con Personas Naturales y Jurídicas simultáneamente exige tipo Grupo_Mixto.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.23"],
+                "arbimaps_rule_ids_raw": "2.23",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.23: Si la agrupación de interesados de un predio está conformada por personas naturales y jurídicas, el tipo de agrupación debe ser Grupo_Mixto",
+                "source_status_functioning": "—",
+                "cross_observation": "La 2.23 exige Grupo_Mixto cuando coexisten personas naturales y jurídicas."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.23"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_119",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "120",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_120",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Matrícula > 0 exige Fuente Administrativa asociada con fecha, tipo y ente emisor.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Exacta",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.12"],
+                "arbimaps_rule_ids_raw": "2.12",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.12: Si el predio tiene folio de matrícula en la tabla ILC_Predio, entonces debe tener registrada una fecha de documento fuente, tipo de fuente administrativa, numero de fuente administrativa y ente emisor. El valor registrado en fecha de documento fuente no puede ser posterior a la fecha de levantamiento",
+                "source_status_functioning": "2.12: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "La 2.12 exige fuente administrativa, fecha, tipo, número y ente emisor cuando existe FMI."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "REUTILIZA_LOGICA_ARBIMAPS",
+                "source_rule_ids": ["2.12"],
+                "source_module_keys": ["juridico"],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_120",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "121",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_121",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Predio Matriz con un único interesado exige que sea Persona Jurídica.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Sin correspondencia directa",
+                "confidence": "—",
+                "arbimaps_rule_ids": [],
+                "arbimaps_rule_ids_raw": "—",
+                "arbimaps_modules": "—",
+                "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+                "source_status_functioning": "—",
+                "cross_observation": "No se encontró regla que obligue Persona Jurídica cuando un predio Matriz tiene un único interesado."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": [],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_121",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "122",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_122",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Fuente Documento_Publico exige Ente Emisor, Oficina, Ciudad y Fecha diligenciados.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Media",
+                "arbimaps_rule_ids": ["2.27", "2.28"],
+                "arbimaps_rule_ids_raw": "2.27; 2.28",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.27: El registro de un dato en ente emisor, numero de fuente y fecha de documento debe ser congruente con el tipo de fuente administrativa asignado.\n• 2.28: El ente emisor debe corresponder al  tipo de fuente administrativa diligenciado.",
+                "source_status_functioning": "2.27: Estado=OK, Funcionamiento=OK; 2.28: Estado=OK, Funcionamiento=OK",
+                "cross_observation": "Las reglas existentes exigen congruencia de datos y ente emisor con el tipo de fuente, pero no enumeran literalmente Documento_Publico + Oficina + Ciudad + Fecha."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.27", "2.28"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_122",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "123",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_123",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Fuente Sin Documento exige Ente Emisor, Oficina, Ciudad y Fecha NO diligenciados.",
+            "level_score_percent": 30,
+            "rule_score_percent": 0.5,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Sin correspondencia directa",
+                "confidence": "—",
+                "arbimaps_rule_ids": [],
+                "arbimaps_rule_ids_raw": "—",
+                "arbimaps_modules": "—",
+                "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+                "source_status_functioning": "—",
+                "cross_observation": "No se encontró regla explícita que obligue a dejar Ente Emisor, Oficina, Ciudad y Fecha vacíos cuando la fuente es Sin Documento."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": [],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_123",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "128",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_128",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Adaptación operativa solicitada: cada predio con Estado Activo debe tener al menos una Fuente Administrativa por COL_UnidadFuente, por COL_BAUnitRrr + COL_RRRFuente o por relación ARB embebida. Los predios Cancelados/Inactivos no se evalúan. Este criterio difiere de la descripción oficial de la regla 128.",
+            "level_score_percent": 30,
+            "rule_score_percent": 1,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Sin correspondencia directa",
+                "confidence": "—",
+                "arbimaps_rule_ids": [],
+                "arbimaps_rule_ids_raw": "—",
+                "arbimaps_modules": "—",
+                "arbimaps_rule_descriptions": "Sin regla equivalente identificada en el catálogo actual.",
+                "source_status_functioning": "—",
+                "cross_observation": "No se identificó una regla inversa que obligue a toda Fuente Administrativa a estar asociada a un predio activo."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": [],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_128",
+                "target_file": "reglas_juridicos.py"
+            }
+        },
+        {
+            "id": "144",
+            "level": "Temático",
+            "abbreviation": "3_ET_CJ_144",
+            "rule_type": "Exactitud Temática",
+            "component": "Componente Jurídico",
+            "description": "Agrupación de Interesados exige suma de participaciones igual a 1 (100%).",
+            "level_score_percent": 30,
+            "rule_score_percent": 1,
+            "sheet_slug": "juridico",
+            "equivalence": {
+                "type": "Parcial",
+                "confidence": "Alta",
+                "arbimaps_rule_ids": ["2.26"],
+                "arbimaps_rule_ids_raw": "2.26",
+                "arbimaps_modules": "JURIDICO",
+                "arbimaps_rule_descriptions": "• 2.26: La suma de los valores de participación de la tabla col_miembros debe sumar 1 para los interesados asociados a una misma agrupación (En predios que cuente con FMI y que ellos se detalle el porcentaje de participación); de lo contrario esta suma debe ser cero o Null.",
+                "source_status_functioning": "—",
+                "cross_observation": "La 2.26 exige suma de participaciones=1 cuando el FMI detalla porcentajes, pero permite cero/null en otros casos; SINIC lo formula como requisito general de la agrupación."
+            },
+            "implementation_status": "IMPLEMENTADA_LOGICA_SINIC",
+            "implementation": {
+                "status": "IMPLEMENTADA_LOGICA_SINIC",
+                "executable": true,
+                "strategy": "ESPACIO_PREPARADO_PARA_IMPLEMENTACION",
+                "source_rule_ids": ["2.26"],
+                "source_module_keys": [],
+                "missing_source_rule_ids": [],
+                "pending_reason": "",
+                "target_function": "regla_144",
+                "target_file": "reglas_juridicos.py"
+            }
+        }
+    ]
 }
